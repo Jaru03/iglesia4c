@@ -52,7 +52,9 @@ const Footer = () => {
             <div className=" bg-primary text-white p-6 text-base">
                 <div className="flex flex-col font-semibold gap-4 max-w-[800px] sm:m-auto">
                     <ul className='flex flex-col gap-4 items-center justify-center sm:flex-row sm:justify-between'>
-                        <Image alt='' src={'/logo-4c-white.png'} width={100} height={100} />
+                        <li>
+                            <Image alt='' src={'/logo-4c-white.png'} width={100} height={100} />
+                        </li>
 
                         {footerRoutes.map((item) => (
                             <li key={item.toLowerCase().replace('ó', 'o')}>
