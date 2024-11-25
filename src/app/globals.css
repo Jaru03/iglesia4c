@@ -2,20 +2,80 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+.scroll-animation {
+    animation: animation-bar linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0 150px; 
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+.scroll-logo-desktop {
+    animation: animation-logo-desktop linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0 150px; 
+}
+
+.scroll-bg {
+    animation: animation-bg linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0 150px; 
+}
+
+.scroll-letter {
+    animation: animation-letter linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0 150px; 
+}
+
+@keyframes animation-bar {
+    from{
+        filter: invert(1) sepia(0.3) saturate(0) hue-rotate(0deg);
+    }
+    to {
+        filter: none;
+    }
   }
-}
+  
+@keyframes animation-letter {
+    from{
+      color: #060735
+    }
+    to {
+      color:white;
+    }
+  }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-}
+@keyframes animation-bg {
+    to {
+        background-color: #060735;
+    }
+  }
+
+@keyframes animation-logo-desktop {
+    from{
+      filter: none;
+    }
+    to {
+      filter: invert(1) sepia(0.3) saturate(0) hue-rotate(0deg);
+    }
+  }
+
+  .logo-filter{
+    filter: invert(1) sepia(0.3) saturate(0) hue-rotate(0deg);
+  }
+
+  .text-stroke {
+    -webkit-text-stroke: 1px black; 
+    text-stroke: 1px black;  
+  }
+
+  .innerShadowDonationCard{
+    box-shadow: inset 1px 5px 4px 0 #00000025;
+  }
+
+  .invertirElements {
+    &:nth-child(even) {
+      img {
+        
+      }
+    }
+  }
