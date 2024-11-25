@@ -50,8 +50,8 @@ const Footer = () => {
     return (
         <footer>
             <div className=" bg-primary text-white p-6 text-base">
-                <ul className="flex flex-col font-semibold gap-4 max-w-[800px] sm:m-auto">
-                    <div className='flex flex-col gap-4 items-center justify-center sm:flex-row sm:justify-between'>
+                <div className="flex flex-col font-semibold gap-4 max-w-[800px] sm:m-auto">
+                    <ul className='flex flex-col gap-4 items-center justify-center sm:flex-row sm:justify-between'>
                         <Image alt='' src={'/logo-4c-white.png'} width={100} height={100} />
 
                         {footerRoutes.map((item) => (
@@ -61,10 +61,10 @@ const Footer = () => {
                                 </Link>
                             </li>
                         ))}
-                    </div>
+                    </ul>
                     <div className='flex flex-col items-center gap-4 justify-center sm:flex-row sm:items-start sm:gap-14 sm:justify-between sm:mx-auto'>
 
-                        <div className='flex flex-col gap-2 sm:flex-row sm:gap-4'>
+                        <ul className='flex flex-col gap-2 sm:flex-row sm:gap-4'>
 
                             {footerContact.filter((social) => !(social.value === 'Facebook' || social.value === 'Instagram' || social.value === 'YouTube')).map((item) => (
                                 <li key={item.name}>
@@ -74,8 +74,8 @@ const Footer = () => {
                                     </Link>
                                 </li>
                             ))}
-                        </div>
-                        <div className='flex justify-center gap-4'>
+                        </ul>
+                        <ul className='flex justify-center gap-4'>
                             {footerContact.filter((item) => (item.value === 'Facebook' || item.value === 'YouTube' || item.value === 'Instagram')).map((item) => (
                                 <li key={item.name}>
                                     <Link href={'/'} className={`flex flex-col items-center ${item.value === 'Facebook' || item.value === 'Instagram' || item.value === 'YouTube' ? 'inline' : ""}`}>
@@ -83,9 +83,9 @@ const Footer = () => {
                                     </Link>
                                 </li>
                             ))}
-                        </div>
+                        </ul>
                     </div>
-                </ul>
+                </div>
             </div>
         </footer>
     )
