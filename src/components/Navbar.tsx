@@ -24,13 +24,13 @@ const Navbar = () => {
     return (
         <header>
             <div>
-                <div className={`${currentRoute === '/' ? 'scroll-animation' : ''} fixed left-1/2 transform -translate-x-1/2`}>
+                <div className={`${currentRoute === '/' ? 'scroll-animation' : ''} fixed z-[9] left-1/2 transform -translate-x-1/2`}>
                     <Link className="md:hidden" href={'/'}>
                         <Image src={'/logo-4c-png.png'} alt="Logo 4C" className={` w-[85px] h-[85px]`} width={100} height={100} />
                     </Link>
                 </div>
-                <nav className="fixed w-screen transition-all scroll-bg md:h-24 md:flex md:justify-center">
-                    <div className="hidden w-full md:fixed md:flex px-4 justify-between items-center top-0 h-24 max-w-[850px]  ">
+                <nav className="z-10 fixed w-screen transition-all scroll-bg md:h-24 md:flex md:justify-center">
+                    <div className="hidden w-full md:fixed md:flex px-4 justify-between items-center top-0 h-24 max-w-[850px] ">
                         <Link className={`hidden md:block ${currentRoute === '/' ? 'logo-filter' : 'scroll-logo-desktop'}`} href={'/'}>
                             <Image src={'/logo-4c-png.png'} alt="Logo 4C" className={` w-[85px] h-[85px]`} width={100} height={100} />
                         </Link>
