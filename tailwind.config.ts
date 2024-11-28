@@ -31,13 +31,13 @@ export default {
         'button-desktop': ['24px', {
           fontWeight: 'semi-bold',
         }],
-        'xl-desktop': ['32px', {
+        'xl-desktop': ['30px', {
           fontWeight: 'bold',
         }],
-        '2xl-desktop': ['48px', {
+        '2xl-desktop': ['40px', {
           fontWeight: 'bold',
         }],
-        '3xl-desktop': ['64px', {
+        '3xl-desktop': ['55px', {
           fontWeight: 'bold',
         }],
       },      
