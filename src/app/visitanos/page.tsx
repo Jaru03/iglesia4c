@@ -32,7 +32,7 @@ const page = () => {
   return (
     <section>
         <div className="p-6 pt-24 sm:pt-32">
-            <h2 className="text-center text-primary-2 text-2xl pb-6">Visitanos</h2>
+            <h2 className="text-center text-primary-2 text-2xl md:text-2xl-desktop pb-6">Visitanos</h2>
 
             <div className=" gap-y-10 justify-between">
                 {

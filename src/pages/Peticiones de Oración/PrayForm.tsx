@@ -17,7 +17,7 @@ const PrayForm = () => {
             </div>
             <Input placeholder="Escribe tu petición" type="textarea" className="pb-32"/>
 
-            <Button variant="form" text="Enviar" className="mt-8"  />
+            <Button url="" variant="form" text="Enviar" className="mt-8"  />
         </form>
     )
 }

@@ -49,7 +49,7 @@ const Footer = () => {
 
     return (
         <footer>
-            <div className=" bg-primary text-white p-6 text-base">
+            <div className=" bg-primary text-white p-6 text-base md:text-base-desktop">
                 <div className="flex flex-col font-semibold gap-4 max-w-[800px] sm:m-auto">
                     <ul className='flex flex-col gap-4 items-center justify-center sm:flex-row sm:justify-between'>
                         <li>
@@ -80,8 +80,8 @@ const Footer = () => {
                         <ul className='flex justify-center gap-4'>
                             {footerContact.filter((item) => (item.value === 'Facebook' || item.value === 'YouTube' || item.value === 'Instagram')).map((item) => (
                                 <li key={item.name}>
-                                    <Link href={'/'} className={`flex flex-col items-center ${item.value === 'Facebook' || item.value === 'Instagram' || item.value === 'YouTube' ? 'inline' : ""}`}>
-                                        <Image alt={item.name} src={item.icon} width={25} height={25} />
+                                    <Link href={'/'} className={`flex flex-col items-center filter invert brightness-100 ${item.value === 'Facebook' || item.value === 'Instagram' || item.value === 'YouTube' ? 'inline' : ""}`}>
+                                        <Image alt={item.name} src={item.icon} width={25} className='' height={25} />
                                     </Link>
                                 </li>
                             ))}

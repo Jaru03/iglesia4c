@@ -15,13 +15,13 @@ const DonationIcon = ({ text, imgSrc, setter, payPath, className }: Props) => {
     setter(payPath)
   }
 
-  const cardStyles = twMerge("shadow-[1px_10px_4px_0px_rgba(0,_0,_0,_0.15)] rounded-lg w-[260px] h-[160px] flex justify-center", className)
+  const cardStyles = twMerge("shadow-[1px_10px_4px_0px_rgba(0,_0,_0,_0.15)] rounded-lg w-[260px] h-[160px] flex justify-center transition-all", className)
 
   return (
       <article onClick={handleClick} className={cardStyles}>
-        <div  className="flex flex-col items-center justify-center gap-2 w-full h-full">
+        <div  className="flex flex-col transition-all cursor-pointer hover:scale-110 items-center justify-center gap-2 w-full h-full">
           <Image src={imgSrc} width={150} height={150} alt="Icono de donación" className="max-w-[70px] max-h-[80px]" />
-          <p className="text-base font-semibold">{text}</p>
+          <p className="text-base md:text-base-desktop font-semibold">{text}</p>
         </div> 
       </article>
   )

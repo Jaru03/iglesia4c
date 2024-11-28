@@ -15,7 +15,7 @@ const DonationsPage = () => {
   return (
     <section className="w-full min-h-screen">
       <div className="p-6 pt-24 sm:pt-32 flex flex-col gap-6 justify-center items-center">
-        <h2 className="text-2xl text-primary-2">Donaciones</h2>
+        <h2 className="text-2xl md:text-2xl-desktop text-primary-2">Donaciones</h2>
 
         <div className="flex flex-wrap gap-4 justify-center">
           <DonationIcon className={`${infoPay === 'PayPal' ? 'innerShadowDonationCard' : null }`} setter={setInfoPay} payPath="PayPal" imgSrc="/paypal-icon.png" text="PayPal" />

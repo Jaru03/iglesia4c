@@ -20,11 +20,12 @@
   animation-range: 0 150px;
 }
 
-.scroll-letter {
-  animation: animation-letter linear both;
+.scroll-letter-bold {
+  animation: animation-letter-bold linear both;
   animation-timeline: scroll(root block);
   animation-range: 0 150px;
 }
+
 
 @keyframes animation-bar {
   from {
@@ -36,7 +37,7 @@
   }
 }
 
-@keyframes animation-letter {
+@keyframes animation-letter-bold {
   from {
     color: #060735
   }
@@ -75,7 +76,10 @@
   box-shadow: inset 1px 5px 4px 0 #00000025;
 }
 
-
 .rbc-event-label{
   display: none !important;
+}
+
+.ministerios:first-child{
+  grid-row: 1/3;
 }

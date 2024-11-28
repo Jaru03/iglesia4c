@@ -63,7 +63,7 @@ function CalendarApp() {
   }
 
   return (
-    <div className='max-w-[800px] sm:mx-auto'>
+    <div className='w-full flex flex-col items-center justify-center'>
       <Calendar
         localizer={localizer}
         events={events}
@@ -71,8 +71,9 @@ function CalendarApp() {
         min={dayjs('2024-11-01T10:00:00').toDate()}
         components={componentes}
         style={{
-          height: "700px",
-          width: "100%"
+          height: "400px",
+          width: "100%",
+          maxWidth: "800px"
         }}
       />
 
@@ -80,7 +81,7 @@ function CalendarApp() {
       {
         eventSelect && (
           <div className="py-6">
-            <h3 className="text-xl text-center  text-primary-3">Evento Seleccionado</h3>
+            <h3 className="text-2xl md:text-2xl-desktop text-center  text-primary-3">Evento Seleccionado</h3>
             <Activity button={false} description="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. "
               hour={dayjs((eventSelect.start).toString()).format('HH:mm')} image="/cultomujeres.png" place="Plaza Castilla" title={eventSelect.title} />
           </div>

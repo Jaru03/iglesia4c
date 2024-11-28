@@ -1,3 +1,5 @@
+'use client'
+
 import clsx from "clsx"
 import Link from "next/link";
 import { twMerge } from "tailwind-merge";
@@ -6,10 +8,11 @@ interface Props {
     text: string;
     variant: 'primary' | 'hero' | 'secundary' | 'form';
     className?: string;
-    href?: string;
+    url: string
+    target?: '_blank' | '_self' | '_parent' | '_top';
 }
 
-const Button = ({ text, variant, className, href}: Props) => {
+const Button = ({ text, variant, className, url, target}: Props) => {
     const buttonClasses = twMerge(
         clsx({
             'bg-primary-3 text-white shadow-2xl': variant === 'primary',
@@ -22,9 +25,9 @@ const Button = ({ text, variant, className, href}: Props) => {
         <>
         {
             variant === 'form' ?
-            <button className={`${buttonClasses} p-2 cursor-pointer flex items-center justify-center text-base max-w-[370px]`}>{text}</button>
+            <button className={`${buttonClasses} p-2 cursor-pointer flex items-center justify-center hover:scale-105 transition-all text-base md:text-base-desktop max-w-[370px]`}>{text}</button>
             :
-            <Link href={`/` + href} className={`${buttonClasses} p-2 cursor-pointer flex items-center justify-center text-base max-w-[370px]`}>
+            <Link href={url} target={target} className={`${buttonClasses} p-2 hover:scale-105 transition-all cursor-pointer flex items-center justify-center text-base md:text-base-desktop max-w-[370px]`}>
             {text}
             </Link>
         }

@@ -18,14 +18,14 @@ const Activity = ({title, description, image, button, place, hour}:Props) => {
             <Image src={image} alt='img'width={1000} height={1000} className='w-full h-full max-w-[370px] max-h-[370px] min-w-[280px] m-auto sm:m-0 pb-4 sm:pb-0' />
 
             <div className="flex flex-col gap-4 p-4 sm:justify-between sm:w-[370px]">
-                <h2 className="text-xl text-center text-primary-3">{title}</h2>
-                <p className="text-base">{description}</p>
-                <ul className="text-base font-bold flex flex-col gap-4">
+                <h3 className="text-xl md:text-xl-desktop text-center text-primary-3">{title}</h3>
+                <p className="text-base md:text-base-desktop">{description}</p>
+                <ul className="text-base md:text-base-desktop font-bold flex flex-col gap-4">
                     <li><span className="text-primary-4 pr-1">Lugar:</span> {place}</li>
                     <li><span className="text-primary-4 pr-1">Horario:</span>{hour}</li>
                 </ul>
 
-                {showButton === true && <Button href='' text="Más actividades" variant="primary"/>}
+                {showButton === true && <Button url='/actividades' text="Más actividades" variant="primary"/>}
 
             </div>
 
