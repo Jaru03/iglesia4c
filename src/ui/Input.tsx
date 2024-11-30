@@ -13,8 +13,9 @@ const Input = ({ type, placeholder, className }: Props) => {
           <select className="rounded-[20px] text-base md:text-base-desktop px-4 py-2 w-full innerShadowDonationCard" name="" id="">
             <option value="masculino" selected>Masculino</option>
             <option value="femenino">Femenino</option>
-          </select> :
-          <input type={type} placeholder={placeholder} className={`rounded-[20px] text-base md:text-base-desktop px-4 py-2 w-full innerShadowDonationCard ${className}`} />
+          </select> : type === 'date'
+          ?<input type={type} value={'2004-09-03'} className={`rounded-[20px] text-base md:text-base-desktop px-4 py-2 w-full innerShadowDonationCard ${className}`} />
+          :<input type={type} placeholder={placeholder} className={`rounded-[20px] text-base md:text-base-desktop px-4 py-2 w-full innerShadowDonationCard ${className}`} />
       }
     </>
   )

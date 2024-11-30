@@ -6,13 +6,15 @@ const Ministries = () => {
 
             id: 1,
             title: 'Ministerio de Alabanza',
-            value: "alabanza"
+            value: "alabanza",
+            img: '/logoJovenes.jpeg'
         },
         {
 
             id: 2,
             title: 'Ministerio de Evangelizmo',
-            value: "evangelizmo"
+            value: "evangelizmo",
+            img: '/logoJovenes.jpeg'
         },
     ]
 
@@ -25,7 +27,7 @@ const Ministries = () => {
                         ministries.map((ministerio) => (
                             <Area
                                 key={ministerio.id}
-                                image='/cultomujeres.png'
+                                image={ministerio.img}
                                 title={ministerio.title}
                                 value={ministerio.value}
                             />

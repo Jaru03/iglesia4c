@@ -26,7 +26,21 @@
   animation-range: 0 150px;
 }
 
+.scroll-menu{
+  animation: animation-menu linear both;
+  animation-timeline: scroll(root block);
+  animation-range: 0 100vh;
+}
 
+@keyframes animation-menu {
+  from {
+    filter: invert(1) sepia(0.3) saturate(0) hue-rotate(0deg);
+  }
+
+  to {
+    filter: none;
+  }
+}
 @keyframes animation-bar {
   from {
     filter: invert(1) sepia(0.3) saturate(0) hue-rotate(0deg);
