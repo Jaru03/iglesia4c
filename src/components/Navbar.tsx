@@ -21,7 +21,7 @@ const Navbar = () => {
             target: '_self'
 
         },
-        { name: "En Vivo",
+        { name: "Directo",
             value: 'https://www.youtube.com/@CentroCristiano4C/streams',
             target: '_blank'
 
