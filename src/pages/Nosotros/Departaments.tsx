@@ -1,37 +1,13 @@
+import prisma from "@/utils/prisma"
 import Area from "./Area"
 
-const Departaments = () => {
+const Departaments = async() => {
 
-    const departaments = [
-        {
-
-            id: 1,
-            title: 'Departamento de Mujeres',
-            value: "mujeres",
-            img: '/logoJovenes.jpeg'
-        },
-        {
-
-            id: 2,
-            title: 'Departamento de Niños',
-            value: "ninos",
-            img: '/logoJovenes.jpeg'
-        },
-        {
-
-            id: 3,
-            title: 'Departamento de Jóvenes',
-            value: "jovenes",
-            img: '/logoJovenes.jpeg'
-        },
-        {
-
-            id: 4,
-            title: 'Departamento de Matrimonios',
-            value: "matrimonios",
-            img: '/logoJovenes.jpeg'
-        },
-    ]
+    const departaments = await prisma.area.findMany({
+        where: {
+            rol: 'departamento'
+        }
+    })
 
     return (
         <section>
@@ -43,7 +19,7 @@ const Departaments = () => {
                         departaments.map((departament) => (
                             <Area
                                 key={departament.id}
-                                image={departament.img}
+                                img={departament.img}
                                 title={departament.title}
                                 value={departament.value}
                                 className={departament.id === departaments.at(-1)?.id ? 'md:col-[1/4]' : ''}

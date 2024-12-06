@@ -10,13 +10,11 @@ interface Props {
 }
 
 const ChurchLocation = ({ info }: Props) => {
-
     return (
-        <article className={`pb-10 sm:flex sm:flex-row max-w-[800px] sm:mx-auto sm:pb-10 ${info?.index % 2 === 1 ? 'sm:flex-row-reverse' : ''}`}>
-            <div className="w-full h-full flex justify-center items-center max-w-[280px] max-h-[280px] pb-8 m-auto sm:p-0 ">
+        <article className={`pb-10 grid grid-cols-1 md:grid-cols-2 max-w-[800px] mx-auto`}>
+            <div className={`w-full h-full flex justify-center items-center max-w-[280px] max-h-[280px] pb-8 m-auto sm:p-0 ${info?.index % 2 === 0 ? 'md:col-start-2 md:col-end-3 md:row-start-1 md:row-end-2' : ''} `}>
 
-                <Map width={280} height={280} defaultCenter={info?.coords} defaultZoom={15} maxZoom={19} minZoom={13} metaWheelZoom={true} metaWheelZoomWarning="Use META+wheel to zoom!" >
-
+                <Map width={280} height={280} defaultCenter={info?.coords} twoFingerDrag={true} defaultZoom={15} maxZoom={19} minZoom={13} metaWheelZoom={true} metaWheelZoomWarning="Use META+wheel to zoom!" >
                     <Marker color="#060735" anchor={info?.coords} width={40} />
                 </Map>
             </div>
@@ -43,11 +41,11 @@ const ChurchLocation = ({ info }: Props) => {
                         </div>
                     </li>
                     <li className="flex items-center gap-3">
-                        <span className="text-primary-4 font-bold">Pastores:</span>
+                        <span className="text-primary-4 font-bold">Responsables:</span>
                         <div className="flex gap-2">
                             {info?.pastors.map((pastor) => (
                                 pastor.img === '' ? '' : (
-                                    <div className="flex flex-col items-center group" key={pastor.nombre}>
+                                    <div className="flex flex-col items-center group relative py-5" key={pastor.nombre}>
                                         <Image
                                             alt={pastor.nombre}
                                             width={100}
@@ -55,7 +53,7 @@ const ChurchLocation = ({ info }: Props) => {
                                             src={pastor.img}
                                             className="max-w-[60px] max-h-[60px] rounded-full shadow-lg transition-all transform hover:scale-110"
                                         />
-                                        <span className="mt-2 text-center text-sm font-semibold opacity-0 group-hover:opacity-100 transition-all ease-in-out duration-300">
+                                        <span className="absolute w-96 text-center top-20 text-base font-semibold opacity-0 group-hover:opacity-100 transition-all ease-in-out duration-300">
                                             {pastor.nombre}
                                         </span>
                                     </div>

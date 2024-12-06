@@ -1,0 +1,43 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Area {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String?
+  img         String?
+  value       String  @unique
+  rol         String
+}
+
+model Activities {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  img         String?
+  place       String
+  hour_start  DateTime
+  hour_end    DateTime
+}
+
+model Preachs {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String?
+  img         String?
+}
+
+model LastActivities {
+  id    Int    @id @default(autoincrement())
+  title String
+  img   String?
+}

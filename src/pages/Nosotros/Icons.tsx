@@ -9,7 +9,7 @@ interface Props{
 const Icons = ({image, description, alt}: Props) => {
   return (
     <article className="flex flex-col items-center gap-4">
-        <Image width={170} height={170} src={image} alt={alt} />
+        <Image width={220} height={220} src={image} alt={alt} />
         <p className="text-center">{description}</p>
     </article>
   )

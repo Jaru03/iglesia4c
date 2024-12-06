@@ -2,18 +2,18 @@ import Button from "@/ui/Button";
 import Image from "next/image"
 
 interface Props {
-  image: string;
+  img: string | null;
   className?: string;
   title: string;
   value: string;
 }
 
-const Area = ({ image, className, value, title }: Props) => {
+const Area = ({ img, className, value, title }: Props) => {
   return (
     <article className={`max-w-[300px] overflow-hidden max-h-[300px] ${className} group`}>
       <div className="w-full h-full  group-hover:translate-y-[-300px] transition-all duration-1000">
         <Image
-          src={image}
+          src={img ? img : '/logoJovenes.jpeg'}
           width={1000}
           height={1000}
           className=" w-full h-full"

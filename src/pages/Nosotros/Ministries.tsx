@@ -1,22 +1,13 @@
 import Area from "./Area"
+import prisma from "@/utils/prisma"
 
-const Ministries = () => {
-    const ministries = [
-        {
-
-            id: 1,
-            title: 'Ministerio de Alabanza',
-            value: "alabanza",
-            img: '/logoJovenes.jpeg'
-        },
-        {
-
-            id: 2,
-            title: 'Ministerio de Evangelizmo',
-            value: "evangelizmo",
-            img: '/logoJovenes.jpeg'
-        },
-    ]
+const Ministries = async() => {
+    
+    const ministries = await prisma.area.findMany({
+        where: {
+            rol:'ministerio'
+        }
+    })
 
     return (
         <section>
@@ -27,7 +18,7 @@ const Ministries = () => {
                         ministries.map((ministerio) => (
                             <Area
                                 key={ministerio.id}
-                                image={ministerio.img}
+                                img={ministerio.img}
                                 title={ministerio.title}
                                 value={ministerio.value}
                             />
