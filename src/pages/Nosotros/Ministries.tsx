@@ -1,13 +1,19 @@
-import Area from "./Area"
-import prisma from "@/utils/prisma"
+'use client'
 
-const Ministries = async() => {
+import axios from "axios";
+import Area from "./Area";
+import { useEffect, useState } from "react";
+import AreaType from "@/types/AreaTypes";
+
+
+const Ministries = () => {
     
-    const ministries = await prisma.area.findMany({
-        where: {
-            rol:'ministerio'
-        }
-    })
+    const [info, setInfo] = useState<AreaType[]>()
+
+    useEffect(() => {
+      axios.get(`http://localhost:3000/api/ministries`)
+        .then(res => setInfo(res.data)).catch(error => error)
+    }, [])
 
     return (
         <section>
@@ -15,7 +21,7 @@ const Ministries = async() => {
                 <h3 className="text-xl md:text-xl-desktop text-primary-2 text-center">Ministerios</h3>
                 <div className="grid sm:grid-cols-2 p-6 justify-items-center gap-4 max-w-[800px] mx-auto">
                     {
-                        ministries.map((ministerio) => (
+                        info?.map((ministerio) => (
                             <Area
                                 key={ministerio.id}
                                 img={ministerio.img}

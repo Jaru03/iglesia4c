@@ -1,18 +1,21 @@
+'use client'
+
+import AreaType from "@/types/AreaTypes";
+import axios from "axios";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
-interface Props {
-  info: {
-    id: number;
-    value: string;
-    title: string;
-    description: string | null;
-    img: string | null;
-    rol: string;
-  } | null
-}
+const AreaPage = ({ area }: { area: string | string[] | undefined; }) => {
+  const param = area
+
+  const [info, setInfo] = useState<AreaType>()
+
+  useEffect(() => {
+    axios.get(`http://localhost:3000/api/nosotros/${param}`)
+      .then(res => setInfo(res.data)).catch(error => error)
+  }, [])
 
 
-const AreaPage = ({ info }: Props) => {
 
   return (
     <section>

@@ -1,14 +1,21 @@
-import prisma from "@/utils/prisma"
-import Area from "./Area"
+'use client'
 
-const Departaments = async() => {
+import axios from "axios";
+import Area from "./Area";
+import { useEffect, useState } from "react";
+import AreaType from "@/types/AreaTypes";
 
-    const departaments = await prisma.area.findMany({
-        where: {
-            rol: 'departamento'
-        }
-    })
 
+const Departaments = () => {
+
+    const [info, setInfo] = useState<AreaType[]>()
+
+    useEffect(() => {
+      axios.get(`http://localhost:3000/api/departaments`)
+        .then(res => setInfo(res.data)).catch(error => error)
+    }, [])
+  
+  
     return (
         <section>
             <div className="p-6">
@@ -16,20 +23,20 @@ const Departaments = async() => {
 
                 <div className="grid sm:grid-cols-2 justify-items-center sm:grid-rows-2 md:grid-cols-3 gap-4 max-w-[1000px] mx-auto">
                     {
-                        departaments.map((departament) => (
+                        info?.map((departament) => (
                             <Area
                                 key={departament.id}
                                 img={departament.img}
                                 title={departament.title}
                                 value={departament.value}
-                                className={departament.id === departaments.at(-1)?.id ? 'md:col-[1/4]' : ''}
+                                className={departament.id === info?.at(-1)?.id ? 'md:col-[1/4]' : ''}
                             />
                         ))
                     }
                 </div>
             </div>
         </section>
-    )
-}
+    );
+};
 
-export default Departaments
+export default Departaments;
