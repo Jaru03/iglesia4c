@@ -13,7 +13,7 @@ const AreaPage = ({ area }: { area: string | string[] | undefined; }) => {
   useEffect(() => {
     axios.get(`http://localhost:3000/api/nosotros/${param}`)
       .then(res => setInfo(res.data)).catch(error => error)
-  }, [])
+  })
 
 
 
