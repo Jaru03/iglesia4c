@@ -11,9 +11,9 @@ const AreaPage = ({ area }: { area: string | string[] | undefined; }) => {
   const [info, setInfo] = useState<AreaType>()
 
   useEffect(() => {
-    axios.get(`http://localhost:3000/api/nosotros/${param}`)
+    axios.get(`/api/nosotros/${param}`)
       .then(res => setInfo(res.data)).catch(error => error)
-  })
+  }, [param])
 
 
 

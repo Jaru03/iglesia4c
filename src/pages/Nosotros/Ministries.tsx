@@ -11,7 +11,7 @@ const Ministries = () => {
     const [info, setInfo] = useState<AreaType[]>()
 
     useEffect(() => {
-      axios.get(`http://localhost:3000/api/ministries`)
+      axios.get(`/api/ministries`)
         .then(res => setInfo(res.data)).catch(error => error)
     }, [])
 
