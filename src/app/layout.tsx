@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "Iglesia 4C",
+  title: "Centro Cristiano 4C",
   description: "Centro Cristiano 4C",
 };
 

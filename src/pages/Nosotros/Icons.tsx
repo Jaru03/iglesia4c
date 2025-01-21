@@ -8,9 +8,9 @@ interface Props{
 
 const Icons = ({image, description, alt}: Props) => {
   return (
-    <article className="flex flex-col items-center gap-4">
-        <Image width={220} height={220} src={image} alt={alt} />
-        <p className="text-center">{description}</p>
+    <article className="flex flex-col items-center ">
+        <Image width={220} height={220} src={image} className="sm:w-80 sm:h-80" alt={alt} />
+        <p>{description}</p>
     </article>
   )
 }

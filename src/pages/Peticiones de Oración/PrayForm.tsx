@@ -32,7 +32,7 @@ const PrayForm = () => {
 
     return (
         <form ref={formPray} onSubmit={handleSubmit} className="w-full max-w-[500px] rounded-[20px] items-center shadow-form p-6 mb-10 flex flex-col gap-4">
-            <h2 className="text-secundary-3 text-center text-xl">Escribe tu petición y te estaremos apoyando en oración</h2>
+            <h2 className="text-secundary-3 text-center text-xl">Escribe tu petición</h2>
 
             <Input name="nombre" placeholder="Nombre" type="text" defaultValue={''} />
             <Input name="to" placeholder="Email" type="text" defaultValue={''} />
