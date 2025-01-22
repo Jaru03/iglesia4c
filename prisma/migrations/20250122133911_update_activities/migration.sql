@@ -1,37 +1,46 @@
 -- CreateTable
 CREATE TABLE "Area" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
     "img" TEXT,
     "value" TEXT NOT NULL,
-    "rol" TEXT NOT NULL
+    "rol" TEXT NOT NULL,
+
+    CONSTRAINT "Area_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Activities" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
     "img" TEXT,
     "place" TEXT NOT NULL,
-    "hour_start" DATETIME NOT NULL,
-    "hour_end" DATETIME NOT NULL
+    "hour_start" TIMESTAMP(3) NOT NULL,
+    "hour_end" TIMESTAMP(3) NOT NULL,
+    "urgent" BOOLEAN NOT NULL,
+
+    CONSTRAINT "Activities_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Preachs" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
-    "img" TEXT
+    "img" TEXT,
+
+    CONSTRAINT "Preachs_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "LastActivities" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
-    "img" TEXT
+    "img" TEXT,
+
+    CONSTRAINT "LastActivities_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex

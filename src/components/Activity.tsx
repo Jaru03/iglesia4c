@@ -15,7 +15,7 @@ const Activity = ({title, description, image, button, place, hour, className}:Pr
 
    const showButton = button
   return (
-    <article className={`max-w-[370px] mx-auto sm:flex sm:justify-between sm:max-w-[800px] sm:max-h-[370px] md:gap-8 ${className}`}>
+    <article className={`max-w-[370px] mx-auto sm:flex sm:justify-between sm:max-w-[800px] sm:max-h-[370px] md:gap-8 md:justify-center md:items-center ${className}`}>
             <Image src={image} alt='img'width={1000} height={1000} className='w-full h-full max-w-[350px] max-h-[370px] min-w-[280px] m-auto sm:m-0 pb-8 sm:pb-0' />
 
             <div className="flex flex-col mx-auto sm:mx-0 gap-2  sm:w-[400px] sm:justify-between p-4">

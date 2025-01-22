@@ -1,14 +1,45 @@
 import Activity from "@/components/Activity"
 
 const UpcomingActivities = () => {
+
+  const upcomingActivities = [
+    {
+      title: 'Palabra Vision',
+      description: '"Ensancha" es un llamado a la expansión de la iglesia, basado en Isaías 54:2. Nos invita a extendernos espiritualmente y territorialmente, firmes en nuestra fe y obediencia a Dios, confiando en Su respaldo para llevar el evangelio a más vidas y comunidades.',
+      place: "Plaza de Castilla",
+      hour: "10:00",
+      image: "/palabraVision2025.jpeg",
+    },
+    {
+      title: "Aniversario de 4C",
+      description: "¡11 años de fidelidad de Dios! Acompáñanos este 8 de febrero con el Pastor Juan Carlos Escobar, presidente de las ADE. ¡Te esperamos!",
+      place: "Auditorio 4C Parla, Calle Londres 58, Parla",
+      hour: "18:00",
+      image: "/undecimoAniversario.jpeg",
+    },
+    {
+      title: "Retiro Familiar",
+      description: "Del 17 al 19 de abril, vive un tiempo de conexión espiritual y familiar. Fortalezcamos nuestra fe, renovemos nuestro compromiso con Dios y disfrutemos juntos momentos especiales.",
+      place: "Plaza de Castilla",
+      hour: "10:00",
+      image: "/retiroFamiliarSemanaSanta.jpeg",
+    },
+
+  ]
+
   return (
     <section>
-        <div className="p-6 sm:md:h-[600px] md:flex md:flex-col md:justify-center w-full ">
-            <h2 className="text-2xl md:text-2xl-desktop text-primary-2 text-center py-10">Próximas actividades</h2>
-
-            <Activity button={true} description={"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. "} 
-            place="Plaza de Castilla" hour="18:00" image="/cultomujeres.png" title="Culto de mujeres"/>
+      <div className="p-6 sm: md:flex md:flex-col md:justify-center w-full ">
+        <h2 className="text-2xl md:text-2xl-desktop text-primary-2 text-center py-10">Próximas actividades</h2>
+        <div className="flex flex-col gap-8">
+          {
+            upcomingActivities.map((activity) => (
+              <Activity button={true} description={activity.description}
+                place={activity.place} hour={activity.hour} image={activity.image} title={activity.title} />
+            ))
+          }
         </div>
+      </div>
     </section>
   )
 }
