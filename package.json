@@ -12,6 +12,8 @@
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
     "@getbrevo/brevo": "^1.0.1",
+    "@paypal/checkout-server-sdk": "^1.0.3",
+    "@paypal/react-paypal-js": "^8.8.1",
     "@prisma/client": "^6.0.1",
     "@svgr/webpack": "^8.1.0",
     "@types/react-big-calendar": "^1.16.0",
@@ -27,6 +29,7 @@
     "react-big-calendar": "^1.16.3",
     "react-dom": "^18.3.1",
     "resend": "^4.0.1",
+    "stripe": "^17.5.0",
     "swiper": "^11.1.15",
     "tailwind-merge": "^2.5.4",
     "zod": "^3.23.8",
@@ -34,6 +37,7 @@
   },
   "devDependencies": {
     "@types/node": "^20",
+    "@types/paypal__checkout-server-sdk": "^1.0.8",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",

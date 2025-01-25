@@ -2,6 +2,7 @@
 
 import clsx from "clsx"
 import Link from "next/link";
+import { MouseEventHandler } from "react";
 import { twMerge } from "tailwind-merge";
 
 interface Props {
@@ -10,9 +11,10 @@ interface Props {
     className?: string;
     url: string
     target?: '_blank' | '_self' | '_parent' | '_top';
+    onClick?: MouseEventHandler<HTMLButtonElement>
 }
 
-const Button = ({ text, variant, className, url, target}: Props) => {
+const Button = ({ text, variant, className, url, target, onClick }: Props) => {
     const buttonClasses = twMerge(
         clsx({
             'bg-primary-3 text-white shadow-2xl': variant === 'primary',
@@ -23,14 +25,14 @@ const Button = ({ text, variant, className, url, target}: Props) => {
 
     return (
         <>
-        {
-            variant === 'form' ?
-            <button className={`${buttonClasses} p-2 cursor-pointer flex items-center justify-center hover:scale-105 transition-all text-base md:text-base-desktop max-w-[370px]`}>{text}</button>
-            :
-            <Link href={url} target={target} className={`${buttonClasses} p-2 hover:scale-105 transition-all cursor-pointer flex items-center justify-center text-base md:text-base-desktop max-w-[370px]`}>
-            {text}
-            </Link>
-        }
+            {
+                variant === 'form' ?
+                    <button onClick={onClick} className={`${buttonClasses} p-2 cursor-pointer flex items-center justify-center hover:scale-105 transition-all text-base md:text-base-desktop max-w-[370px]`}>{text}</button>
+                    :
+                    <Link href={url} target={target} className={`${buttonClasses} p-2 hover:scale-105 transition-all cursor-pointer flex items-center justify-center text-base md:text-base-desktop max-w-[370px]`}>
+                        {text}
+                    </Link>
+            }
         </>
     )
 }

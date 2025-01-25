@@ -1,26 +1,43 @@
+import React, { forwardRef } from 'react';
+
 interface Props {
-  type: string
-  placeholder?: string
-  className?: string
-  name?: string,
-  defaultValue?: string
+  type: string;
+  placeholder?: string;
+  className?: string;
+  name?: string;
+  defaultValue?: string;
+  options?: { value: string; label: string }[]; // Opcional para select
 }
 
-const Input = ({ type, placeholder, className, name, defaultValue }: Props) => {
-  return (
+const Input = forwardRef<HTMLInputElement | HTMLSelectElement, Props>(
+  ({ type, placeholder, className, name, defaultValue }, ref) => {
+    if (type === 'select') {
+      return (
+        <select
+          ref={ref as React.Ref<HTMLSelectElement>}
+          name={name}
+          defaultValue={defaultValue}
+          className={`rounded-[20px] text-base md:text-base-desktop px-4 py-2 w-full innerShadowDonationCard ${className}`}
+        >
+          <option value="Ofrenda">Ofrenda</option>
+          <option value="Diezmo">Diezmo</option>
+        </select>
+      );
+    }
 
-    <>
-      {
-        type === 'select' ?
-          <select  name={name} defaultValue={defaultValue} className="rounded-[20px] text-base md:text-base-desktop px-4 py-2 w-full innerShadowDonationCard" id="">
-            <option value="masculino">Masculino</option>
-            <option value="femenino">Femenino</option>
-          </select> : type === 'date'
-          ?<input defaultValue={defaultValue} name={name} type={type} className={`rounded-[20px] text-base md:text-base-desktop px-4 py-2 w-full innerShadowDonationCard ${className}`} />
-          :<input defaultValue={defaultValue} name={name} type={type} placeholder={placeholder} className={`rounded-[20px] text-base md:text-base-desktop px-4 py-2 w-full innerShadowDonationCard ${className}`} />
-      }
-    </>
-  )
-}
+    return (
+      <input
+        ref={ref as React.Ref<HTMLInputElement>}
+        type={type}
+        placeholder={placeholder}
+        className={`rounded-[20px] text-base md:text-base-desktop px-4 py-2 w-full innerShadowDonationCard ${className}`}
+        name={name}
+        defaultValue={defaultValue}
+      />
+    );
+  }
+);
 
-export default Input
+Input.displayName = 'Input';
+
+export default Input;
