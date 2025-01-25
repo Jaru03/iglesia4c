@@ -15,7 +15,7 @@ const PayPalInfo = () => {
           mount: mount.current.value,
           typeDonative: typeDonative.current.value,
         });
-        return response.data.id; // Asegúrate de que tu API devuelva un objeto con la propiedad `id`.
+        return response.data.id;
       }
     } catch (error) {
       console.error("Error al crear la orden de PayPal:", error);
@@ -37,7 +37,7 @@ const PayPalInfo = () => {
       <PayPalScriptProvider
         options={{
           clientId:
-            "AfpIhgOUuDyIOGj8LjLluRGhWT-rK3uhEZLEo8lfvfV-gTeDJcicdKNKv92BVt_aB6T46QwleUbbQiGZ",
+            process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID as string,
         }}
       >
         <PayPalButtons

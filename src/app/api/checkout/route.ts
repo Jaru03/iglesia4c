@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-const stripe = new Stripe("sk_test_51Qk9xlFTDIaTWkhjSy9FZIgNwfbIlsQbQXXaE9qXV0TC0zp1rdlhCOiJkXvjsFUjPZWGwFNgzZHhUZuYza4g17gu00mcF4egAF");
+const stripe = new Stripe(process.env.NEXT_PUBLIC_STRIPE_CLIENT_ID as string);
 
 export async function POST(request: Request) {
 

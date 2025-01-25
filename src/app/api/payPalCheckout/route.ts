@@ -1,10 +1,10 @@
 import paypal from "@paypal/checkout-server-sdk";
 import { NextResponse } from "next/server";
 
-const clientId = "AfpIhgOUuDyIOGj8LjLluRGhWT-rK3uhEZLEo8lfvfV-gTeDJcicdKNKv92BVt_aB6T46QwleUbbQiGZ";
-const clientSecret = "EMqfKXpFQWkCcM0iObrS2SsIBcWjpKLdiW5IRy5VGGNq4lwk7fasLeL_eK67-XxcuU2PNYG5NuvKxRcW";
+const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+const clientSecret = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_SECRET_ID ;
 
-const environment = new paypal.core.SandboxEnvironment(clientId, clientSecret);
+const environment = new paypal.core.SandboxEnvironment(clientId as string, clientSecret as string);
 const client = new paypal.core.PayPalHttpClient(environment);
 
 export async function POST(request: Request) {
