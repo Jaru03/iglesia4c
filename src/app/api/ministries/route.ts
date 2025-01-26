@@ -1,27 +1,29 @@
 import prisma from "@/utils/prisma";
 import { NextResponse } from "next/server";
+import { Area } from "@prisma/client"; // Asegúrate de tener el tipo generado por Prisma
 
+export async function GET() {
+    try {
+        const ministerios: Area[] = await prisma.area.findMany({
+            where: {
+                rol: "ministerio",
+            },
+        });
 
-export async function GET(){  
-    try{
-       const ministerios = await prisma.area.findMany({
-        where:{
-            rol: 'ministerio'
+        // Comprobamos si el array está vacío
+        if (ministerios.length === 0) {
+            return new NextResponse("No hay ministerios disponibles", { status: 404 });
         }
-       })
 
-       if(!ministerios){
-        return new NextResponse("No hay ministerios disponibles", { status: 404 }); 
-       }
+        return NextResponse.json(ministerios);
+    } catch (error: unknown) {
+        // Registrar el error en el servidor
+        console.error("Error al obtener ministerios:", error);
 
-       return NextResponse.json(ministerios)
-    }catch (error: unknown) {
-        // Comprobamos si el error es una instancia de Error
-        if (error instanceof Error) {
-            return new NextResponse(error.message, { status: 500 });
-        } else {
-            // Si el error no es un Error, devolvemos un mensaje genérico
-            return new NextResponse("Error inesperado", { status: 500 });
-        }
+        // Devolver un mensaje de error genérico
+        return new NextResponse(
+            error instanceof Error ? error.message : "Error inesperado",
+            { status: 500 }
+        );
     }
 }

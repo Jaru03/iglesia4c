@@ -1,27 +1,25 @@
 import prisma from "@/utils/prisma";
 import { NextResponse } from "next/server";
+import { Area } from "@prisma/client";
 
+export async function GET() {
+    try {
+        const departaments: Area[] = await prisma.area.findMany({
+            where: {
+                rol: "departamento",
+            },
+        });
 
-export async function GET(){  
-    try{
-       const departaments = await prisma.area.findMany({
-        where:{
-            rol: 'departamento'
+        if (departaments.length === 0) {
+            return new NextResponse("No hay departamentos disponibles", { status: 404 });
         }
-       })
 
-       if(!departaments){
-        return new NextResponse("No hay departamentos disponibles", { status: 404 }); 
-       }
-
-       return NextResponse.json(departaments)
-    }catch (error: unknown) {
-        // Comprobamos si el error es una instancia de Error
-        if (error instanceof Error) {
-            return new NextResponse(error.message, { status: 500 });
-        } else {
-            // Si el error no es un Error, devolvemos un mensaje genérico
-            return new NextResponse("Error inesperado", { status: 500 });
-        }
+        return NextResponse.json(departaments);
+    } catch (error: unknown) {
+        console.error("Error en el servidor:", error);
+        return new NextResponse(
+            error instanceof Error ? error.message : "Error inesperado",
+            { status: 500 }
+        );
     }
 }
