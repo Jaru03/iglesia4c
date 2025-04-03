@@ -14,7 +14,7 @@ const Footer = () => {
             name: 'email',
             url: '/',
             icon: '/email-icon.png',
-            value: '4c@gmail.com',
+            value: 'secretaria@centrocristiano4c.es',
 
         },
         {
@@ -56,7 +56,7 @@ const Footer = () => {
                         </li>
                         {footerContact.filter((social) => !(social.value === 'Facebook' || social.value === 'Instagram' || social.value === 'YouTube')).map((item) => (
                             <li className='' key={item.name}>
-                                <Link href={'/'} className={`flex gap-2 min-w-[130px]`}>
+                                <Link href={'/'} className={`flex items-center justify-center gap-2 min-w-[130px]`}>
                                     <Image alt={item.name} src={item.icon} width={20} height={20} />
                                     {item.value}
                                 </Link>
