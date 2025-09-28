@@ -27,9 +27,9 @@ const Button = ({ text, variant, className, url, target, onClick }: Props) => {
         <>
             {
                 variant === 'form' ?
-                    <button onClick={onClick} className={`${buttonClasses} p-2 cursor-pointer flex items-center justify-center hover:scale-105 transition-all text-base md:text-base-desktop max-w-[370px]`}>{text}</button>
+                    <button onClick={onClick} className={`${buttonClasses} p-2 cursor-pointer flex items-center justify-center hover:scale-105 transition-all text-base md:text-base-desktop`}>{text}</button>
                     :
-                    <Link href={url} target={target} className={`${buttonClasses} p-2 hover:scale-105 transition-all cursor-pointer flex items-center justify-center text-base md:text-base-desktop max-w-[370px]`}>
+                    <Link href={url} target={target} className={`${buttonClasses} p-2 hover:scale-105 transition-all cursor-pointer flex items-center justify-center text-base md:text-base-desktop`}>
                         {text}
                     </Link>
             }

@@ -31,19 +31,17 @@ const PrayForm = () => {
     }
 
     return (
-        <form ref={formPray} onSubmit={handleSubmit} className="w-full max-w-[500px] rounded-[20px] items-center shadow-form p-6 mb-10 flex flex-col gap-4">
-            <h2 className="text-secundary-3 text-center text-xl">Escribe tu petición</h2>
+        <form ref={formPray} onSubmit={handleSubmit} className="w-full max-w-[500px] rounded-[20px] items-center shadow-form p-6 mb-10 grid grid-cols-2 gap-4">
+            <h2 className="text-secundary-3 text-center text-xl col-span-full">Escribe tu petición</h2>
 
-            <Input name="nombre" placeholder="Nombre" type="text" defaultValue={''} />
-            <Input name="to" placeholder="Email" type="text" defaultValue={''} />
-            <Input name="date" type="date" />
-            <div className="flex flex-col w-full gap-4 sm:flex-row">
-                <Input name="genre" type="select" defaultValue={'masculino'} />
-                <Input name="typePetition" placeholder="Tipo de Petición" type="text" defaultValue={''} />
-            </div>
-            <Input name="content" placeholder="Escribe tu petición" type="textarea" className="pb-32" defaultValue={''} />
+            <Input name="nombre" placeholder="Nombre" type="text" className="col-span-full" defaultValue={''} />
+            <Input name="to" placeholder="Email" type="text" className="col-span-full" defaultValue={''} />
+            <Input name="date" type="date" className="col-span-full" />
+            <Input name="genre" type="select" className="col-span-full md:col-[1/2]" defaultValue={'masculino'} />
+            <Input name="typePetition" placeholder="Tipo de Petición" className="col-span-full md:col-[2/3]" type="text" defaultValue={''} />
+            <Input name="content" placeholder="Escribe tu petición"  type="textarea" className="h-32 col-span-full" defaultValue={''} />
 
-            <Button url="" variant="form" text="Enviar" className="mt-8"  />
+            <Button url="" variant="form" text="Enviar" className="mt-8 col-span-full"  />
         </form>
     )
 }

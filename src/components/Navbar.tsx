@@ -22,7 +22,7 @@ const Navbar = () => {
 
         },
         { name: "Directo",
-            value: 'https://www.youtube.com/@CentroCristiano4C/streams',
+            value: 'https://www.youtube.com/@casasdediosmadrid/streams',
             target: '_blank'
 
          }, 
@@ -31,11 +31,11 @@ const Navbar = () => {
             target: '_self'
 
          }, 
-        { name: "Donaciones",
+       /*  { name: "Donaciones",
             value: '/donaciones',
             target: '_self'
 
-         }, 
+         },  */
         { name: "Actividades" ,
             value: '/actividades',
             target: '_self'
@@ -62,15 +62,15 @@ const Navbar = () => {
             <div>
                 <div className={`${currentRoute === '/' ? 'scroll-animation' : ''} fixed z-[9] left-1/2 transform -translate-x-1/2`}>
                     <Link className="md:hidden" href={'/'}>
-                        <Image src={'/logo-4c-png.png'} alt="Logo 4C" className="w-[85px] h-[85px]" width={100} height={100} />
+                        <Image src={'/logo-4c-png.png'} alt="Logo 4C" className="w-full aspect-square" width={100} height={100} />
                     </Link>
                 </div>
                 <nav className="z-10 fixed w-screen transition-all scroll-bg md:h-24 md:flex md:justify-center">
-                    <div className="hidden w-full md:fixed md:flex px-4 justify-between items-center top-0 h-24 max-w-[850px]">
+                    <div className="hidden w-full md:fixed md:flex  items-center top-0 h-24 max-w-5xl">
                         <Link className={`${currentRoute === '/' ? 'logo-filter' : 'scroll-logo-desktop'} hidden md:block hover:scale-105 transition-all duration-300 ease-in-out`} href={'/'}>
                             <Image src={'/logo-4c-png.png'} alt="Logo 4C" className="w-[85px] h-[85px]" width={100} height={100} />
                         </Link>
-                        <ul className="flex gap-9">
+                        <ul className="grid grid-cols-6 justify-center justify-items-center w-full">
                             {navbar.map((item) => (
                                 <li className="text-base md:text-base-desktop" key={item.name}>
                                     <Link

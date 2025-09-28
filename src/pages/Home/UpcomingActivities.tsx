@@ -31,7 +31,7 @@ const UpcomingActivities = () => {
 
   return (
     <section>
-      <div className="p-6 sm: md:flex md:flex-col md:justify-center w-full ">
+      <div className="p-4 sm:p-6 md:flex md:flex-col md:justify-center w-full mx-auto max-w-7xl ">
         <h2 className="text-2xl md:text-2xl-desktop text-primary-2 text-center py-10">Próximas actividades</h2>
         <div className="flex flex-col gap-8">
           {

@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef } from "react";
 
 interface Props {
   type: string;
@@ -11,7 +11,7 @@ interface Props {
 
 const Input = forwardRef<HTMLInputElement | HTMLSelectElement, Props>(
   ({ type, placeholder, className, name, defaultValue }, ref) => {
-    if (type === 'select') {
+    if (type === "select") {
       return (
         <select
           ref={ref as React.Ref<HTMLSelectElement>}
@@ -19,8 +19,18 @@ const Input = forwardRef<HTMLInputElement | HTMLSelectElement, Props>(
           defaultValue={defaultValue}
           className={`rounded-[20px] text-base md:text-base-desktop px-4 py-2 w-full innerShadowDonationCard ${className}`}
         >
-          <option value="Ofrenda">Ofrenda</option>
-          <option value="Diezmo">Diezmo</option>
+              {name === 'genre' ?
+              <>
+              <option value="Hombre">Homre</option>
+              <option value="Mujer">Mujer</option>:
+              </>:
+              <>
+              <option value="Ofrenda">Ofrenda</option>
+              <option value="Diezmo">Diezmo</option>
+              </>
+              }
+            
+            
         </select>
       );
     }
@@ -38,6 +48,6 @@ const Input = forwardRef<HTMLInputElement | HTMLSelectElement, Props>(
   }
 );
 
-Input.displayName = 'Input';
+Input.displayName = "Input";
 
 export default Input;

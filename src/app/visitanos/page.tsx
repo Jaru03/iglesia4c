@@ -1,6 +1,12 @@
-import ChurchLocation from "@/pages/Visitanos/ChurchLocation"
+'use client'
 import { churches } from '../../mocks/churchues'
 import { InfoChurch } from "@/types/InfoChurch"
+import dynamic from "next/dynamic"
+
+// Importa ChurchLocation deshabilitando SSR
+const ChurchLocation = dynamic(() => import("@/pages/Visitanos/ChurchLocation"), {
+  ssr: false,
+})
 
 const page = () => {
   return (

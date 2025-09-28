@@ -46,7 +46,7 @@ const page = () => {
         <div className="bg-secondary p-6 items-center gap-6">
           <h3 className="text-primary-3 text-2xl md:text-2xl-desktop pt-6 pb-10 text-center">Más actividades</h3>
           
-          <div className="flex flex-col gap-y-8">
+          <div className="flex flex-col gap-y-8 max-w-7xl justify-center mx-auto">
             {
               activities.map((activity) => (
                 <Activity key={activity.index} button={false} description={activity.description}
