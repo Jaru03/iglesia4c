@@ -1,4 +1,5 @@
 'use client'
+import { twMerge } from "tailwind-merge";
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import Image from "next/image"
@@ -57,36 +58,44 @@ const Navbar = () => {
         handleClose()
     }, [currentRoute])
 
+
+
     return (
         <header>
             <div>
-                <div className={`${currentRoute === '/' ? 'scroll-animation' : ''} fixed z-[9] left-1/2 transform -translate-x-1/2`}>
-                    <Link className="md:hidden" href={'/'}>
-                        <Image src={'/logo-4c-png.png'} alt="Logo 4C" className="w-full aspect-square" width={100} height={100} />
-                    </Link>
-                </div>
-                <nav className="z-10 fixed w-screen transition-all scroll-bg md:h-24 md:flex md:justify-center">
-                    <div className="hidden w-full md:fixed md:flex  items-center top-0 h-24 max-w-5xl">
-                        <Link className={`${currentRoute === '/' ? 'logo-filter' : 'scroll-logo-desktop'} hidden md:block hover:scale-105 transition-all duration-300 ease-in-out`} href={'/'}>
-                            <Image src={'/logo-4c-png.png'} alt="Logo 4C" className="w-[85px] h-[85px]" width={100} height={100} />
+                <nav className="z-10 absolute w-full transition-all scroll-bg md:h-24 md:flex md:justify-center">
+                    <div className="hidden w-full md:absolute md:flex  items-center top-0 h-24 max-w-5xl">
+                        <Link className={`${currentRoute === '/' ? 'filter invert brightness-0' : ''} hidden md:block hover:scale-105 transition-all duration-300 ease-in-out`} href={'/'}>
+                            <Image src={'/logoCCCD.jpg'} alt="Logo 4C" className="w-[120px] h-[85px]" width={100} height={100} />
                         </Link>
                         <ul className="grid grid-cols-6 justify-center justify-items-center w-full">
                             {navbar.map((item) => (
-                                <li className="text-base md:text-base-desktop" key={item.name}>
-                                    <Link
-                                        target={item.target}
-                                        /* Redirección condicional */
-                                        href={item.value}
-                                        /* Aplicamos el fontbold condicional con respecto a la ruta en la que estemos */
-                                        /* Si no estamos en la ruta '/' el hover será blanco, si no, será del color primario  */
-                                        className={`${'/' + item.name.toLowerCase() === currentRoute ? 'scroll-letter-bold font-bold scale-50' : 'text-gray-500 '} 
-                                            
-                                        ${currentRoute === '/' && item.name === 'Inicio' ? 'scroll-letter-bold font-bold ' : 'text-gray-500 scale-50 scale'} 
-                                             hover:scale-110 hover:-translate-y-1 transition-all duration-200 ease-in-out hover:text-secundary-4 `}
-                                    >
-                                        {item.name}
-                                    </Link>
-                                </li>
+
+<li
+  key={item.name}
+  className="text-base md:text-base-desktop"
+>
+  <Link
+    href={item.value}
+    target={item.target}
+    className={twMerge(
+      `
+        transition-all duration-200 ease-in-out 
+        hover:scale-110 hover:-translate-y-1
+      `,
+      // Si estamos en Home (ruta "/")
+      currentRoute === "/" 
+        ? "text-white hover:text-secundary-2" 
+        : "text-secundary-2 hover:text-primary",
+      // Si el item coincide con la ruta actual
+      `/${item.name.toLowerCase()}` === currentRoute && "scroll-letter-bold",
+     currentRoute === item.value ? "font-bold" : ""
+    )}
+  >
+    {item.name}
+  </Link>
+</li>
+
                             ))}
                         </ul>
                     </div>
@@ -94,10 +103,11 @@ const Navbar = () => {
                     {/* Menu móvil */}
                     <div className="relative overflow-hidden md:hidden">
                         {/* Menú hamburguesa */}
+                        <Image alt='' src={'/logoCCCD.jpg'} width={110} height={85} className={`${currentRoute === '/' ? "hidden" : ''} pt-2 mx-auto`} />
                         <Image onClick={handleOpen} className={`fixed top-7 right-10 z-10 ${currentRoute === '/' ? 'scroll-menu' : ''} ${buttonOpen ? "hidden" : 'block'}`} alt='' src={'/menu-icon.svg'} width={30} height={30} />
                         <ul className={`flex flex-col items-center justify-center shadow-form fixed pt-1 pb-10 w-full gap-10 right-0 top-0 bg-primary rounded-b-xl transition-transform duration-300 ease-out 
                             ${!buttonOpen ? 'transform -translate-y-full opacity-0' : 'transform translate-y-0 opacity-100'}`}>
-                            <Image alt='' src={'/logo-4c-white.png'} width={85} height={85} className="" />
+                            <Image alt='' src={'/logoCCCD-white.jpg'} width={110} height={85} className="pt-2" />
                             <Image onClick={handleClose} className={`absolute top-7 right-10 ${buttonOpen ? "block" : 'hidden'}`} alt='' src={'/close-icon.svg'} width={30} height={30} />
                             {navbar.map((item) => (
                                 <li className="text-base" key={item.value}>
@@ -105,7 +115,7 @@ const Navbar = () => {
                                         target={item.target}
                                         href={item.value}
                                         className={`text-secundary-4 hover:text-white hover:scale-110 hover:-translate-y-1 transition-all duration-200 ease-in-out 
-                                            ${'/' + item.name.toLowerCase() === currentRoute ? 'text-white font-bold' : ''}`}
+                                            ${'/' + item.name.toLowerCase() === currentRoute || '/' + item.name.toLocaleLowerCase() === "Inicio" ? 'text-white font-bold' : ''}`}
                                     >
                                         {item.name}
                                     </Link>
