@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.scroll-menu{
+  animation: animation-menu linear both;
+  animation-timeline: scroll(root block);
+  animation-range: 0 100vh;
+}
+
+@keyframes animation-menu {
+  from {
+    filter: invert(1) sepia(0.3) saturate(0) hue-rotate(0deg);
+  }
+
+  to {
+    filter: none;
+  }
+}
+
+
+.innerShadowDonationCard {
+  box-shadow: inset 1px 5px 4px 0 #00000025;
+}
+
+.rbc-event-label{
+  display: none !important;
+}
+
+.ministerios:first-child{
+  grid-row: 1/3;
+}
+
+.cdd__banner{
+  background-image: url("/cdd-banner.jpg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  height: 100vh;
+}
