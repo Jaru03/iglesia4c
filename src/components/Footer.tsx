@@ -12,9 +12,9 @@ const Footer = () => {
   const footerContact: FooterContact[] = [
     {
       name: "email",
-      url: "mailto:casadediosmadrid@outlook.es",
+      url: "mailto:secretaria@casadedios.es",
       icon: "/email-icon.png",
-      value: "casadediosmadrid@outlook.es",
+      value: "secretaria@casadedios.es",
     },
     {
       name: "phone",
