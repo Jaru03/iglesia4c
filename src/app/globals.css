@@ -31,10 +31,6 @@
   grid-row: 1/3;
 }
 
-.cdd__banner{
-  background-image: url("/cdd-banner.jpg");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: cover;
-  height: 100vh;
+.rbc-month-row{
+  overflow: visible !important;
 }

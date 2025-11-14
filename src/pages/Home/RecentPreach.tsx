@@ -5,7 +5,7 @@ import {motion} from "motion/react"
 const RecentPreach = () => {
 
     const preach = {
-        link: 'https://www.youtube.com/watch?v=LdC-9L_3TfM'
+        link: 'https://www.youtube.com/watch?v=BMi26MN1QWQ'
     }
 
     return (
@@ -34,10 +34,10 @@ const RecentPreach = () => {
             once:true
         }}
                 className="grid md:grid-cols-2 gap-8">
-                    <Image width={1000} height={1000} src="/predica.jpeg" className="w-full h-full" alt="Image 1" />
+                    <Image width={1000} height={1000} src="/laLocuraDeUnRey.jpeg" className="w-full h-full" alt="Image 1" />
                     <div className="h-full flex flex-col justify-evenly">
-                        <h3 className="text-primary-3 text-xl md:text-xl-desktop text-center">Tiempo de Ensanchar 2</h3>
-                        <p className="text-base md:text-base-desktop py-4">Dios nos llama a ampliar nuestra visión, crecer en fe y avanzar en Su propósito. Es tiempo de ensanchar nuestras fronteras, confiando en Su poder y dirección para lo que viene.</p>
+                        <h3 className="text-primary-3 text-xl md:text-xl-desktop text-center">La Locura De Un Rey</h3>
+                        <p className="text-base md:text-base-desktop py-4">“La locura de un rey” explora dos episodios impactantes en la vida de Saúl y David: decisiones tomadas bajo presión, actos que cambiaron la historia y momentos que revelan la verdadera condición del corazón. Un mensaje que invita a mirar de cerca lo que llevó a estos reyes a actuar como lo hicieron… y a descubrir lo que esto significa para nosotros hoy.</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <Button className="w-full" target="_blank" url='https://www.youtube.com/@CentroCristiano4C/streams' text={'Más Prédicas'} variant="primary" />
                             <Button className="w-full" target="_blank" url={preach.link} text={'Ver Prédica'} variant="primary" />

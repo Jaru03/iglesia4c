@@ -24,9 +24,11 @@ const happyMonkey = Happy_Monkey({
 const LastActivities = () => {
 
   const slider: Slider[] = [
-    { key: 1, title: "Conferencia de Mujeres", image: "/cultomujeres.png" },
-    { key: 2, title: "Santa Cena", image: "/santaCena.jpg" },
-    { key: 3, title: "Servicio General", image: "/predica.jpg" },
+    { key: 1, title: "Culto del Domingo", image: "/cultoDomingo-2.jpg" },
+    { key: 2, title: "Culto del Domingo", image: "/cultoDomingo-1.jpg" },
+    { key: 3, title: "Culto del Domingo", image: "/cultoDomingo-3.jpg" },
+    { key: 4, title: "Santa Cena", image: "/cultoSantaCena-1.jpg" },
+    { key: 5, title: "Santa Cena", image: "/cultoSantaCena-2.jpg" },
   ]
 
   return (

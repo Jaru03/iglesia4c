@@ -4,7 +4,7 @@ import FeDeclaration from "./FeDeclaration";
 const HowItStarted = () => {
   return (
     <section>
-      <div className="bg-[url(../../public/cdd-banner.jpg)] h-screen bg-no-repeat bg-cover before:absolute before:inset-0 before:bg-black/50 before:content-[''] flex flex-col justify-center items-center">
+      <div className="bg-[url(../../public/cdd-banner.jpg)] h-screen bg-no-repeat bg-center bg-cover before:absolute before:inset-0 before:bg-black/50 before:content-[''] flex flex-col justify-center items-center">
         <h2 className="text-white text-3xl md:text-3xl-desktop z-[5] text-center">
           Comunidad Cristiana <br /> Casa de Dios
         </h2>
