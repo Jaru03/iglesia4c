@@ -30,7 +30,7 @@ const Consejo = () => {
   ]
   return (
     <section className=" bg-secondary">
-        <div className="grid gap-y-8 md:gap-0 md:grid-cols-5 justify-center place-content-center items-end max-w-7xl mx-auto py-6">
+        <div className="grid gap-y-8 md:gap-0 md:grid-cols-5 justify-center place-content-center items-end max-w-7xl mx-auto py-6 overflow-hidden">
 
         <h2 className="text-primary-2 text-xl md:text-xl-desktop text-center col-span-full object-cover">
             Consejo Ejecutivo
