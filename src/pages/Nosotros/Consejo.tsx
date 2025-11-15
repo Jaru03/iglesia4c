@@ -5,7 +5,7 @@ const Consejo = () => {
     {
       src:"/presidenteItem-1.png",
       title: "Presidente",
-      name: "Roberto Ricardo López"
+      name: "Roberto Ricardo López Esquivel"
     },
     {
       src:"/secretariaLili.png",
