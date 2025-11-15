@@ -34,3 +34,10 @@
 .rbc-month-row{
   overflow: visible !important;
 }
+
+.consejo__image{
+  mask-image: linear-gradient(
+    black 80%,
+    transparent
+  );
+}

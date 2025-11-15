@@ -3,8 +3,12 @@ import React from 'react'
 import {motion} from "motion/react"
 const FeDeclaration = () => {
   return (
-    <motion.section
-    initial={{
+    <section
+    
+        className='bg-secondary'
+    >
+      <motion.div
+      initial={{
           opacity: 0,
           y: -50,
           scale: 0.8,
@@ -19,7 +23,8 @@ const FeDeclaration = () => {
           ease: [0.25, 0.1, 0.25, 1],
         }}
         viewport={{ once: true }}
-    >
+       className='max-w-7xl mx-auto py-6'>
+
           <h2 className="text-primary-2 text-xl md:text-xl-desktop pb-6 text-center">
             Declaración de Fe
           </h2>
@@ -104,7 +109,8 @@ const FeDeclaration = () => {
               tales.
             </li>
           </ul>
-    </motion.section>
+      </motion.div>
+    </section>
   )
 }
 

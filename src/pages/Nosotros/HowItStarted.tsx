@@ -1,5 +1,6 @@
 import Icons from "./Icons";
 import FeDeclaration from "./FeDeclaration";
+import Consejo from "./Consejo";
 
 const HowItStarted = () => {
   return (
@@ -25,8 +26,9 @@ const HowItStarted = () => {
             alt="Mision Icon"
           />
         </div>
-        <FeDeclaration/>
       </div>
+        <FeDeclaration/>
+        <Consejo/>
     </section>
   );
 };
