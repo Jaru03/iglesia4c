@@ -42,7 +42,7 @@ const LastActivities = () => {
           {slider.map((slider) => (
 
             <SwiperSlide key={slider.key}>
-              <Image width={1000} height={1000} src={slider.image} alt='Image 1' className='w-full h-full min-w-[230px] p-4 xl:p-6 object-contain max-h-[500px]' />
+              <Image width={1000} height={1000} src={slider.image} alt='Image 1' className='w-full h-full min-w-[230px] p-4 xl:p-6 max-w-fit max-h-[500px]' />
 
               <h3 className={`text-xl md:text-xl-desktop py-5 pt-3 sm:pb-8 text-center ${happyMonkey.className}`}>{slider.title}</h3>
             </SwiperSlide>

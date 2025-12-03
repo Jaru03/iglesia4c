@@ -44,71 +44,75 @@ const Footer = () => {
 
   return (
     <footer className="bg-primary">
-      <div className="p-4 md:p-0 max-w-7xl mx-auto text-white text-base md:text-base-desktop">
-        <ul className="grid p-4 gap-8 md:gap-0 md:grid-cols-[repeat(4,_auto)] items-center justify-items-center">
-          <li>
-            <Link href={'/'}>
-            <Image alt="" className="aspect-auto" src={"/logoCCCD-white.jpg"} width={120} height={80} />
+  <div className="p-4 md:p-0 max-w-7xl mx-auto text-white text-base md:text-base-desktop">
+    <ul className="grid p-4 pb-0 gap-8 md:gap-0 md:grid-cols-[repeat(4,_auto)] items-center justify-items-center">
+      <li>
+        <Link href={'/'}>
+          <Image alt="" className="aspect-auto" src={"/logoCCCD-white.jpg"} width={120} height={80} />
+        </Link>
+      </li>
+
+      {footerContact
+        .filter(
+          (social) =>
+            !(
+              social.value === "TikTok" ||
+              social.value === "Instagram" ||
+              social.value === "YouTube"
+            )
+        )
+        .map((item) => (
+          <li className="" key={item.name}>
+            <Link href={item.url} className={`flex items-center gap-2  `}>
+              <Image alt={item.name} src={item.icon} width={20} height={20} />
+              {item.value}
             </Link>
           </li>
-          {footerContact
-            .filter(
-              (social) =>
-                !(
-                  social.value === "TikTok" ||
-                  social.value === "Instagram" ||
-                  social.value === "YouTube"
-                )
-            )
-            .map((item) => (
-              <li className="" key={item.name}>
-                <Link href={item.url} className={`flex items-center gap-2`}>
-                  <Image
-                    alt={item.name}
-                    src={item.icon}
-                    width={20}
-                    height={20}
-                  />
-                  {item.value}
-                </Link>
-              </li>
-            ))}
+        ))}
 
-          <li className="flex gap-4">
-            {footerContact
-              .filter(
-                (item) =>
+      <li className="flex gap-4">
+        {footerContact
+          .filter(
+            (item) =>
+              item.value === "TikTok" ||
+              item.value === "YouTube" ||
+              item.value === "Instagram"
+          )
+          .map((item) => (
+            <span key={item.name}>
+              <Link
+                href={item.url}
+                target="_blank"
+                className={`${
                   item.value === "TikTok" ||
-                  item.value === "YouTube" ||
-                  item.value === "Instagram"
-              )
-              .map((item) => (
-                <span key={item.name}>
-                  <Link
-                    href={item.url}
-                    target="_blank"
-                    className={` ${
-                      item.value === "TikTok" ||
-                      item.value === "Instagram" ||
-                      item.value === "YouTube"
-                        ? "inline"
-                        : ""
-                    }`}
-                  >
-                    <Image
-                      alt={item.name}
-                      src={item.icon}
-                      width={25}
-                      className="hover:scale-125 transition-all cursor-pointer filter invert"
-                      height={25}
-                    />
-                  </Link>
-                </span>
-              ))}
-          </li>
-        </ul>
-      </div>
-    </footer>
+                  item.value === "Instagram" ||
+                  item.value === "YouTube"
+                    ? "inline"
+                    : ""
+                }`}
+              >
+                <Image
+                  alt={item.name}
+                  src={item.icon}
+                  width={25}
+                  height={25}
+                  className="hover:scale-125 transition-all cursor-pointer filter invert"
+                />
+              </Link>
+            </span>
+          ))}
+      </li>
+    </ul>
+
+    {/* --- Enlace de Privacidad --- */}
+    <div className="text-center text-white pb-4">
+      <Link href="/privacidad" className="underline hover:text-gray-300">
+        Política de Privacidad
+      </Link>
+    </div>
+  </div>
+</footer>
+
   );
 };
 
