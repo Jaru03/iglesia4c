@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Montserrat } from "next/font/google";
+import { Inter, Montserrat } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: "Comunidad Cristiana Casa de Dios Madrid",
 };
 
-const montserrat = Montserrat({ subsets: ['latin'] })
+const inter = Inter({ subsets: ['latin'] })
  
 
 export default function RootLayout({
@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body
-        className={montserrat.className}
+        className={inter.className}
       >
         <Navbar/>
         <main>

@@ -38,7 +38,7 @@ const Navbar = () => {
   return (
     <header>
       <div>
-        <nav className="z-10 absolute w-full transition-all scroll-bg md:h-24 md:flex md:justify-center">
+        <nav className="z-10 absolute w-full transition-all scroll-bg md:h-24 md:flex md:justify-center mt-4">
           <div className="hidden w-full md:absolute md:flex  items-center top-0 h-24 max-w-5xl">
             <Link
               className={`filter invert brightness-0 hidden md:block hover:scale-105 transition-all duration-300 ease-in-out`}

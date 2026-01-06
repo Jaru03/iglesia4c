@@ -1,7 +1,6 @@
 'use client'
 
 import Image from 'next/image'
-import React from 'react'
 import { Happy_Monkey } from 'next/font/google'
 import { Swiper, SwiperSlide } from 'swiper/react'
 
@@ -33,18 +32,45 @@ const LastActivities = () => {
 
   return (
     <section>
-      <div className='p-6'>
-        <h2 className='text-primary-2 text-2xl md:text-2xl-desktop text-center py-10'>Últimas Actividades</h2>
+      <div className='p-6 max-w-7xl mx-auto'>
+        <h2 className='text-primary-3 text-2xl md:text-2xl-desktop text-center py-10'>Últimas Actividades</h2>
 
 
-        <Swiper navigation={true} pagination={true} modules={[Pagination, Navigation]} className="mySwiper shadow-form  mb-20 p-10 max-w-[500px]">
+        <Swiper
+          navigation={true}
+          pagination={true}
+          modules={[Pagination, Navigation]}
+          slidesPerView={1}
+          breakpoints={{
+            640: {
+              slidesPerView: 1,
+            },
+            768: {
+              slidesPerView: 2,
+            },
+          }}
+          spaceBetween={20}
+        >
 
           {slider.map((slider) => (
 
-            <SwiperSlide key={slider.key}>
-              <Image width={1000} height={1000} src={slider.image} alt='Image 1' className='w-full h-full min-w-[230px] p-4 xl:p-6 max-w-fit max-h-[500px]' />
-
-              <h3 className={`text-xl md:text-xl-desktop py-5 pt-3 sm:pb-8 text-center ${happyMonkey.className}`}>{slider.title}</h3>
+            <SwiperSlide key={slider.key} className="flex justify-center px-4 pb-14">
+              <div className="bg-white p-6 shadow-xl transform rotate-1 hover:rotate-0 transition-transform duration-300">
+                <div className="bg-gray-100 p-3 rounded-lg">
+                  <Image
+                    width={1000}
+                    height={1000}
+                    src={slider.image}
+                    alt={slider.title}
+                    className='w-full h-full max-h-80 rounded-md'
+                  />
+                </div>
+                <div className="mt-3 text-center">
+                  <h3 className={`text-xl md:text-2xl text-gray-800 ${happyMonkey.className}`}>
+                    {slider.title}
+                  </h3>
+                </div>
+              </div>
             </SwiperSlide>
           ))
           }

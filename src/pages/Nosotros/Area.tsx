@@ -1,6 +1,7 @@
 'use client'
 import Image from "next/image"
-import {motion} from 'motion/react'
+import { motion } from 'motion/react'
+import { ArrowRight, Users } from "lucide-react"
 
 interface Props {
   img: string | null;
@@ -9,40 +10,62 @@ interface Props {
   value: string;
 }
 
-const Area = ({ img, className }: Props) => {
+const Area = ({ img, className, title, value }: Props) => {
   return (
-    <motion.article 
-    initial={{
-          opacity: 0,
-          x: -50,
-          scale: 0.8,
-        }}
-        whileInView={{
-          opacity: 1,
-          x: 0,
-          scale: 1,
-        }}
-        transition={{
-          duration: 1.5,
-          ease: [0.25, 0.1, 0.25, 1],
-        }}
-        viewport={{
-          once: true
-        }}
-    className={`max-w-[300px] /*overflow-hidden */ max-h-[300px] ${className} /*group */`}>
-      <div className="w-full h-full  group-hover:translate-y-[-300px] transition-all duration-1000">
+    <motion.article
+      initial={{
+        opacity: 0,
+        y: 50,
+        scale: 0.9,
+      }}
+      whileInView={{
+        opacity: 1,
+        y: 0,
+        scale: 1,
+      }}
+      transition={{
+        duration: 0.8,
+        ease: [0.25, 0.1, 0.25, 1],
+      }}
+      viewport={{
+        once: true
+      }}
+      className={`group relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 bg-white border border-gray-100 ${className}`}
+    >
+      {/* Image container */}
+      <div className="relative h-64 overflow-hidden rounded-t-3xl">
         <Image
           src={img ? img : '/logoJovenes.jpeg'}
           width={1000}
           height={1000}
-          className=" w-full h-full"
-          alt="Area de la iglesia"
-          />
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          alt={`Departamento de ${title}`}
+        />
 
-        {/* <div className="w-full min-h-[300px] flex flex-col justify-center gap-8 items-center">
-          <p className="text-center text-base md:text-base-desktop">¿Quieres saber más sobre el <br /> {title}?</p>
-          <Button text="Ver más" variant="primary" className="px-8" url={`/nosotros/${value}`} />
-        </div> */}
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+        {/* Hover content */}
+        <div className="absolute bottom-4 left-4 right-4 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 opacity-0 group-hover:opacity-100">
+          <a
+            href={`/nosotros/${value}`}
+            className="inline-flex items-center gap-2 bg-white text-primary-3 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-colors text-sm"
+          >
+            <Users className="w-4 h-4" />
+            Ver más
+            <ArrowRight className="w-4 h-4" />
+          </a>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-6">
+        <h3 className="text-xl font-bold text-gray-800 mb-2 text-center group-hover:text-primary-3 transition-colors">
+          {title}
+        </h3>
+        <p className="text-gray-600 text-center text-sm leading-relaxed">
+          Un espacio dedicado al crecimiento espiritual y comunitario de {title?.toLowerCase()}.
+        </p>
       </div>
     </motion.article>
   );

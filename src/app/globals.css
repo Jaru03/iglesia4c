@@ -19,20 +19,8 @@
 }
 
 
-.innerShadowDonationCard {
-  box-shadow: inset 1px 5px 4px 0 #00000025;
-}
-
-.rbc-event-label{
-  display: none !important;
-}
-
 .ministerios:first-child{
   grid-row: 1/3;
-}
-
-.rbc-month-row{
-  overflow: visible !important;
 }
 
 .consejo__image{

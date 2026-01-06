@@ -1,12 +1,8 @@
 'use client'
-import React from 'react'
 import {motion} from "motion/react"
-const FeDeclaration = () => {
+const   FeDeclaration = () => {
   return (
-    <section
-    
-        className='bg-secondary'
-    >
+    <section className='bg-gradient-to-b from-primary-3/5 to-primary-2/5 py-20'>
       <motion.div
       initial={{
           opacity: 0,
@@ -23,11 +19,21 @@ const FeDeclaration = () => {
           ease: [0.25, 0.1, 0.25, 1],
         }}
         viewport={{ once: true }}
-       className='max-w-7xl mx-auto py-6'>
+       className='max-w-6xl mx-auto px-6'>
 
-          <h2 className="text-primary-2 text-xl md:text-xl-desktop pb-6 text-center">
-            Declaración de Fe
-          </h2>
+          <div className="text-center mb-12">
+            <h2 className="text-primary-3 text-4xl md:text-5xl font-bold mb-4">
+              Declaración de Fe
+            </h2>
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto font-normal">
+              Nuestros fundamentos doctrinales que guían nuestra fe y práctica cristiana
+            </p>
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 md:p-12">
+            <h3 className="text-2xl font-bold text-primary-3 mb-8 text-center">
+              Creemos y Confesamos
+            </h3>
           <ul className="list-decimal list-inside columns-1 md:columns-2 gap-x-8 px-8 space-y-2">
             <li >
               Creemos en las Sagradas Escrituras, la Biblia, que como palabra
@@ -109,6 +115,7 @@ const FeDeclaration = () => {
               tales.
             </li>
           </ul>
+          </div>
       </motion.div>
     </section>
   )

@@ -7,9 +7,9 @@ import { twMerge } from "tailwind-merge";
 
 interface Props {
     text: string;
-    variant: 'primary' | 'hero' | 'secundary' | 'form';
+    variant: 'primary' | 'hero' | 'secondary' | 'form';
     className?: string;
-    url: string
+    url?: string;
     target?: '_blank' | '_self' | '_parent' | '_top';
     onClick?: MouseEventHandler<HTMLButtonElement>
 }
@@ -17,23 +17,42 @@ interface Props {
 const Button = ({ text, variant, className, url, target, onClick }: Props) => {
     const buttonClasses = twMerge(
         clsx({
-            'bg-primary-3 text-white shadow-2xl': variant === 'primary',
-            'bg-transparent border hover:bg-[#5C69724D] border-[3px] border-secundary-2 rounded-md text-secundary-2 font-semibold': variant === 'secundary',
-            'bg-transparent border hover:bg-[#ffffff4D] border-[3px] border-white rounded-md text-white font-semibold': variant === 'hero',
-            'bg-primary-3 text-white hover:bg-primary-3-hover rounded-[3px] px-10 font-semibold': variant === 'form',
+            'bg-primary-3 text-white shadow-lg hover:shadow-xl hover:bg-primary-2 transform hover:scale-105 transition-all duration-200 font-semibold rounded-lg px-6 py-3 text-center': variant === 'primary',
+            'bg-transparent border-2 border-primary-3 hover:bg-primary-3 hover:text-white text-primary-3 font-semibold rounded-lg px-6 py-3 transform hover:scale-105 transition-all duration-200': variant === 'secondary',
+            'bg-transparent border-2 border-white hover:bg-white hover:text-primary-3 text-white font-semibold rounded-lg px-6 py-3 transform hover:scale-105 transition-all duration-200': variant === 'hero',
+            'bg-primary-3 text-white hover:bg-primary-2 rounded-lg px-8 py-3 font-semibold transform hover:scale-105 transition-all duration-200': variant === 'form',
         }), className)
 
+    if (variant === 'form') {
+        return (
+            <button
+                onClick={onClick}
+                className={`${buttonClasses} cursor-pointer flex items-center justify-center text-base md:text-base-desktop`}
+            >
+                {text}
+            </button>
+        )
+    }
+
+    if (!url) {
+        return (
+            <button
+                onClick={onClick}
+                className={`${buttonClasses} cursor-pointer flex items-center justify-center text-base md:text-base-desktop`}
+            >
+                {text}
+            </button>
+        )
+    }
+
     return (
-        <>
-            {
-                variant === 'form' ?
-                    <button onClick={onClick} className={`${buttonClasses} p-2 cursor-pointer flex items-center justify-center transition-all text-base md:text-base-desktop`}>{text}</button>
-                    :
-                    <Link href={url} target={target} className={`${buttonClasses} p-2 hover:scale-105  transition-all cursor-pointer flex items-center justify-center text-base md:text-base-desktop`}>
-                        {text}
-                    </Link>
-            }
-        </>
+        <Link
+            href={url}
+            target={target}
+            className={`${buttonClasses} flex items-center justify-center text-base md:text-base-desktop`}
+        >
+            {text}
+        </Link>
     )
 }
 

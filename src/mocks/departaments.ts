@@ -1,17 +1,17 @@
 export const departaments = [
     {
         img: '/alabanza-white.jpeg',
-        title: 'IgleKids',
+        title: 'Alabanza',
         value: ''
     },
     {
         img: '/matrimonios-blue.jpeg',
-        title: 'IgleKids',
+        title: 'Departamento de Matrimonios',
         value: ''
     },
     {
         img: '/evangelismo-white.jpeg',
-        title: 'IgleKids',
+        title: 'Evangelismo',
         value: ''
     },
     {

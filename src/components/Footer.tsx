@@ -1,5 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Facebook,
+  Instagram,
+  Youtube,
+  Heart,
+  Clock,
+  Users
+} from "lucide-react";
 
 interface FooterContact {
   name: string;
@@ -42,77 +53,163 @@ const Footer = () => {
     },
   ];
 
+  const quickLinks = [
+    { name: "Inicio", href: "/" },
+    { name: "Nosotros", href: "/nosotros" },
+    { name: "Visítanos", href: "/visitanos" },
+    { name: "Actividades", href: "/actividades" },
+    { name: "Donaciones", href: "/donaciones" },
+    { name: "Oración", href: "/oracion" },
+  ];
+
+  const serviceInfo = [
+    { icon: Clock, text: "Domingos 10:00 AM", label: "Culto Dominical" },
+    { icon: MapPin, text: "Plaza Castilla, Madrid", label: "Ubicación" },
+    { icon: Users, text: "+200 Miembros", label: "Comunidad" },
+  ];
+
   return (
-    <footer className="bg-primary">
-  <div className="p-4 md:p-0 max-w-7xl mx-auto text-white text-base md:text-base-desktop">
-    <ul className="grid p-4 pb-0 gap-8 md:gap-0 md:grid-cols-[repeat(4,_auto)] items-center justify-items-center">
-      <li>
-        <Link href={'/'}>
-          <Image alt="" className="aspect-auto" src={"/logoCCCD-white.jpg"} width={120} height={80} />
-        </Link>
-      </li>
+    <footer className="bg-primary relative overflow-hidden"> 
 
-      {footerContact
-        .filter(
-          (social) =>
-            !(
-              social.value === "TikTok" ||
-              social.value === "Instagram" ||
-              social.value === "YouTube"
-            )
-        )
-        .map((item) => (
-          <li className="" key={item.name}>
-            <Link href={item.url} className={`flex items-center gap-2  `}>
-              <Image alt={item.name} src={item.icon} width={20} height={20} />
-              {item.value}
+      <div className="relative max-w-7xl mx-auto px-6 py-16">
+        {/* Main Footer Content */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+          {/* Logo & Description */}
+          <div className="lg:col-span-2">
+            <Link href="/" className="inline-block mb-6">
+              <Image
+                alt="Casa de Dios"
+                className="h-36 w-auto mx-auto"
+                src="/logoCCCD-white.jpg"
+                width={120}
+                height={80}
+              />
             </Link>
-          </li>
-        ))}
 
-      <li className="flex gap-4">
-        {footerContact
-          .filter(
-            (item) =>
-              item.value === "TikTok" ||
-              item.value === "YouTube" ||
-              item.value === "Instagram"
-          )
-          .map((item) => (
-            <span key={item.name}>
-              <Link
-                href={item.url}
-                target="_blank"
-                className={`${
-                  item.value === "TikTok" ||
-                  item.value === "Instagram" ||
-                  item.value === "YouTube"
-                    ? "inline"
-                    : ""
-                }`}
+            <p className="text-white/90 text-lg leading-relaxed mb-6 max-w-md">
+              Una comunidad cristiana dedicada a compartir el amor de Cristo,
+              fortalecer la fe y servir a nuestra ciudad con compasión y esperanza.
+            </p>
+
+            {/* Service Info Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {serviceInfo.map((info, index) => (
+                <div key={index} className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                  <info.icon className="w-6 h-6 text-white mb-2" />
+                  <p className="text-white font-semibold text-sm">{info.label}</p>
+                  <p className="text-white/80 text-xs">{info.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h3 className="text-white text-xl font-bold mb-6">Enlaces Rápidos</h3>
+            <ul className="space-y-3">
+              {quickLinks.map((link) => (
+                <li key={link.name}>
+                  <Link
+                    href={link.href}
+                    className="text-white/80 hover:text-white transition-colors duration-200 flex items-center gap-2 group"
+                  >
+                    <div className="w-1.5 h-1.5 bg-white/40 rounded-full group-hover:bg-white transition-colors"></div>
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Contact & Social */}
+          <div>
+            <h3 className="text-white text-xl font-bold mb-6">Conecta Con Nosotros</h3>
+
+            {/* Contact Info */}
+            <div className="space-y-4 mb-6">
+              <a
+                href="mailto:secretaria@casadedios.es"
+                className="flex items-center gap-3 text-white/80 hover:text-white transition-colors group"
               >
-                <Image
-                  alt={item.name}
-                  src={item.icon}
-                  width={25}
-                  height={25}
-                  className="hover:scale-125 transition-all cursor-pointer filter invert"
-                />
+                <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                  <Mail className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="font-medium">Email</p>
+                  <p className="text-sm">secretaria@casadedios.es</p>
+                </div>
+              </a>
+
+              <a
+                href="tel:+34637650111"
+                className="flex items-center gap-3 text-white/80 hover:text-white transition-colors group"
+              >
+                <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                  <Phone className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="font-medium">Teléfono</p>
+                  <p className="text-sm">+34 637-650111</p>
+                </div>
+              </a>
+            </div>
+
+            {/* Social Media */}
+            <div>
+              <p className="text-white/80 font-medium mb-3">Síguenos</p>
+              <div className="flex gap-3">
+                {footerContact
+                  .filter((item) => ["TikTok", "Instagram", "YouTube"].includes(item.value))
+                  .map((item) => (
+                    <a
+                      key={item.name}
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-12 h-12 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-110 group"
+                    >
+                      <Image
+                        alt={item.name}
+                        src={item.icon}
+                        width={24}
+                        height={24}
+                        className="filter brightness-0 invert group-hover:brightness-100"
+                      />
+                    </a>
+                  ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Section */}
+        <div className="border-t border-white/20 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="flex items-center gap-2 text-white/80">
+              <p className="text-sm">
+                © 2025 Comunidad Cristiana Casa de Dios. Todos los derechos reservados.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-6">
+              <Link
+                href="/privacidad"
+                className="text-white/80 hover:text-white text-sm transition-colors"
+              >
+                Política de Privacidad
               </Link>
-            </span>
-          ))}
-      </li>
-    </ul>
-
-    {/* --- Enlace de Privacidad --- */}
-    <div className="text-center text-white pb-4">
-      <Link href="/privacidad" className="underline hover:text-gray-300">
-        Política de Privacidad
-      </Link>
-    </div>
-  </div>
-</footer>
-
+              <span className="text-white/40">•</span>
+              <Link
+                href="/nosotros"
+                className="text-white/80 hover:text-white text-sm transition-colors"
+              >
+                Sobre Nosotros
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
   );
 };
 

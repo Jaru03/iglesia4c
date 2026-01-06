@@ -9,13 +9,13 @@ const RecentPreach = () => {
     }
 
     return (
-        <section 
+        <section
         className="bg-secondary ">
             <div
-            
+
             className="max-w-7xl mx-auto p-4 md:p-8">
-                <h2 className="text-2xl md:text-2xl-desktop text-primary-2 text-center py-10">Prédicas más recientes</h2>
-                <motion.article 
+                <h2 className="text-2xl md:text-2xl-desktop text-primary-3 text-center py-10">Prédicas más recientes</h2>
+                <motion.article
                 initial={{
           opacity: 0,
           x: -100,
