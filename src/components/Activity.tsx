@@ -42,7 +42,7 @@ const Activity = ({
       viewport={{
         once:true
       }}
-      className={`grid items-center  justify-center md:grid-cols-2 gap-8 md:p-4 ${className}`}
+      className={`grid items-center justify-center grid-cols-1 xs:grid-cols-1 md:grid-cols-2 gap-6 xs:gap-8 md:p-4 ${className}`}
     >
       <Image
         src={image}
@@ -50,6 +50,7 @@ const Activity = ({
         width={1000}
         height={1000}
         className="w-full h-full md:aspect-video"
+        suppressHydrationWarning
       />
 
       <div
@@ -57,10 +58,10 @@ const Activity = ({
           showButton ? "md:justify-between" : "md:justify-evenly"
         }  h-full`}
       >
-        <h3 className="text-2xl font-bold text-center text-primary-3 mb-4">
+        <h3 className="text-xl xs:text-2xl font-bold text-center text-primary-3 mb-4">
           {title}
         </h3>
-        <p className="text-gray-700 leading-relaxed mb-6">{description}</p>
+        <p className="text-gray-700 text-base xs:text-lg leading-relaxed mb-6">{description}</p>
         <ul className="text-gray-600 font-medium flex flex-col gap-3 mb-6">
           <li className="flex items-center gap-2">
             <svg className="w-5 h-5 text-primary-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

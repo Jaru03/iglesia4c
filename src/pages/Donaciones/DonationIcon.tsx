@@ -84,6 +84,7 @@ const DonationIcon = ({ text, imgSrc, setter, payPath, className }: Props) => {
                         height={150}
                         alt={`Icono de ${text}`}
                         className="max-w-[50px] max-h-[50px] object-contain"
+                        suppressHydrationWarning
                     />
                 </div>
 

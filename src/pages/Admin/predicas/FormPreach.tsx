@@ -1,6 +1,8 @@
 'use client'
 
 import Button from "@/ui/Button"
+import Input from "@/ui/Input"
+import Textarea from "@/ui/Textarea"
 import { useRef, useState } from "react"
 
 const FormPreach = () => {
@@ -65,31 +67,32 @@ const FormPreach = () => {
 
     return (
         <form ref={formPreach} onSubmit={handleSubmit} noValidate>
-            <div>
-                <label htmlFor="title">Título</label>
-                <input
+            <div className="mb-6">
+                <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">Título</label>
+                <Input
                     type="text"
                     name="title"
-                    id="title"
+                    placeholder="Introduce el título de la predicación"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     required
                 />
             </div>
             
-            <div>
-                <label htmlFor="description">Descripción</label>
-                <textarea
+            <div className="mb-6">
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+                <Textarea
                     name="description"
-                    id="description"
+                    placeholder="Introduce la descripción de la predicación"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
+                    rows={6}
                     required
                 />
             </div>
             
-            <div>
-                <label htmlFor="file">Imagen</label>
+            <div className="mb-6">
+                <label htmlFor="file" className="block text-sm font-medium text-gray-700 mb-2">Imagen</label>
                 <input
                     type="file"
                     name="file"
@@ -97,12 +100,13 @@ const FormPreach = () => {
                     accept="image/*"
                     onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
                     required
+                    className="w-full px-4 py-3 text-base transition-all duration-200 bg-white border-2 border-gray-200 rounded-xl focus:border-primary-3 focus:ring-4 focus:ring-primary-3/10 focus:outline-none hover:border-gray-300 hover:shadow-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-3 file:text-white hover:file:bg-primary-4"
                 />
             </div>
 
             {/* Mensajes de error y éxito con estilos mejorados */}
-            {error && <p style={{ color: 'red', fontWeight: 'bold' }}>{error}</p>}
-            {success && <p style={{ color: 'green', fontWeight: 'bold' }}>{success}</p>}
+            {error && <p className="text-red-600 font-bold text-sm">{error}</p>}
+            {success && <p className="text-green-600 font-bold text-sm">{success}</p>}
 
             <Button variant="form" text="Enviar" url="#" />
         </form>

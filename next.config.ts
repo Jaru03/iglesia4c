@@ -5,10 +5,16 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        hostname: 'res.cloudinary.com', 
+        hostname: 'res.cloudinary.com',
       },
       {
-        hostname: 'northeurope1-mediap.svc.ms', 
+        hostname: 'northeurope1-mediap.svc.ms',
+      },
+      {
+        hostname: 'i.ytimg.com',
+      },
+      {
+        hostname: 'ytimg.com',
       },
     ],
   },

@@ -1,5 +1,5 @@
 import ConsejoItem from "./ConsejoItem"
-import { Users, Award, Heart } from "lucide-react"
+import { Users } from "lucide-react"
 
 const Consejo = () => {
     const consejo = [

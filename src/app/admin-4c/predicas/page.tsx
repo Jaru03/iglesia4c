@@ -64,7 +64,7 @@ const Page = () => {
                     {
                         response?.map((preach: PreachInfo) => (
                             <article key={preach.id} className="min-w-60 min-h-72 max-w-40">
-                                <Image alt={preach.title} src={preach.img} width={1000} height={1000} />
+                                <Image alt={preach.title} src={preach.img} width={1000} height={1000} suppressHydrationWarning />
                                 <h3 className="text-xl md:text-base-desktop-desktop text-center text-primary-2">{preach.title}</h3>
                                 <div className='flex justify-center gap-4'>
                                     <span onClick={() => setPreachSelectUpdate(preach.id)} className="cursor-pointer py-2 px-4 rounded-lg bg-primary-3 text-white">Update</span>

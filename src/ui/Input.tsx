@@ -1,5 +1,4 @@
 import React, { forwardRef } from "react";
-import { ChevronDown } from "lucide-react";
 
 interface Props {
   type: string;
@@ -7,11 +6,14 @@ interface Props {
   className?: string;
   name?: string;
   defaultValue?: string;
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  required?: boolean;
   options?: { value: string; label: string }[]; // Opcional para select
 }
 
 const Input = forwardRef<HTMLInputElement | HTMLSelectElement, Props>(
-  ({ type, placeholder, className, name, defaultValue }, ref) => {
+  ({ type, placeholder, className, name, defaultValue, value, onChange, required }, ref) => {
     const baseStyles = `
       w-full px-4 py-3 text-base transition-all duration-200
       bg-white border-2 border-gray-200 rounded-xl
@@ -29,6 +31,7 @@ const Input = forwardRef<HTMLInputElement | HTMLSelectElement, Props>(
             name={name}
             defaultValue={defaultValue}
             className={`${baseStyles} appearance-none pr-12 cursor-pointer bg-gradient-to-r from-white to-gray-50 border-gray-300 hover:border-primary-3 hover:shadow-md transition-all duration-200 ${className}`}
+            required={required}
             style={{
               backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
               backgroundPosition: 'right 12px center',
@@ -53,16 +56,19 @@ const Input = forwardRef<HTMLInputElement | HTMLSelectElement, Props>(
       );
     }
 
-    return (
-      <input
-        ref={ref as React.Ref<HTMLInputElement>}
-        type={type}
-        placeholder={placeholder}
-        className={`${baseStyles} ${className}`}
-        name={name}
-        defaultValue={defaultValue}
-      />
-    );
+      return (
+        <input
+          ref={ref as React.Ref<HTMLInputElement>}
+          type={type}
+          placeholder={placeholder}
+          className={`${baseStyles} ${className}`}
+          name={name}
+          defaultValue={defaultValue}
+          value={value}
+          onChange={onChange}
+          required={required}
+        />
+      );
   }
 );
 

@@ -52,9 +52,9 @@ const Navbar = () => {
                 height={100}
               />
             </Link>
-            <ul className="grid grid-cols-7 justify-center justify-items-center w-full">
+            <ul className="hidden xs:grid xs:grid-cols-2 xs:gap-2 md:grid md:grid-cols-7 justify-center justify-items-center w-full">
               {navbar.map((item) => (
-                <li key={item.name} className="text-base md:text-base-desktop">
+                <li key={item.name} className="text-xs xs:text-sm md:text-base-desktop">
                   <Link
                     href={item.value}
                     target={item.target}
@@ -76,19 +76,19 @@ const Navbar = () => {
             <Image
               alt=""
               src={"/logoCCCD.jpg"}
-              width={110}
-              height={85}
-              className={`${currentRoute === "/" ? "hidden" : ""} pt-2 mx-auto filter invert brightness-110`}
+              width={90}
+              height={70}
+              className={`${currentRoute === "/" ? "hidden" : ""} pt-2 mx-auto filter invert brightness-110 w-[70px] xs:w-[90px] h-[55px] xs:h-[70px]`}
             />
             <Image
               onClick={handleOpen}
-              className={`fixed top-7 right-10 z-10
+              className={`fixed top-7 xs:right-6 right-10 z-10
                 scroll-menu
                ${buttonOpen ? "hidden" : "block"}`}
               alt=""
               src={"/menu-icon.svg"}
-              width={30}
-              height={30}
+              width={25}
+              height={25}
             />
             <ul
               className={`flex flex-col items-center justify-center shadow-form fixed pt-1 pb-10 w-full gap-8 right-0 top-0 bg-primary rounded-b-xl transition-transform duration-300 ease-out 
@@ -101,26 +101,26 @@ const Navbar = () => {
               <Image
                 alt=""
                 src={"/logoCCCD-white.jpg"}
-                width={110}
-                height={85}
-                className="pt-2 filter brightness-110"
+                width={90}
+                height={70}
+                className="pt-2 filter brightness-110 w-[70px] xs:w-[90px] h-[55px] xs:h-[70px]"
               />
               <Image
                 onClick={handleClose}
-                className={`absolute top-7 right-10 ${
+                className={`absolute top-7 xs:right-6 right-10 ${
                   buttonOpen ? "block" : "hidden"
                 }`}
                 alt=""
                 src={"/close-icon.svg"}
-                width={30}
-                height={30}
+                width={25}
+                height={25}
               />
               {navbar.map((item) => (
-                <li className="text-base" key={item.value}>
+                <li className="text-base xs:text-sm" key={item.value}>
                   <Link
                     target={item.target}
                     href={item.value}
-                    className={`text-secundary-4 hover:text-white hover:scale-110 hover:-translate-y-1 transition-all duration-200 ease-in-out 
+                    className={`text-secondary-4 hover:text-white hover:scale-110 hover:-translate-y-1 transition-all duration-200 ease-in-out 
                                             ${
                                               "/" + item.name.toLowerCase() ===
                                                 currentRoute ||

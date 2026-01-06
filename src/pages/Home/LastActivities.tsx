@@ -1,7 +1,6 @@
 'use client'
 
 import Image from 'next/image'
-import { Happy_Monkey } from 'next/font/google'
 import { Swiper, SwiperSlide } from 'swiper/react'
 
 import 'swiper/css';
@@ -13,12 +12,6 @@ interface Slider {
   title: string
   image: string
 }
-
-const happyMonkey = Happy_Monkey({
-  subsets: ['latin'],
-  weight: '400',
-  style: 'normal',
-})
 
 const LastActivities = () => {
 
@@ -63,10 +56,11 @@ const LastActivities = () => {
                     src={slider.image}
                     alt={slider.title}
                     className='w-full h-full max-h-80 rounded-md'
+                    suppressHydrationWarning
                   />
                 </div>
                 <div className="mt-3 text-center">
-                  <h3 className={`text-xl md:text-2xl text-gray-800 ${happyMonkey.className}`}>
+                  <h3 className="text-xl xs:text-lg md:text-2xl text-gray-800 font-semibold">
                     {slider.title}
                   </h3>
                 </div>

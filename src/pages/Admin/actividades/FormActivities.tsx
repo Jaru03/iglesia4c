@@ -135,10 +135,10 @@ const FormActivities = () => {
             </div>
 
             {/* Mostrar mensaje de error si existe */}
-            {error && <p style={{ color: 'red' }}>{error}</p>}
+            {error && <p className="text-red-600 font-semibold text-sm">{error}</p>}
 
             {/* Mostrar mensaje de éxito si se envió correctamente */}
-            {success && <p style={{ color: 'green' }}>{success}</p>}
+            {success && <p className="text-green-600 font-semibold text-sm">{success}</p>}
 
             <Button variant="form" text="Enviar" url="" />
         </form>

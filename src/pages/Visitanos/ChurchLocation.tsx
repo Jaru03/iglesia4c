@@ -130,6 +130,7 @@ const ChurchLocation = ({ info }: Props) => {
                       height={100}
                       src={pastor.img}
                       className="max-w-[60px] max-h-[60px] rounded-full shadow-lg transition-all transform hover:scale-110"
+                      suppressHydrationWarning
                     />
                     <span className="absolute w-96 text-center top-20 text-base font-semibold opacity-0 group-hover:opacity-100 transition-all ease-in-out duration-300">
                       {pastor.nombre}
@@ -173,6 +174,7 @@ const ChurchLocation = ({ info }: Props) => {
                       className=""
                       width={25}
                       height={25}
+                      suppressHydrationWarning
                     />
                   </Link>
                 ))}

@@ -27,7 +27,7 @@ const Icons = ({image, description, alt}: Props) => {
         }}
         viewport={{ once: true }}
     className="flex flex-col items-center ">
-        <Image width={220} height={220} src={image} className="sm:w-80 sm:h-80" alt={alt} />
+        <Image width={220} height={220} src={image} className="sm:w-80 sm:h-80" alt={alt} suppressHydrationWarning />
         <p>{description}</p>
     </motion.article>
   )

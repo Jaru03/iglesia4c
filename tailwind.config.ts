@@ -10,6 +10,9 @@ export default {
   ],
   theme: {
     extend: {
+      screens: {
+        'xs': '320px',
+      },
       boxShadow: {
         'form': '0px 20px 20px #00000025'
       },
@@ -49,9 +52,9 @@ export default {
         "primary-3": "#3B63A8",
         "primary-4": "#2F67C7",
         'secondary': "#F4F2F0",
-        "secundary-2": "#5C6972",
-        "secundary-3": "#A9ADB0",
-        "secundary-4": "#BBBBBB",
+        "secondary-2": "#5C6972",
+        "secondary-3": "#A9ADB0",
+        "secondary-4": "#BBBBBB",
         "primary-3-hover":"#325488",
       },
     },
