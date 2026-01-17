@@ -59,11 +59,12 @@ const page = () => {
             <p className="text-sm">
               "Orad sin cesar. Dad gracias en todo, porque esta es la voluntad de Dios"
             </p>
-            <p className="text-xs mt-1 opacity-75">- 1 Tesalonicenses 5:17-18</p>
+            <p className="text-xs mt-1 opacity-75">- 1 Tesalonicenses 5:17-18 pago</p>
           </div>
         </div>
       </section>
     </section>
+    
   );
 };
 
