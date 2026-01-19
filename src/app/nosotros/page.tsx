@@ -1,6 +1,6 @@
-import Departaments from "@/pages/Nosotros/Departaments"
-import HowItStarted from "@/pages/Nosotros/HowItStarted"
-import { Church, Users, Heart, BookOpen } from "lucide-react"
+import { Users, Heart, BookOpen } from "lucide-react"
+import HowItStarted from "./components/HowItStarted"
+import Departaments from "./components/Departaments"
 
 const page = () => {
     return (

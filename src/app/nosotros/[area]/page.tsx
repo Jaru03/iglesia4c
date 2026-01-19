@@ -1,7 +1,7 @@
 'use client'
 
-import AreaPage from "@/pages/Nosotros/AreaPage";
 import { useParams } from "next/navigation";
+import AreaPage from "../components/AreaPage";
 
 const Page = () => {
 

@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 
 // Importa ChurchLocation deshabilitando SSR
 const ChurchLocation = dynamic(
-  () => import("@/pages/Visitanos/ChurchLocation"),
+  () => import("@/app/visitanos/components/ChurchLocation"),
   {
     ssr: false,
   }

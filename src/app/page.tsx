@@ -1,8 +1,9 @@
-import Hero from "@/pages/Home/Hero"
-import LastActivities from "@/pages/Home/LastActivities"
-import NeedPray from "@/pages/Home/NeedPray"
-import RecentPreach from "@/pages/Home/RecentPreach"
-import UpcomingActivities from "@/pages/Home/UpcomingActivities"
+import Hero from "./(home)/components/Hero"
+import LastActivities from "./(home)/components/LastActivities"
+import NeedPray from "./(home)/components/NeedPray"
+import RecentPreach from "./(home)/components/RecentPreach"
+import UpcomingActivities from "./(home)/components/UpcomingActivities"
+
 
 const page = () => {
   return (
