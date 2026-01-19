@@ -1,4 +1,4 @@
-import DonationsPage from "@/pages/Donaciones/DonationsPage"
+import DonationsPage from "@/app/donaciones/components/DonationsPage"
 
 const page = () => {
   return (
