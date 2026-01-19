@@ -1,9 +1,9 @@
 'use client'
 
-import DonationIcon from "@/pages/Donaciones/DonationIcon"
-import PayOnline from "@/pages/Donaciones/PayOnline"
-import PayPalInfo from "@/pages/Donaciones/PayPalInfo"
-import TransferInfo from "@/pages/Donaciones/TransferInfo"
+import DonationIcon from "@/app/donaciones/components/DonationIcon"
+import PayOnline from "@/app/donaciones/components/PayOnline"
+import PayPalInfo from "@/app/donaciones/components/PayPalInfo"
+import TransferInfo from "@/app/donaciones/components/TransferInfo"
 import { useState } from "react"
 
 

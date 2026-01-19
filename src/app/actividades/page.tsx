@@ -1,5 +1,5 @@
 import Activity from "@/components/Activity"
-import CalendarActivities from "@/pages/Agenda/CalendarApp"
+import CalendarActivities from "@/app/actividades/components/CalendarApp"
 import dayjs from "dayjs"
 import { events } from "@/mocks/activities"
 

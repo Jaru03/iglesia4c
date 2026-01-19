@@ -1,5 +1,5 @@
-import PrayForm from "@/pages/Peticiones de Oración/PrayForm";
-import ToastProvider from "@/pages/Peticiones de Oración/ToastProvider";
+import PrayForm from "@/app/oracion/components/PrayForm";
+import ToastProvider from "@/app/oracion/components/ToastProvider";
 
 const page = () => {
   return (
