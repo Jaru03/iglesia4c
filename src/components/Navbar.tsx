@@ -53,26 +53,34 @@ const Navbar = () => {
               />
             </Link>
             <ul className="hidden xs:grid xs:grid-cols-2 xs:gap-2 md:grid md:grid-cols-7 justify-center justify-items-center w-full">
-              {navbar.map((item) => (
-                <li key={item.name} className="text-xs xs:text-sm md:text-base-desktop">
-                  <Link
-                    href={item.value}
-                    target={item.target}
-                    className={`transition-all duration-200 ease-in-out hover:scale-110
-      text-white hover:filter hover:brightness-110
-      ${currentRoute ===  item.value ? "font-bold" : ""}
-    `}
-                  >
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
+              {navbar.map((item) => {
+                
+                const isDonation = item.name === "Donaciones";
+                
+                return (
+                    <li key={item.name} className="text-xs xs:text-sm md:text-base-desktop flex items-center justify-center">
+                    <Link
+                        href={item.value}
+                        target={item.target}
+                        className={`transition-all duration-200 ease-in-out flex items-center justify-center
+                            ${isDonation 
+                                /* ESTILO VIP para Donaciones*/
+                                ? "bg-white text-[#060735] font-bold px-3 py-1.5 rounded-full shadow-md hover:scale-105"
+                                /* ESTILO NORMAL mejorado*/
+                                : `text-white px-3 py-1.5 rounded-full hover:bg-white/10 hover:scale-105 ${currentRoute ===  item.value ? "font-bold bg-white/20" : ""}`
+                            }
+                        `}
+                    >
+                        {item.name} {isDonation && "❤️"}
+                    </Link>
+                    </li>
+                );
+              })}
             </ul>
           </div>
 
-          {/* Menu móvil */}
+         
           <div className="relative overflow-hidden md:hidden">
-            {/* Menú hamburguesa */}
             <Image
               alt=""
               src={"/logoCCCD.jpg"}
