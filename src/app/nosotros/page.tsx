@@ -1,4 +1,4 @@
-import { Church, Users, Heart, BookOpen } from "lucide-react"
+import { Users, Heart, BookOpen } from "lucide-react"
 import HowItStarted from "./components/HowItStarted"
 import Departaments from "./components/Departaments"
 
