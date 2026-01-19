@@ -55,6 +55,11 @@ const RecentPreach = () => {
     const thumbnail = currentVideo.snippet.thumbnails.high?.url || currentVideo.snippet.thumbnails.default?.url
     const link = `https://www.youtube.com/watch?v=${videoId}`
 
+    // 1: para cortar el texto si es muy largo sin romper el diseño
+    const descriptionText = currentVideo.snippet.description 
+        ? (currentVideo.snippet.description.length > 150 ? currentVideo.snippet.description.substring(0, 150) + "..." : currentVideo.snippet.description)
+        : "Entra a nuestro canal de YouTube para ver nuestra última predica, será completamente de bendición para tu vida."
+
     if (!mounted) {
         return (
             <section className="bg-secondary">
@@ -99,22 +104,31 @@ const RecentPreach = () => {
                     viewport={{
                         once:true
                     }}
-                    className="grid md:grid-cols-2 gap-8"
+                    className="grid md:grid-cols-2 gap-8 items-center" 
                     suppressHydrationWarning>
+                    
+                    {/* 2
+                    : Añadidi aspect-video y rounded para que no se deforme la miniatura */}
                     <Image 
                         width={1000} 
                         height={1000} 
                         src={thumbnail} 
-                        className="w-full h-full object-cover" 
+                        className="w-full object-cover aspect-video rounded-xl shadow-lg" 
                         alt={currentVideo.snippet.title}
                         suppressHydrationWarning
                     />
+                    
                     <div className="h-full flex flex-col justify-evenly">
-                        <h3 className="text-primary-3 text-xl md:text-xl-desktop text-center">{currentVideo.snippet.title}</h3>
-                        <p className="text-base md:text-base-desktop py-4">Entra a nuestro canal de YouTube para ver nuestra última predica, será completamente de bendición para tu vida.                    </p>
+                        <h3 className="text-primary-3 text-xl md:text-xl-desktop text-center font-bold">{currentVideo.snippet.title}</h3>
+                        
+                        {/* 3:*/}
+                        <p className="text-base md:text-base-desktop py-4 text-gray-600">
+                            {descriptionText}
+                        </p>
+                        
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Button className="w-full" target="_blank" url='https://www.youtube.com/@casasdediosmadrid/streams' text={'Más Prédicas'} variant="primary" />
-                            <Button className="w-full" target="_blank" url={link} text={'Ver Prédica'} variant="primary" />
+                            <Button className="w-full" target="_blank" url={link} text={'▶ Ver Prédica'} variant="primary" />
+                            <Button className="w-full" target="_blank" url='https://www.youtube.com/@casasdediosmadrid/streams' text={'Más Prédicas'} variant="secondary" />
                         </div>
                     </div>
                 </motion.article>
