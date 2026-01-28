@@ -1,14 +1,11 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider  = "postgresql"
-  url       = env("NEXT_PUBLIC_DATABASE_URL")
-  directUrl = env("NEXT_PUBLIC_DIRECT_URL")
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Area {
@@ -44,40 +41,29 @@ model LastActivities {
   img   String?
 }
 
-
-// 1. USUARIOS DEL SISTEMA (Admins y Líderes)
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String   
-  nombre    String
-  role      String   @default("LIDER") 
-  sede      String?  
+  id       Int     @id @default(autoincrement())
+  email    String  @unique
+  password String
+  nombre   String
+  role     String  @default("LIDER")
+  sede     String?
 }
 
-// 2. EL JOVEN
 model Joven {
-  id             Int          @id @default(autoincrement())
-  nombres        String
-  apellidos      String
-  
-  // LA CLAVE
-  documento      String       @unique 
-  
-  sede           String
-  
-  // ultimavisita
-  ultimaVisita   DateTime     @default(now())
-  activo         Boolean      @default(true)
-
-  asistencias    Asistencia[] 
+  id           Int          @id @default(autoincrement())
+  nombres      String
+  apellidos    String
+  documento    String       @unique
+  sede         String
+  ultimaVisita DateTime     @default(now())
+  activo       Boolean      @default(true)
+  asistencias  Asistencia[]
 }
 
-// 3. EL HISTORIAL
 model Asistencia {
-  id        Int      @id @default(autoincrement())
-  fecha     DateTime @default(now())
-  
-  jovenId   Int
-  joven     Joven    @relation(fields: [jovenId], references: [id])
+  id      Int      @id @default(autoincrement())
+  fecha   DateTime @default(now())
+  jovenId Int
+  joven   Joven    @relation(fields: [jovenId], references: [id])
 }
