@@ -1,9 +1,11 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+// import prisma from "@/utils/prisma";
+//Esta es la importación que funciona correctamente. seguramente tiendes que hacer pnpx prisma generate para que genere el prismaClient y funcione correctamente esta línea.
 
-const prisma = new PrismaClient();
+// tienes que descomentar esto de prisma y usarlo.
+// prisma 
 
 const handler = NextAuth({
   providers: [
