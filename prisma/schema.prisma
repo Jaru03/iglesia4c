@@ -43,3 +43,41 @@ model LastActivities {
   title String
   img   String?
 }
+
+
+// 1. USUARIOS DEL SISTEMA (Admins y Líderes)
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String   
+  nombre    String
+  role      String   @default("LIDER") 
+  sede      String?  
+}
+
+// 2. EL JOVEN
+model Joven {
+  id             Int          @id @default(autoincrement())
+  nombres        String
+  apellidos      String
+  
+  // LA CLAVE
+  documento      String       @unique 
+  
+  sede           String
+  
+  // ultimavisita
+  ultimaVisita   DateTime     @default(now())
+  activo         Boolean      @default(true)
+
+  asistencias    Asistencia[] 
+}
+
+// 3. EL HISTORIAL
+model Asistencia {
+  id        Int      @id @default(autoincrement())
+  fecha     DateTime @default(now())
+  
+  jovenId   Int
+  joven     Joven    @relation(fields: [jovenId], references: [id])
+}
