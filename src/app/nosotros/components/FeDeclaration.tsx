@@ -2,7 +2,7 @@
 import {motion} from "motion/react"
 const   FeDeclaration = () => {
   return (
-    <section className='bg-gradient-to-b from-primary-3/5 to-primary-2/5 py-20'>
+    <section className='bg-linear-to-b from-primary-3/5 to-primary-2/5 py-20'>
       <motion.div
       initial={{
           opacity: 0,

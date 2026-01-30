@@ -6,7 +6,7 @@ const page = () => {
       <DonationsPage/>
 
       {/* Call to Action Section */}
-      <section className="py-16 bg-gradient-to-r from-primary-3 to-primary-2">
+      <section className="py-16 bg-linear-to-r from-primary-3 to-primary-2">
         <div className="max-w-4xl mx-auto text-center px-6">
           <div className="mb-6">
             <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">

@@ -65,9 +65,9 @@ const CustomToolbar = ({ label, onNavigate }: ToolbarProps<EventInterface, objec
 
 /* ───────────────── EVENTO EN CALENDARIO ───────────────── */
 const EventComponent = ({ event }: { event: EventInterface }) => (
-  <div className="group relative px-3 py-2 rounded-xl bg-gradient-to-r from-primary-3 to-primary-2 text-white text-xs font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 cursor-pointer border border-white/20 overflow-hidden">
+  <div className="group relative px-3 py-2 rounded-xl bg-linear-to-r from-primary-3 to-primary-2 text-white text-xs font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 cursor-pointer border border-white/20 overflow-hidden">
     {/* Subtle shine effect */}
-    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+    <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
 
     <div className="relative z-10 flex items-center gap-1">
       <div className="w-2 h-2 bg-white/80 rounded-full animate-pulse"></div>
@@ -310,7 +310,7 @@ export default function CalendarApp() {
       {eventSelect && (
         <div className="bg-white md:bg-white rounded-2xl md:rounded-3xl shadow-xl md:shadow-2xl border md:border-gray-100 overflow-hidden animate-in slide-in-from-bottom-4 duration-500 mx-4 md:mx-0">
           {/* Header with enhanced design */}
-          <div className="relative bg-gradient-to-br from-primary-3 via-primary-2 to-primary-3 p-6 md:p-8 text-white overflow-hidden">
+          <div className="relative bg-linear-to-br from-primary-3 via-primary-2 to-primary-3 p-6 md:p-8 text-white overflow-hidden">
             {/* Background pattern */}
             <div className="absolute inset-0 opacity-10">
               <div className="absolute top-2 right-2 w-20 h-20 border-2 border-white/30 rounded-full"></div>

@@ -4,14 +4,14 @@ import Departaments from "./components/Departaments"
 
 const page = () => {
     return (
-        <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+        <div className="min-h-screen bg-linear-to-b from-white to-gray-50">
             
 
             <HowItStarted/>
             <Departaments/>
 
             {/* Footer call to action */}
-            <section className="py-16 bg-gradient-to-r from-primary-3 to-primary-2">
+            <section className="py-16 bg-linear-to-r from-primary-3 to-primary-2">
                 <div className="max-w-4xl mx-auto text-center px-6">
                     <div className="flex justify-center mb-6">
                         <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">

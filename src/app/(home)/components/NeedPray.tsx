@@ -4,7 +4,7 @@ import { Heart } from "lucide-react"
 const NeedPray = () => {
   return (
     <section className="relative overflow-hidden">
-      <div className="bg-gradient-to-r from-secondary via-secondary to-secondary-2 md:h-[260px] p-8 flex flex-col justify-center items-center gap-6 relative">
+      <div className="bg-linear-to-r from-secondary via-secondary to-secondary-2 md:h-[260px] p-8 flex flex-col justify-center items-center gap-6 relative">
         {/* Subtle background decoration */}
         <div className="absolute inset-0 opacity-8">
           <div className="absolute top-6 right-6">

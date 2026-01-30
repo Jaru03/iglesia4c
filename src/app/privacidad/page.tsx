@@ -4,7 +4,7 @@ const page = () => {
   return (
     <section>
       <div className="bg-[url(../../public/privacidad.png)] h-screen bg-no-repeat bg-center bg-cover before:absolute before:inset-0 before:bg-black/50 before:content-[''] flex flex-col justify-center items-center">
-        <h2 className="text-white text-3xl md:text-3xl-desktop z-[5] text-center">
+        <h2 className="text-white text-3xl md:text-3xl-desktop z-5 text-center">
           Política de Privacidad
         </h2>
       </div>

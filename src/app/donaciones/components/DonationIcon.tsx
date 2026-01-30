@@ -66,7 +66,7 @@ const DonationIcon = ({ text, imgSrc, setter, payPath, className }: Props) => {
         >
             {/* Background gradient for selected state */}
             {isSelected && (
-                <div className="absolute inset-0 bg-gradient-to-br from-primary-3/10 to-primary-2/10"></div>
+                <div className="absolute inset-0 bg-linear-to-br from-primary-3/10 to-primary-2/10"></div>
             )}
 
             {/* Selection indicator */}

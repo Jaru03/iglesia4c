@@ -8,7 +8,7 @@ const HowItStarted = () => {
     <section>
       {/* Hero Section */}
       <div className="relative bg-[url(../../public/cdd-banner.jpg)] h-screen bg-no-repeat bg-center bg-cover flex flex-col justify-center items-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70"></div>
+        <div className="absolute inset-0 bg-linear-to-b from-black/60 via-black/50 to-black/70"></div>
 
         {/* Decorative elements */}
         <div className="absolute inset-0 opacity-20">
@@ -28,7 +28,7 @@ const HowItStarted = () => {
       </div>
 
       {/* Vision & Mission Section */}
-      <div className="py-20 px-6 bg-gradient-to-b from-white to-gray-50">
+      <div className="py-20 px-6 bg-linear-to-b from-white to-gray-50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-primary-3 text-4xl md:text-5xl font-bold mb-6">

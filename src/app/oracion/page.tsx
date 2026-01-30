@@ -5,7 +5,7 @@ const page = () => {
   return (
     <section>
       <div className="bg-[url(../../public/oracion-banner.jpg)] h-screen bg-no-repeat bg-center bg-cover before:absolute before:inset-0 before:bg-black/50 before:content-[''] flex flex-col justify-center items-center">
-        <h2 className="text-white text-3xl md:text-3xl-desktop z-[5] text-center">
+        <h2 className="text-white text-3xl md:text-3xl-desktop z-5 text-center">
           Oración
         </h2>
       </div>
@@ -16,7 +16,7 @@ const page = () => {
       </div>
 
       {/* Call to Action Section */}
-      <section className="py-16 bg-gradient-to-r from-primary-3 to-primary-2">
+      <section className="py-16 bg-linear-to-r from-primary-3 to-primary-2">
         <div className="max-w-4xl mx-auto text-center px-6">
           <div className="mb-6">
             <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
