@@ -9,7 +9,7 @@ const UpcomingActivities = () => {
     <section className=" bg-white">
       <div className="max-w-7xl mx-auto p-6">
         <div className="text-center mb-12">
-          <h2 className="text-xl xs:text-2xl md:text-2xl-desktop text-primary-3 text-center py-10">Próximas actividades</h2>
+          <h2 className="text-xl xs:text-2xl md:text-3xl font-bold text-primary-3 text-center py-10">Próximas actividades</h2>
 
           <p className="text-gray-600 text-base xs:text-lg max-w-2xl mx-auto">
             Únete a nosotros en estos próximos eventos y actividades especiales

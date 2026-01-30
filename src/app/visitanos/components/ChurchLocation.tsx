@@ -82,13 +82,13 @@ const ChurchLocation = ({ info }: Props) => {
         viewport={{ once: true }}
         className="flex flex-col justify-center w-full  sm:justify-between mx-auto"
       >
-        <h3 className="text-primary-3 text-xl md:text-xl-desktop text-center">
+        <h3 className="text-xl md:text-2xl font-semibold text-primary-3 text-center">
           {info?.title}
         </h3>
-        <p className="py-4 text-base md:text-base-desktop">
+        <p className="py-4 text-base text-muted-foreground">
           {info?.description}
         </p>
-        <ul className="text-base md:text-base-desktop flex flex-col gap-2">
+        <ul className="text-base text-muted-foreground flex flex-col gap-2">
           <li className="font-medium">
             <span className="text-primary-4 font-bold pr-4">Lugar:</span>{" "}
             {info?.place}

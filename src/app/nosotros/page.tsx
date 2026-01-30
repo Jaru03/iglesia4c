@@ -21,7 +21,7 @@ const page = () => {
                     <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
                         Únete a Nuestra Comunidad
                     </h2>
-                    <p className="text-white/90 text-lg mb-8 leading-relaxed">
+                    <p className="text-white/90 text-lg leading-7">
                         Descubre cómo puedes ser parte de esta hermosa familia que camina juntos
                         en fe, amor y servicio a nuestro Señor Jesucristo.
                     </p>

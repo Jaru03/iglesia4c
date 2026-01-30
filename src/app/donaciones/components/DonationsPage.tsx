@@ -5,6 +5,8 @@ import PayOnline from "@/app/donaciones/components/PayOnline"
 import PayPalInfo from "@/app/donaciones/components/PayPalInfo"
 import TransferInfo from "@/app/donaciones/components/TransferInfo"
 import { useState } from "react"
+import { HeroTitle } from "@/components/typography/HeroTitle"
+import { Title } from "@/components/typography/Title"
 
 
 const DonationsPage = () => {
@@ -20,14 +22,12 @@ const DonationsPage = () => {
 
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
           <div className="flex items-center justify-center gap-4 mb-6">
-           
-            <h1 className="text-white text-5xl md:text-6xl font-bold leading-tight">
-              Donaciones
-            </h1>
+            
+            <HeroTitle title="Donaciones" size="large" />
             
           </div>
 
-         
+          
 
           
         </div>
@@ -37,9 +37,7 @@ const DonationsPage = () => {
       <div className="py-16 px-6 bg-linear-to-b from-gray-50 to-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-primary-3 mb-4">
-              Formas de Donar
-            </h2>
+            <Title>Formas de Donar</Title>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
               Selecciona el método de pago que más te convenga. Todas las donaciones son seguras y confidenciales.
             </p>

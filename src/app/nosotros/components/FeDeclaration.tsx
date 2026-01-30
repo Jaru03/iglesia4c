@@ -22,16 +22,16 @@ const   FeDeclaration = () => {
        className='max-w-6xl mx-auto px-6'>
 
           <div className="text-center mb-12">
-            <h2 className="text-primary-3 text-4xl md:text-5xl font-bold mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-primary-3 mb-4 text-center">
               Declaración de Fe
             </h2>
-            <p className="text-gray-600 text-lg max-w-2xl mx-auto font-normal">
+            <p className="text-gray-600 text-lg leading-7 max-w-2xl mx-auto">
               Nuestros fundamentos doctrinales que guían nuestra fe y práctica cristiana
             </p>
           </div>
 
           <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 md:p-12">
-            <h3 className="text-2xl font-bold text-primary-3 mb-8 text-center">
+            <h3 className="text-2xl font-semibold text-primary-3 mb-8 text-center">
               Creemos y Confesamos
             </h3>
           <ul className="list-decimal list-inside columns-1 md:columns-2 gap-x-8 px-8 space-y-2">

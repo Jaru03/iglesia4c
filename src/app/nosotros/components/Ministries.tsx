@@ -5,7 +5,7 @@ const Ministries = () => {
     return (
         <section>
             <div>
-                <h3 className="text-xl md:text-xl-desktop text-primary-2 text-center">Ministerios</h3>
+                <h3 className="text-xl md:text-2xl font-semibold text-primary-2 text-center">Ministerios</h3>
                 <div className="grid sm:grid-cols-2 p-6 justify-items-center gap-4 max-w-7xl mx-auto">
                     {
                         info?.map((ministerio, index) => (

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const Navbar = () => {
   const navbar = [
@@ -39,7 +40,7 @@ const Navbar = () => {
     <header>
       <div>
         <nav className="z-10 absolute w-full transition-all scroll-bg md:h-24 md:flex md:justify-center mt-4">
-          <div className="hidden w-full md:absolute md:flex  items-center top-0 h-24 max-w-5xl">
+          <div className="hidden w-full md:absolute md:flex items-center top-0 h-24 max-w-5xl">
             <Link
               className={`filter invert brightness-0 hidden md:block hover:scale-105 transition-all duration-300 ease-in-out`}
               href={"/"}
@@ -58,7 +59,7 @@ const Navbar = () => {
                 const isDonation = item.name === "Donaciones";
                 
                 return (
-                    <li key={item.name} className="text-xs xs:text-sm md:text-base-desktop flex items-center justify-center">
+                    <li key={item.name} className="text-xs xs:text-sm md:text-lg flex items-center justify-center">
                     <Link
                         href={item.value}
                         target={item.target}
@@ -71,12 +72,15 @@ const Navbar = () => {
                             }
                         `}
                     >
-                        {item.name} {isDonation && "❤️"}
+                        {item.name}
                     </Link>
                     </li>
                 );
               })}
             </ul>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+            </div>
           </div>
 
          

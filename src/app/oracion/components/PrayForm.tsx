@@ -1,6 +1,5 @@
 "use client";
 
-import Button from "@/ui/Button";
 import Input from "@/ui/Input";
 import emailjs from "@emailjs/browser";
 import { FormEvent, useRef, useState } from "react";

@@ -26,7 +26,7 @@ const LastActivities = () => {
   return (
     <section>
       <div className='p-6 max-w-7xl mx-auto'>
-        <h2 className='text-primary-3 text-2xl md:text-2xl-desktop text-center py-10'>Últimas Actividades</h2>
+        <h2 className='text-2xl md:text-3xl font-bold text-primary-3 text-center py-10'>Últimas Actividades</h2>
 
 
         <Swiper

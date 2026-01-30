@@ -1,5 +1,6 @@
-import Button from "@/ui/Button"
-import { Heart } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { Heart, HandHeart } from "lucide-react"
 
 const NeedPray = () => {
   return (
@@ -27,12 +28,12 @@ const NeedPray = () => {
             Estamos aquí para ti. Comparte tu petición de oración y nuestra comunidad se unirá en fe por ti.
           </p>
 
-          <Button
-            url="/oracion"
-            text="Pedir una oración"
-            variant="primary"
-            className="px-8 py-3 text-base font-semibold shadow-lg hover:shadow-xl"
-          />
+          <Button asChild variant="default" size="default" className="shadow-lg hover:shadow-xl">
+            <Link href="/oracion">
+              <HandHeart className="w-4 h-4 mr-2" />
+              Pedir una oración
+            </Link>
+          </Button>
         </div>
       </div>
     </section>

@@ -3,7 +3,8 @@ import "./globals.css";
 import { Inter, Montserrat } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import HideInAdmin from "@/components/HideInAdmin"; 
+import HideInAdmin from "@/components/HideInAdmin";
+import { ThemeProvider } from "@/components/theme-provider";
 export const metadata: Metadata = {
   title: "Comunidad Cristiana Casa de Dios Madrid",
   description: "Comunidad Cristiana Casa de Dios Madrid",
@@ -17,23 +18,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <body
         className={inter.className}
       >
-        {/* 1. Protegemos el Navbar */}
-        <HideInAdmin>
-          <Navbar/>
-        </HideInAdmin>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+          {/* 1. Protegemos el Navbar */}
+          <HideInAdmin>
+            <Navbar/>
+          </HideInAdmin>
 
-        <main>
-          {children}
-        </main>
+          <main>
+            {children}
+          </main>
 
-        {/* 2. Protegemos el Footer */}
-        <HideInAdmin>
-          <Footer/>
-        </HideInAdmin>
+          {/* 2. Protegemos el Footer */}
+          <HideInAdmin>
+            <Footer/>
+          </HideInAdmin>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,4 +1,6 @@
-import Button from "@/ui/Button"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Calendar, Heart } from "lucide-react"
 
 const Hero = () => {
   return (
@@ -17,7 +19,7 @@ const Hero = () => {
           Bienvenidos a casa
         </span>
 
-        <h1 className="text-4xl xs:text-5xl md:text-7xl font-extrabold text-white tracking-tight leading-tight">
+        <h1 className="text-4xl xs:text-5xl md:text-7xl font-extrabold tracking-tight text-white leading-tight text-balance">
           Comunidad Cristiana <br />
           <span className="text-blue-200">Casa de Dios Madrid</span>
         </h1>
@@ -29,20 +31,20 @@ const Hero = () => {
         {/* BOTONES */}
         <div className="flex flex-col sm:flex-row gap-4 mt-8 w-full justify-center items-center">
             
-          <Button 
-            text="📅 Ver Horarios" 
-            variant="hero" 
-            url="/visitanos" 
-            className="shadow-lg shadow-blue-900/50 min-w-[200px]" 
-          />
+          <Button asChild variant="ghost" size="default" className="min-w-[200px] text-white border border-white/50 hover:bg-white/20 [&:hover]:text-white">
+            <Link href="/visitanos">
+              <Calendar className="w-4 h-4 mr-2" />
+              Ver Horarios
+            </Link>
+          </Button>
 
           {/* Botón 2: Donar (USANDO COMPONENTE, NO HARDCODE) */}
-          <Button 
-            text="❤️ Donar Online"
-            variant="primary" 
-            url="/donaciones"
-            className="min-w-[200px] border-2 border-white/20" 
-          />
+          <Button asChild variant="default" size="default" className="min-w-[200px]">
+            <Link href="/donaciones">
+              <Heart className="w-4 h-4 mr-2" />
+              Donar Online
+            </Link>
+          </Button>
 
         </div>
       </div>

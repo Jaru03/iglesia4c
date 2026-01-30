@@ -1,7 +1,9 @@
 "use client";
-import Button from "@/ui/Button";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "motion/react";
+import { ArrowRight } from "lucide-react";
 
 interface Props {
   title: string;
@@ -49,14 +51,12 @@ const Activity = ({
         alt="img"
         width={1000}
         height={1000}
-        className="w-full h-full md:aspect-video"
+        className="w-full h-full md:aspect-video rounded-xl shadow-lg"
         suppressHydrationWarning
       />
 
       <div
-        className={`flex flex-col gap-4 md:gap-0 ${
-          showButton ? "md:justify-between" : "md:justify-evenly"
-        }  h-full`}
+        className={`flex flex-col gap-4 md:gap-0 ${showButton ? "md:justify-between" : "md:justify-evenly"}  h-full`}
       >
         <h3 className="text-xl xs:text-2xl font-bold text-center text-primary-3 mb-4">
           {title}
@@ -80,7 +80,12 @@ const Activity = ({
         </ul>
 
         {showButton === true && (
-          <Button url="/actividades" text="Más actividades" variant="primary" />
+          <Button asChild variant="default" size="default">
+            <Link href="/actividades">
+              Más actividades
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Link>
+          </Button>
         )}
       </div>
     </motion.article>
