@@ -1,11 +1,7 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-// import prisma from "@/utils/prisma";
-//Esta es la importación que funciona correctamente. seguramente tiendes que hacer pnpx prisma generate para que genere el prismaClient y funcione correctamente esta línea.
-
-// tienes que descomentar esto de prisma y usarlo.
-// prisma 
+import prisma from "@/utils/prisma"; 
 
 const handler = NextAuth({
   providers: [
@@ -22,6 +18,7 @@ const handler = NextAuth({
         }
 
         // 2. Buscar el usuario en la Base de Datos
+        // Ahora sí funcionará porque importamos 'prisma' arriba
         const user = await prisma.user.findUnique({
           where: { email: credentials.email }
         });
@@ -39,7 +36,7 @@ const handler = NextAuth({
           id: user.id.toString(),
           name: user.nombre,
           email: user.email,
-          role: user.role,
+          role: user.role, // Asegúrate de que tu modelo User tiene este campo 'role'
         };
       }
     })
