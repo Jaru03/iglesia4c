@@ -113,6 +113,7 @@ interface Area {
 interface Activities {
   id: number
   title: string
+  
   description?: string
   img?: string
   place: string
@@ -245,6 +246,8 @@ pnpm run start
 
 ## 🤝 Contribuir
 
+
+
 1. Fork del proyecto
 2. Crear feature branch (`git checkout -b feature/NuevaFuncionalidad`)
 3. Commit de cambios (`git commit -m 'Añadir nueva funcionalidad'`)
@@ -253,8 +256,9 @@ pnpm run start
 
 ## 📝 Convenciones de Código
 
-- **TypeScript**: Usar tipado estricto
-- **Componentes**: Nombres en PascalCase
+
+- **TypeScript**: Usar tipado estricto  
+- **Componentes**: Nombres en PascalCase  
 - **Archivos**: Nombres descriptivos en español
 - **Estilos**: Utilidades Tailwind sobre CSS custom
 - **Responsive**: Mobile-first approach
@@ -271,4 +275,4 @@ Este proyecto es propiedad de la Comunidad Cristiana Casa de Dios Madrid.
 
 ---
 
-**Desarrollado con ❤️ para la comunidad cristiana**
+**Desarrollado con ❤️ para la comunidad cristiana**   
