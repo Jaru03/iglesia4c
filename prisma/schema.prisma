@@ -2,7 +2,7 @@
 
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = ["native", "windows"]
+  binaryTargets = ["native", "windows"] 
 }
 
 datasource db {
@@ -11,15 +11,15 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// --- TUS MODELOS (No han cambiado) ---
+// --- TUS MODELOS DE LA IGLESIA ---
 
 model Area {
   id          Int     @id @default(autoincrement())
   title       String
   description String?
   img         String?
-  value       String  @unique
-  rol         String
+  value       String  @unique 
+  rol         String  
 }
 
 model Activities {
@@ -46,29 +46,36 @@ model LastActivities {
   img   String?
 }
 
+// --- GESTIÓN DE USUARIOS Y JÓVENES ---
+
 model User {
   id       Int     @id @default(autoincrement())
   email    String  @unique
   password String
   nombre   String
-  role     String  @default("LIDER")
+  
+  // El Admin debe ascenderlos manualmente.
+  role     String  @default("MIEMBRO") 
+  
   sede     String?
 }
 
 model Joven {
-  id           Int          @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   nombres      String
   apellidos    String
-  documento    String       @unique
+  documento    String   @unique
   sede         String
-  ultimaVisita DateTime     @default(now())
-  activo       Boolean      @default(true)
+  ultimaVisita DateTime @default(now())
+  activo       Boolean  @default(true)
+  
   asistencias  Asistencia[]
 }
 
 model Asistencia {
   id      Int      @id @default(autoincrement())
   fecha   DateTime @default(now())
+  
   jovenId Int
   joven   Joven    @relation(fields: [jovenId], references: [id])
 }
