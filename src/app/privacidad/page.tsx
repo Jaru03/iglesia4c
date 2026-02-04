@@ -3,14 +3,14 @@ import React from "react";
 const page = () => {
   return (
     <section>
-      <div className="bg-[url(../../public/privacidad.png)] h-screen bg-no-repeat bg-center bg-cover before:absolute before:inset-0 before:bg-black/50 before:content-[''] flex flex-col justify-center items-center">
-        <h2 className="text-white text-3xl md:text-3xl-desktop z-[5] text-center">
+      <div className="bg-[url(../../public/privacidad.png)] h-[100vh] bg-no-repeat bg-center bg-cover before:absolute before:inset-0 before:bg-black/50 before:content-[''] flex flex-col justify-center items-center">
+        <h2 className="text-3xl md:text-4xl font-bold text-white z-10 text-center">
           Política de Privacidad
         </h2>
       </div>
 
       <div className="p-6 max-w-7xl mx-auto">
-        <h3 className="text-primary-2 text-xl text-center md:text-xl-desktop pb-4">
+        <h3 className="text-xl md:text-2xl font-semibold text-primary-2 text-center pb-4">
           Política de Privacidad
         </h3>
         <p>

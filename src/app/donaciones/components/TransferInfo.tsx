@@ -30,7 +30,7 @@ const TransferInfo = () => {
   return (
     <div className="w-full max-w-lg mx-auto bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 to-green-700 p-6 text-white text-center">
+      <div className="bg-linear-to-r from-green-600 to-green-700 p-6 text-white text-center">
         <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
           <Building2 className="w-8 h-8" />
         </div>

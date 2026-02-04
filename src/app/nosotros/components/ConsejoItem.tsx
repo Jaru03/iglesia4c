@@ -1,24 +1,33 @@
-import Image from "next/image";
+import Image from "next/image"
 
 interface Props {
-  item: ConsejoType
-  
+  item: {
+    src: string;
+    title: string;
+    name: string;
+  }
 }
 
-interface ConsejoType{
-  src: string;
-  title: string;
-  name: string;
-}
-
-const ConsejoItem = ({item}:Props) => {
+const ConsejoItem = ({ item }: Props) => {
   return (
-    <article className="flex flex-col items-center py-4">
-      <Image src={item?.src} alt={item?.title} width={900} height={900} className=" object-contain consejo__image grayscale hover:grayscale-0 hover:scale-105 transition-all mb-4 " suppressHydrationWarning></Image>
-      <h3 className="text-base-desktop font-medium">{item?.title}</h3>
-      <p className="text-base">{item?.name}</p>
+    <article className="flex flex-col items-center text-center">
+      <div className="relative w-32 h-32 md:w-40 md:h-40 mb-4">
+        <Image
+          src={item.src}
+          alt={item.title}
+          fill
+          className="object-cover rounded-full border-4 border-gray-100 grayscale hover:grayscale-0 transition-all duration-300"
+          suppressHydrationWarning
+        />
+      </div>
+      <h3 className="text-sm font-semibold text-primary-3 uppercase tracking-wide">
+        {item.title}
+      </h3>
+      <p className="text-gray-700 text-sm mt-1">
+        {item.name}
+      </p>
     </article>
   );
-};
+}
 
 export default ConsejoItem;
