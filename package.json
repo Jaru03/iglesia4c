@@ -2,6 +2,7 @@
   "name": "iglesia4c",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -75,6 +76,7 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "baseline-browser-mapping": "^2.9.11",
+    "dotenv": "^17.2.3",
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
     "prisma": "^7.3.0",

@@ -39,7 +39,7 @@ export default function LoginPage() {
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-slate-800">Acceso Admin</h1>
-          <p className="text-slate-500 text-sm mt-1">Iglesia 4C</p>
+          <p className="text-slate-500 text-sm mt-1">Iglesia Casa de Dios</p>
         </div>
         
         {error && (
