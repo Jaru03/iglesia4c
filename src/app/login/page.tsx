@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -66,14 +67,15 @@ export default function LoginPage() {
               value={password} onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <button 
+          <Button
+            type="submit"
             disabled={loading}
-            className={`w-full py-3 rounded-xl font-bold text-white transition-all ${
-              loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/30'
-            }`}
+            variant="default"
+            size="lg"
+            className="w-full"
           >
             {loading ? 'Entrando...' : 'Iniciar Sesión'}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

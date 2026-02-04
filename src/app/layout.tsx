@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import HideInAdmin from "@/components/HideInAdmin";
 import { ThemeProvider } from "@/components/theme-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 export const metadata: Metadata = {
   title: "Comunidad Cristiana Casa de Dios Madrid",
   description: "Comunidad Cristiana Casa de Dios Madrid",
@@ -23,19 +24,22 @@ export default function RootLayout({
         className={inter.className}
       >
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          {/* 1. Protegemos el Navbar */}
-          <HideInAdmin>
-            <Navbar/>
-          </HideInAdmin>
+          <TooltipProvider delayDuration={300}>
+            <a href="#main-content" className="skip-link">
+              Saltar al contenido principal
+            </a>
+            <HideInAdmin>
+              <Navbar/>
+            </HideInAdmin>
 
-          <main>
-            {children}
-          </main>
+            <main id="main-content" tabIndex={-1}>
+              {children}
+            </main>
 
-          {/* 2. Protegemos el Footer */}
-          <HideInAdmin>
-            <Footer/>
-          </HideInAdmin>
+            <HideInAdmin>
+              <Footer/>
+            </HideInAdmin>
+          </TooltipProvider>
         </ThemeProvider>
       </body>
     </html>

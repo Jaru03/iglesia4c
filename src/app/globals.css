@@ -172,9 +172,252 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+  }
+
+  *:focus-visible {
+    @apply outline-none ring-2 ring-offset-2 ring-primary-3;
+  }
+
+  .dark *:focus-visible {
+    @apply ring-offset-gray-900;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .heading-1 {
+    @apply text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-primary-3;
+  }
+
+  .heading-2 {
+    @apply text-3xl md:text-4xl font-bold tracking-tight text-primary-3;
+  }
+
+  .heading-3 {
+    @apply text-2xl md:text-3xl font-semibold tracking-tight text-primary-3;
+  }
+
+  .heading-4 {
+    @apply text-xl md:text-2xl font-semibold text-primary-3;
+  }
+
+  .text-body {
+    @apply text-base md:text-lg leading-relaxed text-gray-600 dark:text-gray-300;
+  }
+
+  .text-body-sm {
+    @apply text-sm md:text-base leading-relaxed text-gray-600 dark:text-gray-400;
+  }
+
+  .section {
+    @apply px-4 md:px-8 py-12 md:py-16;
+  }
+
+  .section-lg {
+    @apply px-4 md:px-12 py-16 md:py-24;
+  }
+
+  .section-sm {
+    @apply px-4 md:px-6 py-8 md:py-10;
+  }
+
+  .container-page {
+    @apply max-w-7xl mx-auto w-full px-4 md:px-8;
+  }
+
+  .container-narrow {
+    @apply max-w-4xl mx-auto w-full px-4 md:px-8;
+  }
+
+  .card-shadow {
+    @apply shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl;
+  }
+
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary-3 focus:text-white focus:rounded-lg;
+  }
+}
+
+/* Schedule-X → shadcn variable bridge
+   Especificidad (0,2,0) para ganar al :root del paquete theme-default.
+   next-themes siempre agrega .light o .dark a <html>, así que siempre matchea.
+   Las variables de shadcn cambian automáticamente en contexto .dark,
+   así que el dark mode del calendario funciona sin necesidad de .is-dark. */
+:root.light,
+:root.dark {
+  --sx-color-primary: var(--primary-3);
+  --sx-color-on-primary: var(--primary-foreground);
+  --sx-color-primary-container: var(--primary-3);
+  --sx-color-on-primary-container: var(--primary-foreground);
+  --sx-color-secondary: var(--secondary);
+  --sx-color-on-secondary: var(--secondary-foreground);
+  --sx-color-secondary-container: var(--muted);
+  --sx-color-on-secondary-container: var(--foreground);
+  --sx-color-surface: var(--background);
+  --sx-color-surface-dim: var(--muted);
+  --sx-color-surface-bright: var(--card);
+  --sx-color-on-surface: var(--foreground);
+  --sx-color-surface-container: var(--secondary);
+  --sx-color-surface-container-low: var(--muted);
+  --sx-color-surface-container-high: var(--accent);
+  --sx-color-background: var(--background);
+  --sx-color-on-background: var(--foreground);
+  --sx-color-outline: var(--border);
+  --sx-color-outline-variant: var(--border);
+  --sx-color-surface-tint: var(--primary-3);
+  --sx-color-neutral: var(--muted-foreground);
+  --sx-color-neutral-variant: var(--border);
+  --sx-internal-color-text: var(--foreground);
+  --sx-internal-color-light-gray: var(--muted);
+  --sx-internal-color-gray-ripple-background: var(--border);
+  --sx-rounding-extra-small: var(--radius-sm);
+  --sx-rounding-small: var(--radius-xl);
+  --sx-rounding-extra-large: var(--radius-3xl);
+}
+
+/* Schedule-X Calendar Layout */
+.sx-react-calendar-wrapper {
+  width: 100%;
+  min-width: 280px;
+  height: 700px;
+}
+
+.sx__calendar {
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+.sx__range-heading {
+  text-transform: capitalize;
+}
+
+.sx-theme-default .sx__calendar {
+  font-family: inherit;
+}
+
+.sx-theme-default .sx__calendar-controls {
+  display: none !important;
+}
+
+.sx-theme-default .sx__calendar-controls-button {
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.sx-theme-default .sx__calendar-controls-date-picker {
+  font-weight: 700;
+  font-size: 14px;
+  padding: 4px 8px;
+  text-transform: capitalize;
+}
+
+.sx-theme-default .sx__view-select {
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sx-theme-default .sx__month-grid {
+  overflow: hidden;
+  min-width: 100%;
+}
+
+.sx-theme-default .sx__month-grid-weekday {
+  font-weight: 700;
+  font-size: 11px;
+  padding: 8px 4px;
+  text-transform: uppercase;
+}
+
+.sx-theme-default .sx__month-grid-day {
+  min-height: 80px;
+  padding: 4px;
+}
+
+.sx-theme-default .sx__month-grid-day-number {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+
+.sx-theme-default .sx__event-card {
+  border-left: 3px solid var(--primary-3);
+  background-color: var(--primary-3);
+  color: var(--primary-foreground);
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sx-theme-default .sx__event-card-title {
+  font-weight: 600;
+}
+
+.sx-theme-default .sx__week-grid {
+  min-height: 400px;
+}
+
+.sx-theme-default .sx__time-grid-hour-label {
+  font-weight: 500;
+  font-size: 11px;
+  padding: 4px;
+}
+.sx__calendar-header{
+  display: none !important;
+}
+
+.sx-theme-default .sx__day-column-header {
+  font-weight: 600;
+  font-size: 12px;
+  padding: 8px 4px;
+}
+
+@media (max-width: 640px) {
+  .sx-theme-default .sx__month-grid-day {
+    min-height: 60px;
+    padding: 2px;
+  }
+
+  .sx-theme-default .sx__month-grid-day-number {
+    font-size: 12px;
+  }
+
+  .sx-theme-default .sx__event-card {
+    font-size: 10px;
+    padding: 1px 4px;
+  }
+
+  .sx-theme-default .sx__week-grid {
+    min-height: 300px;
+  }
+
+  .sx-theme-default .sx__time-grid-hour-label {
+    font-size: 10px;
   }
 }

@@ -4,7 +4,7 @@ import { Calendar, Heart } from "lucide-react"
 
 const Hero = () => {
   return (
-    <section className="relative h-screen w-full flex items-center justify-center overflow-hidden bg-[#060735]">
+    <section className="relative h-[100vh] w-full flex items-center justify-center overflow-hidden bg-[#060735]">
       
       {/*(Mejora con div separado para efectos) */}
       <div className="absolute inset-0 z-0">
@@ -30,19 +30,18 @@ const Hero = () => {
 
         {/* BOTONES */}
         <div className="flex flex-col sm:flex-row gap-4 mt-8 w-full justify-center items-center">
-            
-          <Button asChild variant="ghost" size="default" className="min-w-[200px] text-white border border-white/50 hover:bg-white/20 [&:hover]:text-white">
-            <Link href="/visitanos">
-              <Calendar className="w-4 h-4 mr-2" />
-              Ver Horarios
-            </Link>
-          </Button>
 
-          {/* Botón 2: Donar (USANDO COMPONENTE, NO HARDCODE) */}
-          <Button asChild variant="default" size="default" className="min-w-[200px]">
+          <Button asChild variant="cta" size="lg" className="min-w-[200px]">
             <Link href="/donaciones">
               <Heart className="w-4 h-4 mr-2" />
               Donar Online
+            </Link>
+          </Button>
+
+          <Button asChild variant="hero-outline" size="lg" className="min-w-[200px]">
+            <Link href="/visitanos">
+              <Calendar className="w-4 h-4 mr-2" />
+              Ver Horarios
             </Link>
           </Button>
 

@@ -3,7 +3,7 @@ import React from "react";
 const page = () => {
   return (
     <section>
-      <div className="bg-[url(../../public/privacidad.png)] h-screen bg-no-repeat bg-center bg-cover before:absolute before:inset-0 before:bg-black/50 before:content-[''] flex flex-col justify-center items-center">
+      <div className="bg-[url(../../public/privacidad.png)] h-[100vh] bg-no-repeat bg-center bg-cover before:absolute before:inset-0 before:bg-black/50 before:content-[''] flex flex-col justify-center items-center">
         <h2 className="text-3xl md:text-4xl font-bold text-white z-10 text-center">
           Política de Privacidad
         </h2>

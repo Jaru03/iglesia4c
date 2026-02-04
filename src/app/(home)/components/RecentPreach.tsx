@@ -5,6 +5,7 @@ import Link from "next/link"
 import {motion} from "motion/react"
 import { useEffect, useState } from "react"
 import { Play, Youtube } from "lucide-react"
+import { Subtitle } from "@/components/typography/Subtitle"
 
 interface YouTubeVideo {
   id: { videoId: string }
@@ -25,6 +26,7 @@ const RecentPreach = () => {
 
     useEffect(() => {
         setMounted(true)
+        /*
         const fetchLatestPreach = async () => {
             try {
                 const response = await fetch("/api/latest-preach")
@@ -37,6 +39,7 @@ const RecentPreach = () => {
             }
         }
         fetchLatestPreach()
+        */
     }, [])
 
     const defaultPreach = {
@@ -66,7 +69,7 @@ const RecentPreach = () => {
         return (
             <section className="bg-secondary">
                 <div className="max-w-7xl mx-auto p-4 md:p-8">
-                    <h2 className="text-2xl md:text-3xl font-bold text-primary-3 text-center py-10">Prédicas más recientes</h2>
+                    <Subtitle className="text-center py-10">Prédicas más recientes</Subtitle>
                     <div className="grid md:grid-cols-2 gap-8">
                         <div className="w-full h-full bg-gray-200 animate-pulse" />
                         <div className="h-full flex flex-col justify-evenly">
@@ -87,7 +90,7 @@ const RecentPreach = () => {
     return (
         <section className="bg-secondary" suppressHydrationWarning>
             <div className="max-w-7xl mx-auto p-4 md:p-8">
-                <h2 className="text-2xl md:text-3xl font-bold text-primary-3 text-center py-10">Prédicas más recientes</h2>
+                <Subtitle className="text-center py-10">Prédicas más recientes</Subtitle>
                 <motion.article
                     initial={{
                         opacity: 0,

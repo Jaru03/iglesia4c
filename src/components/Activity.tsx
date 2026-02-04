@@ -58,7 +58,7 @@ const Activity = ({
       <div
         className={`flex flex-col gap-4 md:gap-0 ${showButton ? "md:justify-between" : "md:justify-evenly"}  h-full`}
       >
-        <h3 className="text-xl xs:text-2xl font-bold text-center text-primary-3 mb-4">
+        <h3 className="text-xl md:text-2xl font-bold text-primary-3 text-center">
           {title}
         </h3>
         <p className="text-gray-700 text-base xs:text-lg leading-relaxed mb-6">{description}</p>

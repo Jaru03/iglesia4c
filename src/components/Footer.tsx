@@ -86,7 +86,7 @@ const Footer = () => {
               />
             </Link>
 
-            <p className="text-white/90 text-lg leading-relaxed mb-6 max-w-md">
+            <p className="text-white text-lg leading-relaxed mb-6 max-w-md">
               Una comunidad cristiana dedicada a compartir el amor de Cristo,
               fortalecer la fe y servir a nuestra ciudad con compasión y esperanza.
             </p>
@@ -106,12 +106,13 @@ const Footer = () => {
           {/* Quick Links */}
           <div>
             <h3 className="text-white text-xl font-bold mb-6">Enlaces Rápidos</h3>
-            <ul className="space-y-3">
+            <ul className="space-y-3" role="list" aria-label="Enlaces rápidos">
               {quickLinks.map((link) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-white/80 hover:text-white transition-colors duration-200 flex items-center gap-2 group"
+                    aria-label={`Ir a ${link.name}`}
+                    className="text-white hover:text-white transition-colors duration-200 flex items-center gap-2 group"
                   >
                     <div className="w-1.5 h-1.5 bg-white/40 rounded-full group-hover:bg-white transition-colors"></div>
                     {link.name}
@@ -129,7 +130,8 @@ const Footer = () => {
             <div className="space-y-4 mb-6">
               <a
                 href="mailto:secretaria@casadedios.es"
-                className="flex items-center gap-3 text-white/80 hover:text-white transition-colors group"
+                aria-label="Enviar email a secretaria@casadedios.es"
+                className="flex items-center gap-3 text-white hover:text-white transition-colors group"
               >
                 <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center group-hover:bg-white/20 transition-colors">
                   <Mail className="w-5 h-5" />
@@ -142,7 +144,8 @@ const Footer = () => {
 
               <a
                 href="tel:+34637650111"
-                className="flex items-center gap-3 text-white/80 hover:text-white transition-colors group"
+                aria-label="Llamar al +34 637-650111"
+                className="flex items-center gap-3 text-white hover:text-white transition-colors group"
               >
                 <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center group-hover:bg-white/20 transition-colors">
                   <Phone className="w-5 h-5" />
@@ -161,15 +164,16 @@ const Footer = () => {
                 {footerContact
                   .filter((item) => ["TikTok", "Instagram", "YouTube"].includes(item.value))
                   .map((item) => (
-                    <a
+                <a
                       key={item.name}
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
+                      aria-label={`Síguenos en ${item.name}`}
                       className="w-12 h-12 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-110 group"
                     >
                       <Image
-                        alt={item.name}
+                        alt={`Icono de ${item.name}`}
                         src={item.icon}
                         width={24}
                         height={24}

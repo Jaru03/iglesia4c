@@ -2,7 +2,6 @@
 import { churches } from "../../mocks/churchues";
 import { InfoChurch } from "@/types/InfoChurch";
 import dynamic from "next/dynamic";
-import { Users, MessageCircle, Info } from "lucide-react";
 import { CallToAction } from "@/components/CallToAction";
 import { HeroTitle } from "@/components/typography/HeroTitle";
 import { Subtitle } from "@/components/typography/Subtitle";
@@ -18,12 +17,18 @@ const ChurchLocation = dynamic(
 const page = () => {
   return (
     <section>
-      <div className="bg-[url(../../public/visitanos-banner.jpg)] h-screen bg-no-repeat bg-center bg-cover before:absolute before:inset-0 before:bg-black/50 before:content-[''] flex flex-col justify-center items-center">
+      <div className="bg-[url(../../public/visitanos-banner.jpg)] h-[100vh] bg-no-repeat bg-center bg-cover before:absolute before:inset-0 before:bg-black/50 before:content-[''] flex flex-col justify-center items-center">
         
             <HeroTitle title="Visitanos" size="large" />
       </div>
-      <div className="p-6 overflow-hidden">
-        <Subtitle>Ubicaciones</Subtitle>
+      <div className="section container-page">
+        <div className="text-center mb-12 max-w-2xl mx-auto">
+          <Subtitle className="mb-4">Ubicaciones</Subtitle>
+          <p className="text-body">
+            Encuentra la sede más cercana a ti y únete a nuestros cultos y actividades.
+            Cada ubicación es una familia lista para recibirte con amor.
+          </p>
+        </div>
         <div className="flex flex-col gap-y-10">
           {churches?.map((church) => (
             <ChurchLocation info={church as InfoChurch} key={church.index} />
@@ -34,20 +39,20 @@ const page = () => {
       <CallToAction
         title="Te Esperamos con los Brazos Abiertos"
         description="Nuestra iglesia es un hogar espiritual para todos. Ya seas nuevo en la fe o busques una comunidad donde crecer, aquí encontrarás amor, aceptación y oportunidades para servir y ser servido."
-        icon={Users}
+        icon="users"
         iconLabel="Comunidad"
         buttons={[
           {
             label: "Conocenos más",
             href: "/nosotros",
             variant: "primary",
-            icon: Info,
+            icon: "info",
           },
           {
             label: "Envía tu Petición",
             href: "/oracion",
             variant: "secondary",
-            icon: MessageCircle,
+            icon: "message-circle",
           },
         ]}
         quote={{
