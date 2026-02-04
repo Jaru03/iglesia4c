@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import animate from "tailwindcss-animate"
 
 export default {
   content: [
@@ -16,34 +17,6 @@ export default {
       boxShadow: {
         'form': '0px 20px 20px #00000025'
       },
-      fontSize: {
-        base: '14px',
-        'button': ['20px', {
-          fontWeight: 'semi-bold',
-        }],
-        xl: ['25px', {
-          fontWeight: 'bold',
-        }],
-        '2xl': ['30px', {
-          fontWeight: 'bold',
-        }],
-        '3xl': ['40px', {
-          fontWeight: 'bold',
-        }],
-        'base-desktop': '16px',
-        'button-desktop': ['24px', {
-          fontWeight: 'semi-bold',
-        }],
-        'xl-desktop': ['30px', {
-          fontWeight: 'bold',
-        }],
-        '2xl-desktop': ['40px', {
-          fontWeight: 'bold',
-        }],
-        '3xl-desktop': ['55px', {
-          fontWeight: 'bold',
-        }],
-      },      
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
@@ -59,5 +32,5 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [animate],
 } satisfies Config;

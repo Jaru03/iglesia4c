@@ -1,11 +1,12 @@
 'use client'
 
 import Image from 'next/image'
-import { Swiper, SwiperSlide } from 'swiper/react'
-
-import 'swiper/css';
-import 'swiper/css/pagination';
-import { Navigation, Pagination } from 'swiper/modules'
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel'
+import { type CarouselApi } from '@/components/ui/carousel'
+import { CallToAction } from '@/components/CallToAction'
+import { Subtitle } from '@/components/typography/Subtitle'
+import { useEffect, useState } from 'react'
+import Autoplay from 'embla-carousel-autoplay'
 
 interface Slider {
   key: number
@@ -23,54 +24,90 @@ const LastActivities = () => {
     { key: 5, title: "Santa Cena", image: "/cultoSantaCena-2.jpg" },
   ]
 
+  const [api, setApi] = useState<CarouselApi>()
+  const [current, setCurrent] = useState(0)
+  const [count, setCount] = useState(0)
+
+  useEffect(() => {
+    if (!api) {
+      return
+    }
+
+    setCount(api.scrollSnapList().length)
+    setCurrent(api.selectedScrollSnap() + 1)
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap() + 1)
+    })
+  }, [api])
+
   return (
     <section>
-      <div className='p-6 max-w-7xl mx-auto'>
-        <h2 className='text-primary-3 text-2xl md:text-2xl-desktop text-center py-10'>Últimas Actividades</h2>
+      <div className='p-6 md:p-16 max-w-7xl mx-auto'>
+        <Subtitle className="text-center py-10">Últimas Actividades</Subtitle>
 
+        <div className="relative">
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+            className="w-full"
+            plugins={[
+              Autoplay({
+                delay: 4000,
+              }),
+            ]}
+            setApi={setApi}
+          >
+            <CarouselContent>
+              {slider.map((item) => (
+                <CarouselItem key={item.key} className="md:basis-1/2 lg:basis-1/3">
+                  <div className="relative overflow-hidden rounded-xl shadow-lg aspect-[16/9] group">
+                    <Image
+                      width={1000}
+                      height={1000}
+                      src={item.image}
+                      alt={item.title}
+                      className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                      suppressHydrationWarning
+                    />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden md:flex" />
+            <CarouselNext className="hidden md:flex" />
+          </Carousel>
 
-        <Swiper
-          navigation={true}
-          pagination={true}
-          modules={[Pagination, Navigation]}
-          slidesPerView={1}
-          breakpoints={{
-            640: {
-              slidesPerView: 1,
-            },
-            768: {
-              slidesPerView: 2,
-            },
-          }}
-          spaceBetween={20}
-        >
-
-          {slider.map((slider) => (
-
-            <SwiperSlide key={slider.key} className="flex justify-center px-4 pb-14">
-              <div className="bg-white p-6 shadow-xl transform rotate-1 hover:rotate-0 transition-transform duration-300">
-                <div className="bg-gray-100 p-3 rounded-lg">
-                  <Image
-                    width={1000}
-                    height={1000}
-                    src={slider.image}
-                    alt={slider.title}
-                    className='w-full h-full max-h-80 rounded-md'
-                    suppressHydrationWarning
-                  />
-                </div>
-                <div className="mt-3 text-center">
-                  <h3 className="text-xl xs:text-lg md:text-2xl text-gray-800 font-semibold">
-                    {slider.title}
-                  </h3>
-                </div>
-              </div>
-            </SwiperSlide>
-          ))
-          }
-        </Swiper>
+          <div className="flex justify-center mt-4 gap-2">
+            {Array.from({ length: count }).map((_, index) => (
+              <button
+                key={index}
+                onClick={() => api?.scrollTo(index)}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  current === index + 1
+                    ? "bg-primary-3 w-6"
+                    : "bg-gray-300 hover:bg-gray-400"
+                }`}
+                aria-label={`Ir a slide ${index + 1}`}
+              />
+            ))}
+          </div>
+        </div>
       </div>
+      <CallToAction
+        title="¿Necesitas una oración?"
+        description="Estamos aquí para ti. Comparte tu petición de oración y nuestra comunidad se unirá en fe por ti."
+        icon="hand-heart"
+        iconLabel="Oración"
+        buttons={[
+          { label: 'Pedir una oración', href: '/oracion', variant: 'primary', icon: 'message-circle' },
+          { label: 'Visítanos', href: '/visitanos', variant: 'secondary', icon: 'map-pin' }
+        ]}
+      />
     </section>
+
   )
 }
 

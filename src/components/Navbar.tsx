@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const Navbar = () => {
   const navbar = [
@@ -29,20 +30,27 @@ const Navbar = () => {
 
   const currentRoute = usePathname();
 
+  const isActive = (value: string, name: string) => {
+    if (value.startsWith('http')) return false;
+    const normalizedValue = value.replace(/\/$/, '');
+    const normalizedRoute = currentRoute.replace(/\/$/, '');
+    if (name === 'Inicio') return normalizedRoute === '/' || normalizedRoute === '';
+    return normalizedRoute === normalizedValue;
+  };
+
   useEffect(() => {
     handleClose();
   }, [currentRoute]);
 
-  console.log(currentRoute)
-
   return (
     <header>
       <div>
-        <nav className="z-10 absolute w-full transition-all scroll-bg md:h-24 md:flex md:justify-center mt-4">
-          <div className="hidden w-full md:absolute md:flex  items-center top-0 h-24 max-w-5xl">
+        <nav className="z-50 absolute w-full transition-all scroll-bg md:h-24 md:flex md:justify-center mt-4">
+          <div className="hidden w-full md:absolute md:flex items-center top-0 h-24 max-w-5xl">
             <Link
               className={`filter invert brightness-0 hidden md:block hover:scale-105 transition-all duration-300 ease-in-out`}
               href={"/"}
+              aria-label="Ir al inicio"
             >
               <Image
                 src={"/logoCCCD.jpg"}
@@ -52,34 +60,40 @@ const Navbar = () => {
                 height={100}
               />
             </Link>
-            <ul className="hidden xs:grid xs:grid-cols-2 xs:gap-2 md:grid md:grid-cols-7 justify-center justify-items-center w-full">
+            <ul className="hidden xs:grid xs:grid-cols-2 xs:gap-2 md:grid md:grid-cols-7 justify-center justify-items-center w-full" role="navigation" aria-label="Navegación principal">
               {navbar.map((item) => {
                 
                 const isDonation = item.name === "Donaciones";
+                const active = isActive(item.value, item.name);
                 
                 return (
-                    <li key={item.name} className="text-xs xs:text-sm md:text-base-desktop flex items-center justify-center">
+                    <li key={item.name} className="text-xs xs:text-sm md:text-lg flex items-center justify-center">
                     <Link
                         href={item.value}
                         target={item.target}
+                        aria-label={item.target === "_blank" ? `${item.name} (se abre en nueva pestaña)` : `Ir a ${item.name}`}
                         className={`transition-all duration-200 ease-in-out flex items-center justify-center
                             ${isDonation 
                                 /* ESTILO VIP para Donaciones*/
                                 ? "bg-white text-[#060735] font-bold px-3 py-1.5 rounded-full shadow-md hover:scale-105"
                                 /* ESTILO NORMAL mejorado*/
-                                : `text-white px-3 py-1.5 rounded-full hover:bg-white/10 hover:scale-105 ${currentRoute ===  item.value ? "font-bold bg-white/20" : ""}`
+                                : `text-white px-3 py-1.5 rounded-full hover:bg-white/10 hover:scale-105 ${active ? "font-bold bg-white/20" : ""}`
                             }
                         `}
+                        suppressHydrationWarning
                     >
-                        {item.name} {isDonation && "❤️"}
+                        {item.name}
                     </Link>
                     </li>
                 );
               })}
             </ul>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+            </div>
           </div>
-
-         
+ 
+          
           <div className="relative overflow-hidden md:hidden">
             <Image
               alt=""
@@ -87,6 +101,7 @@ const Navbar = () => {
               width={90}
               height={70}
               className={`${currentRoute === "/" ? "hidden" : ""} pt-2 mx-auto filter invert brightness-110 w-[70px] xs:w-[90px] h-[55px] xs:h-[70px]`}
+              suppressHydrationWarning
             />
             <Image
               onClick={handleOpen}
@@ -97,14 +112,20 @@ const Navbar = () => {
               src={"/menu-icon.svg"}
               width={25}
               height={25}
+              aria-label="Abrir menú de navegación"
+              role="button"
+              tabIndex={0}
+              suppressHydrationWarning
             />
             <ul
-              className={`flex flex-col items-center justify-center shadow-form fixed pt-1 pb-10 w-full gap-8 right-0 top-0 bg-primary rounded-b-xl transition-transform duration-300 ease-out 
+              className={`flex flex-col items-center justify-center shadow-form fixed pt-1 pb-10 w-full gap-8 right-0 top-0 bg-primary rounded-b-xl transition-transform duration-300 ease-out z-50 
                             ${
                               !buttonOpen
                                 ? "transform -translate-y-full opacity-0"
                                 : "transform translate-y-0 opacity-100"
                             }`}
+              role="navigation"
+              aria-label="Menú de navegación móvil"
             >
               <Image
                 alt=""
@@ -122,22 +143,20 @@ const Navbar = () => {
                 src={"/close-icon.svg"}
                 width={25}
                 height={25}
+                aria-label="Cerrar menú de navegación"
+                role="button"
+                tabIndex={0}
+                suppressHydrationWarning
               />
               {navbar.map((item) => (
                 <li className="text-base xs:text-sm" key={item.value}>
                   <Link
                     target={item.target}
                     href={item.value}
+                    aria-label={item.target === "_blank" ? `${item.name} (se abre en nueva pestaña)` : `Ir a ${item.name}`}
                     className={`text-secondary-4 hover:text-white hover:scale-110 hover:-translate-y-1 transition-all duration-200 ease-in-out 
-                                            ${
-                                              "/" + item.name.toLowerCase() ===
-                                                currentRoute ||
-                                              "/" +
-                                                item.name.toLocaleLowerCase() ===
-                                                "Inicio"
-                                                ? "text-white font-bold"
-                                                : ""
-                                            }`}
+                                            ${isActive(item.value, item.name) ? "text-white font-bold" : ""}`}
+                    suppressHydrationWarning
                   >
                     {item.name}
                   </Link>

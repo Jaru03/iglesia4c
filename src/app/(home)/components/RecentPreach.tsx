@@ -1,8 +1,11 @@
 'use client'
-import Button from "@/ui/Button"
+import { Button } from "@/components/ui/button"
 import Image from "next/image"
+import Link from "next/link"
 import {motion} from "motion/react"
 import { useEffect, useState } from "react"
+import { Play, Youtube } from "lucide-react"
+import { Subtitle } from "@/components/typography/Subtitle"
 
 interface YouTubeVideo {
   id: { videoId: string }
@@ -23,6 +26,7 @@ const RecentPreach = () => {
 
     useEffect(() => {
         setMounted(true)
+        /*
         const fetchLatestPreach = async () => {
             try {
                 const response = await fetch("/api/latest-preach")
@@ -35,6 +39,7 @@ const RecentPreach = () => {
             }
         }
         fetchLatestPreach()
+        */
     }, [])
 
     const defaultPreach = {
@@ -64,7 +69,7 @@ const RecentPreach = () => {
         return (
             <section className="bg-secondary">
                 <div className="max-w-7xl mx-auto p-4 md:p-8">
-                    <h2 className="text-2xl md:text-2xl-desktop text-primary-3 text-center py-10">Prédicas más recientes</h2>
+                    <Subtitle className="text-center py-10">Prédicas más recientes</Subtitle>
                     <div className="grid md:grid-cols-2 gap-8">
                         <div className="w-full h-full bg-gray-200 animate-pulse" />
                         <div className="h-full flex flex-col justify-evenly">
@@ -85,7 +90,7 @@ const RecentPreach = () => {
     return (
         <section className="bg-secondary" suppressHydrationWarning>
             <div className="max-w-7xl mx-auto p-4 md:p-8">
-                <h2 className="text-2xl md:text-2xl-desktop text-primary-3 text-center py-10">Prédicas más recientes</h2>
+                <Subtitle className="text-center py-10">Prédicas más recientes</Subtitle>
                 <motion.article
                     initial={{
                         opacity: 0,
@@ -119,16 +124,26 @@ const RecentPreach = () => {
                     />
                     
                     <div className="h-full flex flex-col justify-evenly">
-                        <h3 className="text-primary-3 text-xl md:text-xl-desktop text-center font-bold">{currentVideo.snippet.title}</h3>
+                        <h3 className="text-xl md:text-2xl font-bold text-primary-3 text-center">{currentVideo.snippet.title}</h3>
                         
                         {/* 3:*/}
-                        <p className="text-base md:text-base-desktop py-4 text-gray-600">
+                        <p className="text-base md:text-lg py-4 text-muted-foreground">
                             {descriptionText}
                         </p>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Button className="w-full" target="_blank" url={link} text={'▶ Ver Prédica'} variant="primary" />
-                            <Button className="w-full" target="_blank" url='https://www.youtube.com/@casasdediosmadrid/streams' text={'Más Prédicas'} variant="secondary" />
+                            <Button asChild className="w-full" variant="default" size="default">
+                                <Link href={link} target="_blank">
+                                    <Play className="w-4 h-4 mr-2" />
+                                    Ver Prédica
+                                </Link>
+                            </Button>
+                            <Button asChild className="w-full" variant="outline" size="default">
+                                <Link href='https://www.youtube.com/@casasdediosmadrid/streams' target="_blank">
+                                    <Youtube className="w-4 h-4 mr-2" />
+                                    Más Prédicas
+                                </Link>
+                            </Button>
                         </div>
                     </div>
                 </motion.article>

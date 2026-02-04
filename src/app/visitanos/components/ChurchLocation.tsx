@@ -3,184 +3,200 @@
 import { InfoChurch } from "@/types/InfoChurch";
 import Image from "next/image";
 import Link from "next/link";
-import { Map, Marker } from "pigeon-maps";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { motion } from "motion/react";
+import { useEffect } from "react";
+import { MapPin, Clock, Users, Share2 } from "lucide-react";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Props {
   info: InfoChurch;
 }
 
-import { useEffect, useState } from "react";
-
 const ChurchLocation = ({ info }: Props) => {
-  const [mapSize, setMapSize] = useState(280); // valor por defecto (mobile)
-
   useEffect(() => {
-    const calcSize = () => {
-      const width = window.innerWidth; // 👈 en lugar de screen
-      if (width >= 640 && width < 768) {
-        return 400;
-      } else if (width >= 768 && width < 1024) {
-        return 450;
-      } else if (width >= 1024) {
-        return 500;
-      } else {
-        return 280;
-      }
-    };
+    const iconRetinaUrl = "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png";
+    const iconUrl = "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png";
+    const shadowUrl = "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png";
 
-    setMapSize(calcSize());
+    const icon = L.icon({
+      iconRetinaUrl,
+      iconUrl,
+      shadowUrl,
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41],
+    });
 
-    // actualizar tamaño si cambia el viewport
-    const handleResize = () => setMapSize(calcSize());
-    window.addEventListener("resize", handleResize);
-
-    return () => window.removeEventListener("resize", handleResize);
+    L.Marker.prototype.options.icon = icon;
   }, []);
+
+  const position: [number, number] = [info.coords[0], info.coords[1]];
+
+  const filteredSocialLinks = info.socialLinks.filter(
+    (item) =>
+      item.value === "Facebook" ||
+      item.value === "YouTube" ||
+      item.value === "Instagram" ||
+      item.name === "Email" ||
+      item.name === "Teléfono" ||
+      item.name === "TikTok"
+  );
 
   return (
     <article
-      className={`pb-10 grid grid-cols-1 gap-8 md:grid-cols-2 max-w-7xl mx-auto p-4 sm:p-6 md:p-8`}
+      className={`
+        grid grid-cols-1 gap-8 md:grid-cols-2
+        max-w-7xl mx-auto p-4 md:p-8
+        ${info?.index % 2 === 0 ? "md:grid-flow-col" : ""}
+      `}
     >
-      <div
-        className={`w-full h-full flex justify-center items-center pb-8 m-auto sm:p-0 ${
-          info?.index % 2 === 0
-            ? "md:col-start-2 md:col-end-3 md:row-start-1 md:row-end-2"
-            : ""
-        } `}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        viewport={{ once: true }}
+        className={`
+          w-full h-full flex justify-center items-center
+          ${info?.index % 2 === 0 ? "md:order-2" : ""}
+        `}
       >
-        <Map
-          width={mapSize}
-          height={mapSize}
-          defaultCenter={info?.coords}
-          twoFingerDrag={true}
-          defaultZoom={15}
-          maxZoom={19}
-          minZoom={13}
-          metaWheelZoom={true}
-          metaWheelZoomWarning="Use META+wheel to zoom!"
-        >
-          <Marker color="#060735" anchor={info?.coords} width={40} />
-        </Map>
-      </div>
+        <div className="w-full h-[350px] md:h-[450px] rounded-xl overflow-hidden shadow-lg">
+          <MapContainer
+            center={position}
+            zoom={15}
+            dragging={false}
+            doubleClickZoom={true}
+            touchZoom={true}
+            tapHold={true}
+            scrollWheelZoom={false}
+            style={{ width: "100%", height: "100%" }}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <Marker position={position}>
+              <Popup>
+                <div className="p-2 text-center">
+                  <strong className="text-primary-3 text-base">{info.title}</strong>
+                  <p className="text-sm text-gray-600 mt-1">{info.place}</p>
+                </div>
+              </Popup>
+            </Marker>
+          </MapContainer>
+        </div>
+      </motion.div>
 
       <motion.div
-        initial={{
-          opacity: 0,
-          x: -50,
-          scale: 0.8,
-        }}
-        whileInView={{
-          opacity: 1,
-          x: 0,
-          scale: 1,
-        }}
-        transition={{
-          duration: 1.5,
-          ease: [0.25, 0.1, 0.25, 1],
-        }}
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
         viewport={{ once: true }}
-        className="flex flex-col justify-center w-full  sm:justify-between mx-auto"
+        className={`
+          flex flex-col justify-center w-full
+          ${info?.index % 2 === 0 ? "md:order-1" : ""}
+        `}
       >
-        <h3 className="text-primary-3 text-xl md:text-xl-desktop text-center">
+        <h3 className="text-2xl font-bold text-primary-3 mb-3">
           {info?.title}
         </h3>
-        <p className="py-4 text-base md:text-base-desktop">
+        <p className="text-gray-600 mb-6 leading-relaxed">
           {info?.description}
         </p>
-        <ul className="text-base md:text-base-desktop flex flex-col gap-2">
-          <li className="font-medium">
-            <span className="text-primary-4 font-bold pr-4">Lugar:</span>{" "}
-            {info?.place}
-          </li>
-          <li className="flex gap-4 max-w-full">
-            <span className="text-primary-4 font-bold">Horarios:</span>
-            <div className="flex gap-4 flex-wrap">
-              {info?.horario.map((dia) => (
-                <div
-                  className="flex flex-col gap-2 items-center w-auto max-w-full"
-                  key={dia.dia}
-                >
-                  <span className="font-semibold">{dia.dia}</span>
-                  {Array.isArray(dia.horario) ? (
-                    dia.horario.map((horario) => (
-                      <span key={horario}>{horario}</span>
-                    ))
-                  ) : (
-                    <span>{dia.horario}</span>
+
+        <div className="space-y-4 text-gray-700">
+          <div className="flex items-start gap-3">
+            <MapPin className="w-5 h-5 text-primary-3 shrink-0 mt-1" />
+            <div>
+              <span className="font-semibold text-primary-3">Lugar:</span>
+              <p className="text-gray-600">{info?.place}</p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3">
+            <Clock className="w-5 h-5 text-primary-3 shrink-0 mt-1" />
+            <div>
+              <span className="font-semibold text-primary-3">Horarios:</span>
+              <div className="flex flex-wrap gap-x-4 gap-y-2 mt-1">
+                {info?.horario.map((dia) => (
+                  <div key={dia.dia} className="text-sm">
+                    <span className="font-medium">{dia.dia}:</span>{" "}
+                    {Array.isArray(dia.horario)
+                      ? dia.horario.join(", ")
+                      : dia.horario}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+            <div className="flex items-start gap-3">
+              <Users className="w-5 h-5 text-primary-3 shrink-0 mt-1" />
+              <div className="flex-1">
+                <span className="font-semibold text-primary-3">Responsables:</span>
+                <div className="flex gap-3 mt-2">
+                  {info?.pastors.map((pastor) =>
+                    pastor.img !== "" ? (
+                      <Tooltip key={pastor.nombre}>
+                        <TooltipTrigger asChild>
+                          <Avatar className="w-14 h-14 cursor-pointer ring-2 ring-primary-3/20 hover:ring-primary-3 transition-all">
+                            <AvatarImage
+                              src={pastor.img}
+                              alt={pastor.nombre}
+                              className="object-cover"
+                            />
+                            <AvatarFallback>
+                              {pastor.nombre
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")}
+                            </AvatarFallback>
+                          </Avatar>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" sideOffset={4}>
+                          <p className="text-sm font-medium">{pastor.nombre}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : null
                   )}
                 </div>
+              </div>
+            </div>
+
+          <div className="flex items-start gap-3">
+            <Share2 className="w-5 h-5 text-primary-3 shrink-0 mt-1" />
+            <div className="flex gap-3 flex-wrap">
+              {filteredSocialLinks.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={item.name}
+                  className="transition-transform hover:scale-110"
+                >
+                  <Image
+                    alt={item.name}
+                    src={item.icon}
+                    width={24}
+                    height={24}
+                    suppressHydrationWarning
+                  />
+                </Link>
               ))}
             </div>
-          </li>
-          <li className="flex items-center gap-3">
-            <span className="text-primary-4 font-bold">Responsables:</span>
-            <div className="flex gap-2">
-              {info?.pastors.map((pastor) =>
-                pastor.img === "" ? (
-                  ""
-                ) : (
-                  <div
-                    className="flex flex-col items-center group relative py-5"
-                    key={pastor.nombre}
-                  >
-                    <Image
-                      alt={pastor.nombre}
-                      width={100}
-                      height={100}
-                      src={pastor.img}
-                      className="max-w-[60px] max-h-[60px] rounded-full shadow-lg transition-all transform hover:scale-110"
-                      suppressHydrationWarning
-                    />
-                    <span className="absolute w-96 text-center top-20 text-base font-semibold opacity-0 group-hover:opacity-100 transition-all ease-in-out duration-300">
-                      {pastor.nombre}
-                    </span>
-                  </div>
-                )
-              )}
-            </div>
-          </li>
-          <li className="flex gap-2">
-            <span className="text-primary-4 font-bold">Redes Sociales:</span>
-            <div className="flex gap-2">
-              {info?.socialLinks
-                .filter(
-                  (item) =>
-                    item.value === "Facebook" ||
-                    item.value === "YouTube" ||
-                    item.value === "Instagram" ||
-                    item.name === "Email" ||
-                    item.name === "Teléfono" ||
-                    item.name === "TikTok"
-                )
-                .map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.url}
-                    className={`flex transition-all hover:scale-110 flex-col items-center ${
-                      item.value === "Facebook" ||
-                      item.value === "Instagram" ||
-                      item.name === "Email" ||
-                      item.name === "Teléfono" ||
-                      item.name === "TikTok" ||
-                      item.value === "YouTube"
-                        ? "inline"
-                        : ""
-                    }`}
-                  >
-                    <Image
-                      alt={item.name}
-                      src={item.icon}
-                      className=""
-                      width={25}
-                      height={25}
-                      suppressHydrationWarning
-                    />
-                  </Link>
-                ))}
-            </div>
-          </li>
-        </ul>
+          </div>
+        </div>
       </motion.div>
     </article>
   );

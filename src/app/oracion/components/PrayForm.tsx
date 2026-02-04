@@ -1,208 +1,280 @@
 "use client";
 
-import Button from "@/ui/Button";
-import Input from "@/ui/Input";
-import emailjs from "@emailjs/browser";
-import { FormEvent, useRef, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { HandHeart, Mail, Phone, MessageSquare, Send, Loader2, User } from "lucide-react";
 import toast from "react-hot-toast";
-import { Heart, User, Mail, Phone, MessageSquare, Send, Loader2, HandHeart } from "lucide-react";
+import emailjs from "@emailjs/browser";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const praySchema = z.object({
+  nombre: z.string().min(2, "El nombre es obligatorio"),
+  email: z.string().email("Email inválido"),
+  phone: z.string().min(1, "El teléfono es obligatorio"),
+  typePetition: z.string().min(1, "Selecciona un tipo de petición"),
+  content: z.string().min(10, "La petición debe tener al menos 10 caracteres"),
+  acceptTerms: z.boolean().refine((val) => val === true, {
+    message: "Debes aceptar los términos y condiciones",
+  }),
+});
+
+type PrayFormData = z.infer<typeof praySchema>;
 
 const PrayForm = () => {
-  const formPray = useRef<HTMLFormElement | null>(null);
-  const checkBox = useRef<HTMLInputElement | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const form = useForm<PrayFormData>({
+    resolver: zodResolver(praySchema),
+    defaultValues: {
+      nombre: "",
+      email: "",
+      phone: "",
+      typePetition: "",
+      content: "",
+      acceptTerms: false,
+    },
+  });
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const { formState: { isSubmitting } } = form;
 
-    const formData = new FormData(formPray.current as HTMLFormElement);
-
-
-    const nombre = formData.get("nombre")?.toString().trim();
-    const email = formData.get("to")?.toString().trim();
-    const phone = formData.get("phone")?.toString().trim();
-    const typePetition = formData.get("typePetition")?.toString().trim();
-    const content = formData.get("content")?.toString().trim();
-
-    if (!nombre) return toast.error("Debes ingresar tu nombre");
-    if (!email || !email.includes("@")) return toast.error("Email inválido");
-    if (!phone) return toast.error("Debes ingresar tu teléfono");
-    if (!typePetition) return toast.error("Debes ingresar un tipo de petición");
-    if (!content) return toast.error("Debes escribir tu petición");
-    if (!checkBox.current?.checked) return toast.error("Debes aceptar los términos y condiciones");
-
-    if (!formPray.current) return;
-
-    setIsSubmitting(true);
-
-    const sendEmailPromise = emailjs.sendForm(
-      process.env.NEXT_PUBLIC_SERVICE_ID_API_KEY!,
-      process.env.NEXT_PUBLIC_TEMPLATE_ID_API_KEY!,
-      formPray.current,
-      { publicKey: process.env.NEXT_PUBLIC_PUBLIC_ID_API_KEY! }
-    );
-
-    toast.promise(sendEmailPromise, {
-      loading: 'Enviando petición...',
-      success: 'Petición enviada correctamente',
-      error: 'Hubo un problema al enviar la petición'
-    });
-
+  const onSubmit = async (data: PrayFormData) => {
     try {
+      setIsSubmitting(true);
+
+      const sendEmailPromise = emailjs.sendForm(
+        process.env.NEXT_PUBLIC_SERVICE_ID_API_KEY!,
+        process.env.NEXT_PUBLIC_TEMPLATE_ID_API_KEY!,
+        form.getValues() as unknown as HTMLFormElement,
+        { publicKey: process.env.NEXT_PUBLIC_PUBLIC_ID_API_KEY! }
+      );
+
+      toast.promise(sendEmailPromise, {
+        loading: "Enviando petición...",
+        success: "Petición enviada correctamente",
+        error: "Hubo un problema al enviar la petición",
+      });
+
       await sendEmailPromise;
-      formPray.current.reset();
+      form.reset();
     } catch (error) {
-      console.log(error);
+      console.error(error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const setIsSubmitting = (value: boolean) => {
+    form.setValue("content" as never, value as never);
+  };
+
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      <form
-        ref={formPray}
-        onSubmit={handleSubmit}
-        className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden"
-      >
-        {/* Header */}
-        <div className="bg-gradient-to-r from-primary-3 to-primary-2 p-8 text-white text-center">
-          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <HandHeart className="w-8 h-8" />
+    <div className="w-full max-w-lg mx-auto">
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden"
+        >
+          <div className="bg-linear-to-r from-primary-3 to-primary-2 p-8 text-white text-center">
+            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <HandHeart className="w-8 h-8" />
+            </div>
+            <h2 className="text-3xl font-bold mb-2">Escribe tu petición</h2>
+            <p className="text-white/90 text-sm">
+              Tu petición será atendida con fe y confidencialidad
+            </p>
           </div>
-          <h2 className="text-3xl font-bold mb-2">Escribe tu petición</h2>
-          <p className="text-white/90 text-sm">Tu petición será atendida con fe y confidencialidad</p>
-        </div>
 
-        {/* Form Fields */}
-        <div className="p-8 space-y-6">
-          {/* Personal Information Section */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-              <User className="w-5 h-5 text-primary-3" />
-              Información Personal
-            </h3>
+          <div className="p-8 space-y-6">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                <User className="w-5 h-5 text-primary-3" />
+                Información Personal
+              </h3>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                  <User className="w-4 h-4" />
-                  Nombre Completo *
-                </label>
-                <Input
+              <div className="grid md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
                   name="nombre"
-                  placeholder="Ingresa tu nombre completo"
-                  type="text"
-                  className="w-full"
-                  defaultValue={""}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <User className="w-4 h-4" />
+                        Nombre Completo *
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ingresa tu nombre completo" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <Mail className="w-4 h-4" />
+                        Correo Electrónico *
+                      </FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="tu@email.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                  <Mail className="w-4 h-4" />
-                  Correo Electrónico *
-                </label>
-                <Input
-                  name="to"
-                  placeholder="tu@email.com"
-                  type="text"
-                  className="w-full"
-                  defaultValue={""}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                <Phone className="w-4 h-4" />
-                Teléfono *
-              </label>
-              <Input
+              <FormField
+                control={form.control}
                 name="phone"
-                placeholder="+34 600 000 000"
-                type="text"
-                className="w-full"
-                defaultValue={""}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Phone className="w-4 h-4" />
+                      Teléfono *
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="+34 600 000 000" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
-          </div>
 
-          {/* Petition Details Section */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-primary-3" />
-              Detalles de la Petición
-            </h3>
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-primary-3" />
+                Detalles de la Petición
+              </h3>
 
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                <HandHeart className="w-4 h-4" />
-                Tipo de Petición *
-              </label>
-              <Input
+              <FormField
+                control={form.control}
                 name="typePetition"
-                placeholder="Ej: Oración por salud, familia, trabajo..."
-                type="text"
-                className="w-full"
-                defaultValue={""}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <HandHeart className="w-4 h-4" />
+                      Tipo de Petición *
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Ej: Oración por salud, familia, trabajo..." />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="salud">Oración por salud</SelectItem>
+                        <SelectItem value="familia">Oración por familia</SelectItem>
+                        <SelectItem value="trabajo">Oración por trabajo</SelectItem>
+                        <SelectItem value="finanzas">Oración por finanzas</SelectItem>
+                        <SelectItem value="otros">Otro</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                <MessageSquare className="w-4 h-4" />
-                Tu Petición *
-              </label>
-              <textarea
+              <FormField
+                control={form.control}
                 name="content"
-                placeholder="Escribe aquí tu petición de oración. Sé específico sobre lo que necesitas y comparte cualquier detalle que consideres importante..."
-                className="w-full px-4 py-3 text-base bg-white border-2 border-gray-200 rounded-xl focus:border-primary-3 focus:ring-4 focus:ring-primary-3/10 focus:outline-none hover:border-gray-300 transition-all duration-200 placeholder:text-gray-400 resize-none"
-                rows={5}
-                defaultValue={""}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <MessageSquare className="w-4 h-4" />
+                      Tu Petición *
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Escribe aquí tu petición de oración..."
+                        className="min-h-[120px] resize-none"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
-          </div>
 
-          {/* Terms and Submit */}
-          <div className="space-y-6 pt-4 border-t border-gray-100">
-            <label className="flex items-start gap-3 cursor-pointer group">
-              <input
-                className="mt-1 w-4 h-4 text-primary-3 bg-gray-100 border-gray-300 rounded focus:ring-primary-3 focus:ring-2 accent-primary-3"
-                ref={checkBox}
-                type="checkbox"
+            <div className="space-y-6 pt-4 border-t border-gray-100">
+              <FormField
+                control={form.control}
+                name="acceptTerms"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="text-sm text-gray-600">
+                          Acepto los{" "}
+                          <span className="text-primary-3 font-medium hover:underline cursor-pointer">
+                            términos y condiciones
+                          </span>{" "}
+                          y entiendo que mi petición será tratada con confidencialidad absoluta.
+                        </FormLabel>
+                      </div>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              <span className="text-sm text-gray-600 leading-relaxed group-hover:text-gray-800 transition-colors">
-                Acepto los <span className="text-primary-3 font-medium hover:underline">términos y condiciones</span> y
-                entiendo que mi petición será tratada con confidencialidad absoluta.
-              </span>
-            </label>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-primary-3 hover:bg-primary-3-hover text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Enviando...
-                </>
-              ) : (
-                <>
-                  <Send className="w-5 h-5" />
-                  Enviar Petición
-                </>
-              )}
-            </button>
-          </div>
+              <Button
+                type="submit"
+                variant="cta"
+                size="lg"
+                className="w-full"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Enviando...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-5 h-5" />
+                    Enviar Petición
+                  </>
+                )}
+              </Button>
+            </div>
 
-          {/* Footer Note */}
-          <div className="text-center text-xs text-gray-500 pt-4 border-t border-gray-100">
-            <p>Tu petición será atendida por nuestro equipo pastoral con oración y discreción.</p>
+            <div className="text-center text-xs text-gray-500 pt-4 border-t border-gray-100">
+              <p>
+                Tu petición será atendida por nuestro equipo pastoral con oración y discreción.
+              </p>
+            </div>
           </div>
-        </div>
-      </form>
+        </form>
+      </Form>
     </div>
   );
 };
