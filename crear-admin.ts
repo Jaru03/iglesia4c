@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import 'dotenv/config'
+import prisma from './src/utils/prisma';
 import * as bcrypt from 'bcryptjs';
-
-const prisma = new PrismaClient();
 
 async function main() {
   console.log("⏳ Creando usuario Admin...");
