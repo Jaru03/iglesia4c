@@ -4,21 +4,10 @@ import { Calendar, Heart } from "lucide-react";
 import prisma from "@/utils/prisma";
 
 const Hero = async () => {
-  let data: any;
-
-  try {
-    data = await prisma.preachs.findMany();
-    console.log("Datos de Prisma:", data);
-  } catch (err) {
-    console.error("Error en prisma.preachs.findMany():", err);
-    data = []; // fallback para que la página no rompa
-  }
-
   return (
     <section className="relative h-[100vh] w-full flex items-center justify-center overflow-hidden bg-[#060735]">
       {/*(Mejora con div separado para efectos) */}
 
-      <pre>{JSON.stringify(data, null, 2)}</pre>
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-black/60 z-10"></div>
 
