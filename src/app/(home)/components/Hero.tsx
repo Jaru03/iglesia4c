@@ -1,8 +1,14 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Calendar, Heart } from "lucide-react"
+import prisma from "@/utils/prisma"
 
-const Hero = () => {
+const Hero = async() => {
+
+  const data = await prisma.preachs.findMany() 
+
+  console.log(data)
+
   return (
     <section className="relative h-[100vh] w-full flex items-center justify-center overflow-hidden bg-[#060735]">
       
