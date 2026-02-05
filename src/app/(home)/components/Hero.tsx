@@ -9,6 +9,8 @@ const Hero = async() => {
 
   console.log(data)
 
+  console.log("working")
+
   return (
     <section className="relative h-[100vh] w-full flex items-center justify-center overflow-hidden bg-[#060735]">
       
