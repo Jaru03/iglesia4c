@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Inter, Montserrat } from "next/font/google";
+import { Inter } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import HideInAdmin from "@/components/HideInAdmin";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ScrollToTop } from "@/components/ScrollToTop";
 export const metadata: Metadata = {
   title: "Comunidad Cristiana Casa de Dios Madrid",
   description: "Comunidad Cristiana Casa de Dios Madrid",
@@ -39,6 +40,8 @@ export default function RootLayout({
             <HideInAdmin>
               <Footer/>
             </HideInAdmin>
+            
+            <ScrollToTop />
           </TooltipProvider>
         </ThemeProvider>
       </body>

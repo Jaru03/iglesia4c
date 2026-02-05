@@ -1,8 +1,9 @@
+import { HeroTitle } from "@/components/typography/HeroTitle";
+import { Subtitle } from "@/components/typography/Subtitle";
+import { SpinningTextLabel } from "@/components/SpinningTextLabel";
 import Icons from "./Icons";
 import FeDeclaration from "./FeDeclaration";
 import Consejo from "./Consejo";
-import { HeroTitle } from "@/components/typography/HeroTitle";
-import { Subtitle } from "@/components/typography/Subtitle";
 
 const HowItStarted = () => {
   return (
@@ -16,6 +17,8 @@ const HowItStarted = () => {
             <HeroTitle title="Comunidad Cristiana Casa de Dios" size="large" />
           </div>
         </div>
+
+        <SpinningTextLabel />
       </div>
 
       {/* Vision & Mission Section */}
