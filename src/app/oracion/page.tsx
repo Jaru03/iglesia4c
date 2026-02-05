@@ -1,13 +1,16 @@
+import { HeroTitle } from "@/components/typography/HeroTitle";
+import { SpinningTextLabel } from "@/components/SpinningTextLabel";
 import PrayForm from "@/app/oracion/components/PrayForm";
 import ToastProvider from "@/app/oracion/components/ToastProvider";
 import { CallToAction } from "@/components/CallToAction";
-import { HeroTitle } from "@/components/typography/HeroTitle";
 
 const page = () => {
   return (
     <section>
-      <div className="bg-[url(../../public/oracion-banner.jpg)] h-[100vh] bg-no-repeat bg-center bg-cover before:absolute before:inset-0 before:bg-black/50 before:content-[''] flex flex-col justify-center items-center">
+      <div className="relative bg-[url(../../public/oracion-banner.jpg)] h-[100vh] bg-no-repeat bg-center bg-cover before:absolute before:inset-0 before:bg-black/50 before:content-[''] flex flex-col justify-center items-center">
         <HeroTitle title="Oración" size="large" />
+
+        <SpinningTextLabel />
       </div>
       <div className="section-sm flex flex-col justify-center items-center container-page">
 

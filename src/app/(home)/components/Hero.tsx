@@ -1,9 +1,9 @@
+import { SpinningTextLabel } from "@/components/SpinningTextLabel"
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Calendar, Heart } from "lucide-react";
-import prisma from "@/utils/prisma";
 
-const Hero = async () => {
+const Hero = () => {
   return (
     <section className="relative h-[100vh] w-full flex items-center justify-center overflow-hidden bg-[#060735]">
       {/*(Mejora con div separado para efectos) */}
@@ -50,7 +50,6 @@ const Hero = async () => {
         </div>
       </div>
 
-      {/* Flechita animada */}
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 animate-bounce text-white/70">
         <svg
           className="w-8 h-8"
@@ -66,8 +65,10 @@ const Hero = async () => {
           />
         </svg>
       </div>
+
+      <SpinningTextLabel />
     </section>
   );
 };
 
-export default Hero;
+export default Hero

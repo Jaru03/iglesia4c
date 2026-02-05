@@ -1,4 +1,5 @@
 'use client'
+import { SpinningTextLabel } from "@/components/SpinningTextLabel"
 
 import PayOnline from "@/app/donaciones/components/PayOnline"
 import PayPalInfo from "@/app/donaciones/components/PayPalInfo"
@@ -7,6 +8,7 @@ import { HeroTitle } from "@/components/typography/HeroTitle"
 import { Title } from "@/components/typography/Title"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Wallet, CreditCard, Building2 } from "lucide-react"
+import { SpinningText } from "@/components/ui/spinning-text"
 
 const DonationsPage = () => {
   return (
@@ -17,6 +19,8 @@ const DonationsPage = () => {
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
           <HeroTitle title="Donaciones" size="large" />
         </div>
+
+        <SpinningTextLabel />
       </div>
 
       <div className="py-16 px-6 bg-linear-to-b from-gray-50 to-white">
