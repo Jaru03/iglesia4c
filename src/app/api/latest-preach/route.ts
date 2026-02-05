@@ -3,8 +3,8 @@ import axios from "axios";
 
 export async function GET() {
   try {
-    const channelId = process.env.NEXT_PUBLIC_CHANNEL_YT_ID;
-    const apiKey = process.env.NEXT_PUBLIC_YT_API_KEY;
+    const channelId = process.env.CHANNEL_YT_ID;
+    const apiKey = process.env.YT_API_KEY;
 
     if (!channelId || !apiKey) {
       console.error("Faltan variables de entorno:", { channelId: !!channelId, apiKey: !!apiKey });

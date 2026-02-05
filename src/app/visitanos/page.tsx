@@ -1,10 +1,12 @@
 "use client";
+import { SpinningTextLabel } from "@/components/SpinningTextLabel";
 import { churches } from "../../mocks/churchues";
 import { InfoChurch } from "@/types/InfoChurch";
 import dynamic from "next/dynamic";
 import { CallToAction } from "@/components/CallToAction";
 import { HeroTitle } from "@/components/typography/HeroTitle";
 import { Subtitle } from "@/components/typography/Subtitle";
+import { SpinningText } from "@/components/ui/spinning-text";
 
 // Importa ChurchLocation deshabilitando SSR
 const ChurchLocation = dynamic(
@@ -17,9 +19,11 @@ const ChurchLocation = dynamic(
 const page = () => {
   return (
     <section>
-      <div className="bg-[url(../../public/visitanos-banner.jpg)] h-[100vh] bg-no-repeat bg-center bg-cover before:absolute before:inset-0 before:bg-black/50 before:content-[''] flex flex-col justify-center items-center">
+      <div className="relative bg-[url(../../public/visitanos-banner.jpg)] h-[100vh] bg-no-repeat bg-center bg-cover before:absolute before:inset-0 before:bg-black/50 before:content-[''] flex flex-col justify-center items-center">
         
             <HeroTitle title="Visitanos" size="large" />
+
+        <SpinningTextLabel />
       </div>
       <div className="section container-page">
         <div className="text-center mb-12 max-w-2xl mx-auto">
