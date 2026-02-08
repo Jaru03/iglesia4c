@@ -4,13 +4,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
-.scroll-menu{
+/* .scroll-menu{
   animation: animation-menu linear both;
   animation-timeline: scroll(root block);
   animation-range: 0 100vh;
-}
+} */
 
-@keyframes animation-menu {
+/* @keyframes animation-menu {
   from {
     filter: invert(1) sepia(0.3) saturate(0) hue-rotate(0deg);
   }
@@ -18,7 +18,7 @@
   to {
     filter: none;
   }
-}
+} */
 
 .ministerios:first-child{
   grid-row: 1/3;
