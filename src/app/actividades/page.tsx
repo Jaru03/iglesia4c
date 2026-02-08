@@ -6,13 +6,12 @@ import { events } from "@/mocks/activities";
 import { CallToAction } from "@/components/CallToAction";
 import { HeroTitle } from "@/components/typography/HeroTitle";
 import { Subtitle } from "@/components/typography/Subtitle";
-import { SpinningText } from "@/components/ui/spinning-text";
 
 const page = () => {
   return (
     <>
       <section>
-        <div className="relative bg-[url(../../public/actividades-banner.jpg)] h-[100vh] bg-no-repeat bg-center bg-cover before:absolute before:inset-0 before:bg-black/50 before:content-[''] flex flex-col justify-center items-center">
+        <div className="relative bg-[url(../../public/actividades-banner.jpg)] h-screen bg-no-repeat bg-center bg-cover before:absolute before:inset-0 before:bg-black/50 before:content-[''] flex flex-col justify-center items-center">
           <HeroTitle title="Actividades" size="large" />
 
           <SpinningTextLabel />
