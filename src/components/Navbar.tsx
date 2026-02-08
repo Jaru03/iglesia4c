@@ -1,4 +1,6 @@
 "use client";
+
+import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -18,6 +20,7 @@ const Navbar = () => {
     { name: "Oración", value: "/oracion", target: "_self" },
     { name: "Donaciones", value: "/donaciones", target: "_self" },
     { name: "Actividades", value: "/actividades", target: "_self" },
+    { name: "Iniciar Sesión", value: "/login", target: "_self" },
   ];
   const [buttonOpen, setButtonOpen] = useState(false);
 
@@ -31,10 +34,11 @@ const Navbar = () => {
   const currentRoute = usePathname();
 
   const isActive = (value: string, name: string) => {
-    if (value.startsWith('http')) return false;
-    const normalizedValue = value.replace(/\/$/, '');
-    const normalizedRoute = currentRoute.replace(/\/$/, '');
-    if (name === 'Inicio') return normalizedRoute === '/' || normalizedRoute === '';
+    if (value.startsWith("http")) return false;
+    const normalizedValue = value.replace(/\/$/, "");
+    const normalizedRoute = currentRoute.replace(/\/$/, "");
+    if (name === "Inicio")
+      return normalizedRoute === "/" || normalizedRoute === "";
     return normalizedRoute === normalizedValue;
   };
 
@@ -45,10 +49,10 @@ const Navbar = () => {
   return (
     <header>
       <div>
-        <nav className="z-50 absolute w-full transition-all scroll-bg md:h-24 md:flex md:justify-center mt-4">
-          <div className="hidden w-full md:absolute md:flex items-center top-0 h-24 max-w-5xl">
+        <nav className="z-5000 absolute w-full transition-all lg:h-24 lg:flex lg:justify-center mt-4">
+          <div className="hidden w-full lg:absolute lg:flex items-center top-0 h-24 max-w-7xl px-4">
             <Link
-              className={`filter invert brightness-0 hidden md:block hover:scale-105 transition-all duration-300 ease-in-out`}
+              className={`filter invert brightness-0 hidden lg:block hover:scale-105 transition-all duration-300 ease-in-out`}
               href={"/"}
               aria-label="Ir al inicio"
             >
@@ -60,31 +64,42 @@ const Navbar = () => {
                 height={100}
               />
             </Link>
-            <ul className="hidden xs:grid xs:grid-cols-2 xs:gap-2 md:grid md:grid-cols-7 justify-center justify-items-center w-full" role="navigation" aria-label="Navegación principal">
+            <ul
+              className="hidden xs:grid xs:grid-cols-2 xs:gap-2 lg:grid lg:grid-cols-8 justify-center justify-items-center w-full"
+              role="navigation"
+              aria-label="Navegación principal"
+            >
               {navbar.map((item) => {
-                
-                const isDonation = item.name === "Donaciones";
+                const isSpecial = item.name === "Iniciar Sesión";
                 const active = isActive(item.value, item.name);
-                
+
                 return (
-                    <li key={item.name} className="text-xs xs:text-sm md:text-lg flex items-center justify-center">
+                  <li
+                    key={item.name}
+                    className="text-xs xs:text-sm lg:text-lg flex items-center justify-center"
+                  >
                     <Link
-                        href={item.value}
-                        target={item.target}
-                        aria-label={item.target === "_blank" ? `${item.name} (se abre en nueva pestaña)` : `Ir a ${item.name}`}
-                        className={`transition-all duration-200 ease-in-out flex items-center justify-center
-                            ${isDonation 
-                                /* ESTILO VIP para Donaciones*/
-                                ? "bg-white text-[#060735] font-bold px-3 py-1.5 rounded-full shadow-md hover:scale-105"
-                                /* ESTILO NORMAL mejorado*/
-                                : `text-white px-3 py-1.5 rounded-full hover:bg-white/10 hover:scale-105 ${active ? "font-bold bg-white/20" : ""}`
+                      href={item.value}
+                      target={item.target}
+                      aria-label={
+                        item.target === "_blank"
+                          ? `${item.name} (se abre en nueva pestaña)`
+                          : `Ir a ${item.name}`
+                      }
+                      className={`transition-all duration-200 ease-in-out flex items-center justify-center
+                            ${
+                              isSpecial
+                                ? /* ESTILO VIP para Iniciar Sesión*/
+                                  "bg-white text-[#060735] font-bold px-2.5 py-1.5 text-sm text-center rounded-full shadow-md hover:scale-105"
+                                : /* ESTILO NORMAL mejorado*/
+                                  `text-white px-3 py-1.5 rounded-full hover:bg-white/10 hover:scale-105 ${active ? "font-bold bg-white/20" : ""}`
                             }
                         `}
-                        suppressHydrationWarning
+                      suppressHydrationWarning
                     >
-                        {item.name}
+                      {item.name}
                     </Link>
-                    </li>
+                  </li>
                 );
               })}
             </ul>
@@ -92,33 +107,27 @@ const Navbar = () => {
               <ThemeToggle />
             </div>
           </div>
- 
-          
-          <div className="relative overflow-hidden md:hidden">
+
+          <div className="relative lg:hidden">
             <Image
               alt=""
               src={"/logoCCCD.jpg"}
               width={90}
               height={70}
-              className={`${currentRoute === "/" ? "hidden" : ""} pt-2 mx-auto filter invert brightness-110 w-[70px] xs:w-[90px] h-[55px] xs:h-[70px]`}
+              className={`${currentRoute === "/" ? "hidden" : ""} pt-2 mx-auto w-[120px] h-[100px] filter invert brightness-0`}
               suppressHydrationWarning
             />
-            <Image
-              onClick={handleOpen}
-              className={`fixed top-7 xs:right-6 right-10 z-10
-                scroll-menu
-               ${buttonOpen ? "hidden" : "block"}`}
-              alt=""
-              src={"/menu-icon.svg"}
-              width={25}
-              height={25}
-              aria-label="Abrir menú de navegación"
-              role="button"
-              tabIndex={0}
-              suppressHydrationWarning
-            />
+
+            <div className={`fixed top-7 xs:right-6 right-10 z-50 flex items-center justify-center w-10 h-10 bg-secondary rounded-lg ${buttonOpen ? "hidden" : "block"}`}>
+              <Menu
+                onClick={handleOpen}
+                size={28}
+                className="text-primary"
+                aria-label="Abrir menú de navegación"
+              />
+            </div>
             <ul
-              className={`flex flex-col items-center justify-center shadow-form fixed pt-1 pb-10 w-full gap-8 right-0 top-0 bg-primary rounded-b-xl transition-transform duration-300 ease-out z-50 
+              className={`flex flex-col items-center justify-center shadow-form fixed pt-1 pb-10 w-full gap-8 right-0 top-0 bg-primary rounded-b-xl duration-300 ease-out z-50 
                             ${
                               !buttonOpen
                                 ? "transform -translate-y-full opacity-0"
@@ -132,36 +141,43 @@ const Navbar = () => {
                 src={"/logoCCCD-white.jpg"}
                 width={90}
                 height={70}
-                className="pt-2 filter brightness-110 w-[70px] xs:w-[90px] h-[55px] xs:h-[70px]"
+                className="pt-2 mt-2 w-[120px] h-[100px] filter invert brightness-0"
               />
-              <Image
-                onClick={handleClose}
-                className={`absolute top-7 xs:right-6 right-10 ${
-                  buttonOpen ? "block" : "hidden"
-                }`}
-                alt=""
-                src={"/close-icon.svg"}
-                width={25}
-                height={25}
-                aria-label="Cerrar menú de navegación"
-                role="button"
-                tabIndex={0}
-                suppressHydrationWarning
-              />
-              {navbar.map((item) => (
-                <li className="text-base xs:text-sm" key={item.value}>
-                  <Link
-                    target={item.target}
-                    href={item.value}
-                    aria-label={item.target === "_blank" ? `${item.name} (se abre en nueva pestaña)` : `Ir a ${item.name}`}
-                    className={`text-secondary-4 hover:text-white hover:scale-110 hover:-translate-y-1 transition-all duration-200 ease-in-out 
-                                            ${isActive(item.value, item.name) ? "text-white font-bold" : ""}`}
-                    suppressHydrationWarning
-                  >
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
+              <div
+                className={`absolute top-7 xs:right-6 right-10 z-50 flex items-center justify-center w-10 h-10 bg-secondary rounded-lg ${buttonOpen ? "block" : "hidden"}`}
+              >
+                <button
+                  onClick={handleClose}
+                  className="text-primary"
+                  aria-label="Cerrar menú de navegación"
+                >
+                  <X size={28} />
+                </button>
+              </div>
+              {navbar.map((item) => {
+                const isSpecial = item.name === "Iniciar Sesión";
+                return (
+                  <li className="text-base xs:text-sm" key={item.value}>
+                    <Link
+                      target={item.target}
+                      href={item.value}
+                      aria-label={
+                        item.target === "_blank"
+                          ? `${item.name} (se abre en nueva pestaña)`
+                          : `Ir a ${item.name}`
+                      }
+                      className={`px-4 py-2 rounded-full transition-all duration-200 ease-in-out
+                        ${isSpecial
+                          ? "bg-white text-primary font-bold shadow-md hover:scale-105"
+                          : `text-secondary-4 hover:text-white hover:scale-110 ${isActive(item.value, item.name) ? "text-white font-bold" : ""}`
+                        }`}
+                      suppressHydrationWarning
+                    >
+                      {item.name}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </nav>
