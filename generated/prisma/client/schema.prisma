@@ -1,19 +1,19 @@
 // prisma/schema.prisma
 
 generator client {
-  provider        = "prisma-client-js"
-  output          = "../generated/prisma/client"
+  provider = "prisma-client-js"
+  output   = "../generated/prisma/client"
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
 }
 
 // 1. DEFINICIÓN DE ROLES
 enum Role {
-  ADMIN       
-  REGISTRO    
-  LIDER       
+  ADMIN
+  REGISTRO
+  LIDER
 }
 
 // 2. MODELO DE USUARIO 
@@ -22,21 +22,21 @@ model User {
   email    String  @unique
   password String
   nombre   String
-  role     Role    @default(LIDER) 
+  role     Role    @default(LIDER)
   sede     String?
 }
 
 // --- GESTIÓN DE ÁREAS Y ACTIVIDADES ---
 
 model Area {
-  id          Int          @id @default(autoincrement())
-  title       String       
+  id          Int     @id @default(autoincrement())
+  title       String
   description String?
   img         String?
-  value       String       @unique 
+  value       String  @unique
   rol         String
-  
-  activities  Activities[] 
+
+  activities Activities[]
 }
 
 model Activities {
@@ -49,8 +49,8 @@ model Activities {
   hour_end    DateTime
   urgent      Boolean  @default(false)
 
-  areaId      Int?
-  area        Area?    @relation(fields: [areaId], references: [id])
+  areaId Int?
+  area   Area? @relation(fields: [areaId], references: [id])
 }
 
 // --- CONTENIDO WEB ---
@@ -60,7 +60,7 @@ model Preachs {
   title       String
   description String?
   img         String?
-  urlVideo    String? 
+  urlVideo    String?
 }
 
 model LastActivities {
@@ -72,24 +72,24 @@ model LastActivities {
 // --- GESTIÓN DE JÓVENES ---
 
 model Joven {
-  id            Int          @id @default(autoincrement())
-  nombres       String
-  apellidos     String
-  documento     String       @unique
-  telefono      String?      
+  id              Int       @id @default(autoincrement())
+  nombres         String
+  apellidos       String
+  documento       String    @unique
+  telefono        String?
   fechaNacimiento DateTime?
-  sede          String
-  
-  ultimaVisita  DateTime     @default(now())
-  activo        Boolean      @default(true)
-  
-  asistencias   Asistencia[]
+  sede            String
+
+  ultimaVisita DateTime @default(now())
+  activo       Boolean  @default(true)
+
+  asistencias Asistencia[]
 }
 
 model Asistencia {
-  id        Int      @id @default(autoincrement())
-  fecha     DateTime @default(now())
-  
-  jovenId   Int
-  joven     Joven    @relation(fields: [jovenId], references: [id], onDelete: Cascade)
+  id    Int      @id @default(autoincrement())
+  fecha DateTime @default(now())
+
+  jovenId Int
+  joven   Joven @relation(fields: [jovenId], references: [id], onDelete: Cascade)
 }

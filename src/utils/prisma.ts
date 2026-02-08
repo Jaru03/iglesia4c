@@ -1,24 +1,26 @@
-import { PrismaClient } from '../../generated/prisma/client'
-import { PrismaPg } from '@prisma/adapter-pg'
+// src/utils/prisma.ts
 
-if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL no está definida')
-}
+// 1. IMPORTANTE: Apuntamos a la carpeta 'generated' 
+import { PrismaClient } from '../../generated/prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL,
-})
+const connectionString = process.env.DATABASE_URL;
+
+// 👇 ¡AQUÍ FALTABA EL SSL! Sin esto, se queda cargando.
+const pool = new Pool({ 
+  connectionString,
+  ssl: process.env.NODE_ENV === 'production' ? true : { rejectUnauthorized: false }
+});
+
+const adapter = new PrismaPg(pool);
 
 const globalForPrisma = globalThis as unknown as {
-  prisma?: PrismaClient
-}
+  prisma: PrismaClient | undefined;
+};
 
-const prisma = globalForPrisma.prisma || new PrismaClient({
-  adapter,
-})
+const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
 
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma
-}
+export default prisma;
 
-export default prisma
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
