@@ -1,9 +1,9 @@
-import 'dotenv/config'
-import { defineConfig, env } from 'prisma/config'
+// iglesia4c/prisma.config.ts
+import 'dotenv/config'; // Asegúrate que esta línea sigue aquí arriba
+import { defineConfig } from 'prisma/config';
 
 export default defineConfig({
-  schema: 'prisma/schema.prisma',
   datasource: {
-    url: env('DATABASE_URL'),
+    url: process.env.DIRECT_URL, 
   },
-})
+});
