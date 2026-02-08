@@ -19,7 +19,8 @@ CREATE TABLE "Activities" (
     "place" TEXT NOT NULL,
     "hour_start" TIMESTAMP(3) NOT NULL,
     "hour_end" TIMESTAMP(3) NOT NULL,
-    "urgent" BOOLEAN NOT NULL,
+    "urgent" BOOLEAN NOT NULL DEFAULT false,
+    "areaId" INTEGER,
 
     CONSTRAINT "Activities_pkey" PRIMARY KEY ("id")
 );
@@ -30,6 +31,7 @@ CREATE TABLE "Preachs" (
     "title" TEXT NOT NULL,
     "description" TEXT,
     "img" TEXT,
+    "urlVideo" TEXT,
 
     CONSTRAINT "Preachs_pkey" PRIMARY KEY ("id")
 );
@@ -49,7 +51,7 @@ CREATE TABLE "User" (
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "nombre" TEXT NOT NULL,
-    "role" TEXT NOT NULL DEFAULT 'LIDER',
+    "role" TEXT NOT NULL DEFAULT 'MIEMBRO',
     "sede" TEXT,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
@@ -61,6 +63,8 @@ CREATE TABLE "Joven" (
     "nombres" TEXT NOT NULL,
     "apellidos" TEXT NOT NULL,
     "documento" TEXT NOT NULL,
+    "telefono" TEXT,
+    "fechaNacimiento" TIMESTAMP(3),
     "sede" TEXT NOT NULL,
     "ultimaVisita" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "activo" BOOLEAN NOT NULL DEFAULT true,
@@ -87,4 +91,7 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX "Joven_documento_key" ON "Joven"("documento");
 
 -- AddForeignKey
-ALTER TABLE "Asistencia" ADD CONSTRAINT "Asistencia_jovenId_fkey" FOREIGN KEY ("jovenId") REFERENCES "Joven"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Activities" ADD CONSTRAINT "Activities_areaId_fkey" FOREIGN KEY ("areaId") REFERENCES "Area"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Asistencia" ADD CONSTRAINT "Asistencia_jovenId_fkey" FOREIGN KEY ("jovenId") REFERENCES "Joven"("id") ON DELETE CASCADE ON UPDATE CASCADE;
