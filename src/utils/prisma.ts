@@ -1,25 +1,23 @@
 // src/utils/prisma.ts
 
-// 1. IMPORTANTE: Apuntamos a la carpeta 'generated' 
+// 1. MANTENEMOS TU RUTA PERSONALIZADA
+// Asegúrate de que esta carpeta exista. Si te da error, usa '@prisma/client'
 import { PrismaClient } from '../../generated/prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
 
-const connectionString = process.env.DATABASE_URL;
-
-// 👇 ¡AQUÍ FALTABA EL SSL! Sin esto, se queda cargando.
-const pool = new Pool({ 
-  connectionString,
-  ssl: process.env.NODE_ENV === 'production' ? true : { rejectUnauthorized: false }
-});
-
-const adapter = new PrismaPg(pool);
-
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
+const prismaClientSingleton = () => {
+  // 2. Instanciamos el cliente DIRECTAMENTE.
+  return new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+  });
 };
 
-const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
+type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>;
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClientSingleton | undefined;
+};
+
+const prisma = globalForPrisma.prisma ?? prismaClientSingleton();
 
 export default prisma;
 

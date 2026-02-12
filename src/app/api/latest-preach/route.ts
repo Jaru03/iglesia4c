@@ -1,30 +1,46 @@
 import { NextResponse } from "next/server";
-import axios from "axios";
+
+// Esto evita que se quede cacheado para siempre, pero tampoco llama a YouTube en cada visita.
+// Actualiza cada 1 hora (3600 segundos).
+export const revalidate = 3600;
 
 export async function GET() {
   try {
-    const channelId = process.env.CHANNEL_YT_ID;
-    const apiKey = process.env.YT_API_KEY;
+    // 1. Usamos los nombres EXACTOS que tienes en tu archivo .env
+    const channelId = process.env.NEXT_PUBLIC_CHANNEL_YT_ID;
+    const apiKey = process.env.NEXT_PUBLIC_YT_API_KEY;
 
     if (!channelId || !apiKey) {
-      console.error("Faltan variables de entorno:", { channelId: !!channelId, apiKey: !!apiKey });
+      console.error(" Faltan las API Keys de YouTube en el .env");
       return NextResponse.json(
         { error: "Configuración de YouTube incompleta" },
         { status: 500 }
       );
     }
 
-    console.log("Consultando YouTube API...");
+    // 2. Construimos la URL
+    // Quitamos 'eventType=completed' para que traiga TANTO videos subidos COMO directos pasados.
+    const url = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet,id&order=date&maxResults=1&type=video`;
 
-    const url = `https://youtube.googleapis.com/youtube/v3/search?channelId=${channelId}&part=snippet&type=video&eventType=completed&order=date&maxResults=1&key=${apiKey}`;
+    // 3. Usamos fetch nativo (mejor para Next.js que axios)
+    const response = await fetch(url, {
+      next: { revalidate: 3600 } // Doble seguridad de caché
+    });
 
-    const { data } = await axios.get(url);
+    if (!response.ok) {
+        const errorData = await response.json();
+        console.error("YouTube API Error:", errorData);
+        throw new Error("Error conectando con YouTube");
+    }
+
+    const data = await response.json();
 
     return NextResponse.json(data);
+    
   } catch (error: any) {
-    console.error("YouTube API error:", error.response?.data || error.message);
+    console.error("Server Error:", error.message);
     return NextResponse.json(
-      { error: "Error al obtener datos de YouTube" },
+      { error: "Error interno al obtener datos" },
       { status: 500 }
     );
   }
