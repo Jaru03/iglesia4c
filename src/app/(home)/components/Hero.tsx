@@ -6,7 +6,6 @@ import { Calendar, Heart } from "lucide-react";
 const Hero = () => {
   return (
     <section className="relative h-[100vh] w-full flex items-center justify-center overflow-hidden bg-[#060735]">
-      {/*(Mejora con div separado para efectos) */}
 
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-black/60 z-10"></div>

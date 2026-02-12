@@ -16,6 +16,9 @@ const nextConfig: NextConfig = {
       {
         hostname: 'ytimg.com',
       },
+      {
+        hostname: 'img.youtube.com',
+      },
     ],
   },
 };
