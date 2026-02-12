@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useCalendarApp, ScheduleXCalendar } from '@schedule-x/react'
 import {
   createViewWeek,
@@ -13,14 +13,19 @@ import '@schedule-x/theme-default/dist/index.css'
 import 'temporal-polyfill/global'
 import dayjs from 'dayjs'
 import 'dayjs/locale/es'
-import { events as rawEvents } from '@/mocks/activities'
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Title } from '@/components/typography/Title'
 
+// IMPORTANTE: Esto define lo que TypeScript espera recibir
+// Usamos "any" en los eventos para evitar conflictos estrictos con la librería externa
+interface CalendarAppProps {
+  activities?: any[];
+}
+
 dayjs.locale('es')
 
-export default function CalendarApp() {
+export default function CalendarApp({ activities = [] }: CalendarAppProps) {
   const [currentView, setCurrentView] = useState<'week' | 'month'>('month')
   const [isCalendarReady, setIsCalendarReady] = useState(false)
   const [dateLabel, setDateLabel] = useState('')
@@ -29,17 +34,21 @@ export default function CalendarApp() {
   const calendarControls = useState(() => createCalendarControlsPlugin())[0]
   const eventModal = useState(() => createEventModalPlugin())[0]
 
+  // AQUÍ ESTÁ LA CORRECCIÓN CLAVE 🔧
+  // Volvemos a crear objetos "Temporal" en lugar de strings simples
   const events = useMemo(() => {
-    return rawEvents.map((event: any) => {
-      const start = dayjs(event.start)
-      const end = dayjs(event.end)
+    return activities.map((act: any) => {
+      // Usamos dayjs solo para sacar los números (año, mes, día...)
+      const start = dayjs(act.hour_start)
+      const end = dayjs(act.hour_end)
       
       return {
-        id: String(event.index),
-        title: event.title,
+        id: String(act.id),
+        title: act.title,
+        // TypeScript quiere esto: ZonedDateTime
         start: Temporal.ZonedDateTime.from({
           year: start.year(),
-          month: start.month() + 1,
+          month: start.month() + 1, // dayjs cuenta meses desde 0, Temporal desde 1
           day: start.date(),
           hour: start.hour(),
           minute: start.minute(),
@@ -53,42 +62,52 @@ export default function CalendarApp() {
           minute: end.minute(),
           timeZone: 'Europe/Madrid',
         }),
-        location: event.place,
-        description: event.description,
+        location: act.place,
+        description: act.description,
         calendarId: 'default',
       }
     })
-  }, [])
+  }, [activities])
 
   const updateDateLabel = () => {
     try {
       const date = calendarControls.getDate()
+      // Convertimos a string para formatear el título del mes
       const label = dayjs(date.toString()).format('MMMM YYYY')
       setDateLabel(label)
-    } catch (e) {
-      console.warn('Error updating date label:', e)
-    }
+    } catch (e) {}
   }
 
   const calendar = useCalendarApp({
     views: [createViewWeek(), viewMonthGrid],
-    events: events,
+    events: events, 
     plugins: [eventsService, calendarControls, eventModal],
     locale: 'es-ES',
-    firstDayOfWeek: 1,
+    firstDayOfWeek: 1, 
     defaultView: viewMonthGrid.name,
     callbacks: {
       onRender() {
         setIsCalendarReady(true)
         updateDateLabel()
       },
+      onRangeUpdate() {
+        updateDateLabel()
+      }
     },
   })
 
+  // Efecto para recargar si los datos llegan tarde
+  useEffect(() => {
+    if (eventsService) {
+      eventsService.getAll()
+    }
+  }, [events, eventsService])
+
+  // Lógica de navegación ORIGINAL (la que funciona con Temporal)
   const handlePrev = () => {
     if (!isCalendarReady) return
     try {
-      const current = calendarControls.getDate()
+      const current = calendarControls.getDate() as any
       if (currentView === 'month') {
         calendarControls.setDate(current.subtract({ months: 1 }))
       } else {
@@ -96,14 +115,14 @@ export default function CalendarApp() {
       }
       updateDateLabel()
     } catch (e) {
-      console.warn('Error navigating:', e)
+      console.warn('Error navegando:', e)
     }
   }
 
   const handleNext = () => {
     if (!isCalendarReady) return
     try {
-      const current = calendarControls.getDate()
+      const current = calendarControls.getDate() as any
       if (currentView === 'month') {
         calendarControls.setDate(current.add({ months: 1 }))
       } else {
@@ -111,7 +130,7 @@ export default function CalendarApp() {
       }
       updateDateLabel()
     } catch (e) {
-      console.warn('Error navigating:', e)
+      console.warn('Error navegando:', e)
     }
   }
 
@@ -141,7 +160,7 @@ export default function CalendarApp() {
         </p>
       </div>
 
-      <div className="bg-white rounded-xl md:rounded-2xl border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-xl md:rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
         <div className="p-3 md:p-4 bg-gray-50 border-b border-gray-100">
           <div className="flex flex-wrap flex-col md:flex-row items-center justify-center md:justify-between gap-3">
             <div className="flex items-center gap-1 md:gap-2">
@@ -150,7 +169,7 @@ export default function CalendarApp() {
                 size="sm"
                 onClick={handlePrev}
                 disabled={!isCalendarReady}
-                className="h-8 md:h-9 px-2 md:px-3 text-sm"
+                className="h-8 md:h-9 px-2 md:px-3 text-sm bg-white"
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
@@ -159,7 +178,7 @@ export default function CalendarApp() {
                 variant="outline"
                 onClick={handleToday}
                 disabled={!isCalendarReady}
-                className="h-8 md:h-9 px-3 md:px-4 text-sm font-medium"
+                className="h-8 md:h-9 px-3 md:px-4 text-sm font-medium bg-white"
               >
                 Hoy
               </Button>
@@ -169,13 +188,13 @@ export default function CalendarApp() {
                 size="sm"
                 onClick={handleNext}
                 disabled={!isCalendarReady}
-                className="h-8 md:h-9 px-2 md:px-3 text-sm"
+                className="h-8 md:h-9 px-2 md:px-3 text-sm bg-white"
               >
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
 
-            <h2 className="text-base md:text-xl font-bold text-gray-800 dark:text-gray-200 capitalize w-full text-center order-first md:order-none md:w-auto md:text-left">
+            <h2 className="text-base md:text-xl font-bold text-gray-800 capitalize w-full text-center order-first md:order-none md:w-auto md:text-left">
               {dateLabel || 'Cargando...'}
             </h2>
 
@@ -185,7 +204,7 @@ export default function CalendarApp() {
                 onClick={() => handleViewChange('month')}
                 disabled={!isCalendarReady}
                 size="sm"
-                className="h-8 md:h-9 px-3 md:px-4 text-sm"
+                className={`h-8 md:h-9 px-3 md:px-4 text-sm ${currentView === 'month' ? 'bg-slate-900 text-white' : 'bg-white'}`}
               >
                 <Calendar className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1" />
                 Mes
@@ -195,7 +214,7 @@ export default function CalendarApp() {
                 onClick={() => handleViewChange('week')}
                 disabled={!isCalendarReady}
                 size="sm"
-                className="h-8 md:h-9 px-3 md:px-4 text-sm"
+                className={`h-8 md:h-9 px-3 md:px-4 text-sm ${currentView === 'week' ? 'bg-slate-900 text-white' : 'bg-white'}`}
               >
                 <Calendar className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1" />
                 Semana
@@ -204,7 +223,7 @@ export default function CalendarApp() {
           </div>
         </div>
         
-        <div className="overflow-auto -mx-2 md:mx-0 px-2 md:px-0">
+        <div className="overflow-auto -mx-2 md:mx-0 px-2 md:px-0 bg-white">
           <ScheduleXCalendar 
             calendarApp={calendar}
           />

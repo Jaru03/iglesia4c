@@ -1,14 +1,11 @@
 "use client";
-
+export const dynamic = "force-dynamic";
 import { useState } from "react";
 import Link from "next/link";
 import { crearJoven } from "@/actions/crear-joven"; 
 
 export default function NuevoJovenPage() {
   const [loading, setLoading] = useState(false);
-  
-  // Nota: Mantenemos el estado solo por si necesitas lógica extra, 
-  // pero la acción usará los nombres de los campos directamente.
   const [formData, setFormData] = useState({
     nombres: "",
     apellidos: "",
@@ -39,13 +36,10 @@ export default function NuevoJovenPage() {
       setLoading(false);
     } 
     
-    // Si NO hay error, no hacemos nada aquí. 
-    // La función redirect() dentro de la acción se encargará de movernos de página.
   };
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      {/* CABECERA */}
       <div className="flex items-center gap-4 mb-8">
         <Link href="/admin/jovenes" className="bg-white p-2 rounded-full shadow-sm border border-slate-200 hover:bg-slate-50 transition">
           ⬅️

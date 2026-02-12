@@ -1,136 +1,86 @@
-"use client";
-import { useState, useEffect } from "react";
+import prisma from "@/utils/prisma";
+import ActivityForm from "./ActivityForm"; 
+import { eliminarActividad } from "@/actions/actividades-actions";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
-export default function AdminActivities() {
-  const [activities, setActivities] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  
-  // Estado del formulario
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    place: "",
-    hour_start: "",
-    hour_end: "",
-    urgent: false,
-    img: ""
+export const dynamic = "force-dynamic";
+
+export default async function ActividadesPage() {
+  const actividades = await prisma.activities.findMany({
+    orderBy: { hour_start: "asc" },
   });
 
-  // Cargar actividades al entrar
-  useEffect(() => {
-    fetchActivities();
-  }, []);
-
-  const fetchActivities = async () => {
-    const res = await fetch("/api/activities");
-    const data = await res.json();
-    setActivities(data);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    await fetch("/api/activities", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-
-    // Limpiar y recargar
-    setForm({ title: "", description: "", place: "", hour_start: "", hour_end: "", urgent: false, img: "" });
-    fetchActivities();
-    setLoading(false);
-  };
-
-  const handleDelete = async (id: number) => {
-    if(!confirm("¿Seguro que quieres borrar este evento?")) return;
-    await fetch(`/api/activities?id=${id}`, { method: "DELETE" });
-    fetchActivities();
-  };
-
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold text-slate-800 mb-6">📅 Calendario de Actividades</h1>
+    <div className="max-w-7xl mx-auto p-6">
+      
+      <header className="mb-8 border-b border-slate-200 pb-6">
+        <h1 className="text-3xl font-bold text-slate-800">Agenda y Eventos</h1>
+        <p className="text-slate-500 mt-2">Programa las próximas actividades de la iglesia.</p>
+      </header>
 
-      {/* FORMULARIO DE CREACIÓN */}
-      <div className="bg-white p-6 rounded-xl shadow-sm mb-8 border border-slate-100">
-        <h2 className="text-xl font-semibold mb-4">Nueva Actividad</h2>
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-slate-700">Título del Evento</label>
-            <input required type="text" className="w-full p-2 border rounded mt-1" 
-              value={form.title} onChange={(e) => setForm({...form, title: e.target.value})} placeholder="Ej: Campamento de Verano" />
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* COLUMNA 1: Aquí cargamos el formulario quese crae en el otro archivo */}
+        <div className="lg:col-span-1">
+            <ActivityForm />
+        </div>
 
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-slate-700">Descripción</label>
-            <textarea className="w-full p-2 border rounded mt-1" rows={3}
-              value={form.description} onChange={(e) => setForm({...form, description: e.target.value})} placeholder="Detalles del evento..." />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700">Lugar</label>
-            <input required type="text" className="w-full p-2 border rounded mt-1" 
-              value={form.place} onChange={(e) => setForm({...form, place: e.target.value})} placeholder="Ej: Auditorio Principal" />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700">Imagen (URL Opcional)</label>
-            <input type="text" className="w-full p-2 border rounded mt-1" 
-              value={form.img} onChange={(e) => setForm({...form, img: e.target.value})} placeholder="https://..." />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700">Inicio</label>
-            <input required type="datetime-local" className="w-full p-2 border rounded mt-1" 
-              value={form.hour_start} onChange={(e) => setForm({...form, hour_start: e.target.value})} />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700">Fin</label>
-            <input required type="datetime-local" className="w-full p-2 border rounded mt-1" 
-              value={form.hour_end} onChange={(e) => setForm({...form, hour_end: e.target.value})} />
-          </div>
-
-          <div className="flex items-center gap-2 mt-4">
-             <input type="checkbox" id="urgent" checked={form.urgent} 
-               onChange={(e) => setForm({...form, urgent: e.target.checked})} className="w-5 h-5 text-blue-600" />
-             <label htmlFor="urgent" className="text-sm font-medium text-red-500 font-bold">¿Es Urgente / Destacado?</label>
-          </div>
-
-          <div className="md:col-span-2">
-            <button disabled={loading} type="submit" className="w-full bg-slate-900 text-white p-3 rounded hover:bg-slate-800 transition">
-              {loading ? "Guardando..." : "➕ Crear Evento"}
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {/* LISTA DE EVENTOS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {activities.map((act) => (
-          <div key={act.id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200">
-            <div className="h-32 bg-slate-200 relative">
-               {/* Si quieres mostrar la imagen real: <img src={act.img} className="w-full h-full object-cover" /> */}
-               <div className="absolute bottom-2 left-2 bg-white px-2 py-1 text-xs rounded font-bold shadow">
-                 {new Date(act.hour_start).toLocaleDateString()}
-               </div>
-               {act.urgent && <span className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full animate-pulse">URGENTE</span>}
+        {/* COLUMNA 2: Lista de Eventos*/}
+        <div className="lg:col-span-2 space-y-6">
+            <div className="flex items-center justify-between">
+                <h2 className="font-bold text-xl text-slate-700">
+                    Próximos Eventos <span className="text-sm font-normal text-slate-500 ml-2">({actividades.length})</span>
+                </h2>
             </div>
-            <div className="p-4">
-              <h3 className="font-bold text-lg">{act.title}</h3>
-              <p className="text-slate-500 text-sm mb-2">📍 {act.place}</p>
-              <p className="text-slate-600 text-sm line-clamp-2">{act.description}</p>
-              <div className="mt-4 flex justify-end">
-                <button onClick={() => handleDelete(act.id)} className="text-red-500 hover:text-red-700 text-sm font-medium">
-                  🗑️ Eliminar
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
+
+            {actividades.length === 0 ? (
+                <div className="py-12 text-center bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+                    <p className="text-slate-400">No hay eventos programados.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 gap-4">
+                    {actividades.map((act) => (
+                        <div key={act.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col sm:flex-row gap-5 hover:shadow-md transition group">
+                            
+                            {/* Fecha */}
+                            <div className="flex sm:flex-col items-center justify-center bg-blue-50 text-blue-700 w-full sm:w-24 rounded-lg p-3 h-16 sm:h-auto shrink-0 gap-2 sm:gap-0">
+                                <span className="text-sm font-bold uppercase tracking-wider">{format(new Date(act.hour_start), "MMM", { locale: es })}</span>
+                                <span className="text-2xl font-bold">{format(new Date(act.hour_start), "d")}</span>
+                            </div>
+
+                            {/* Info */}
+                            <div className="flex-1 flex flex-col justify-between overflow-hidden">
+                                <div>
+                                    <h3 className="font-bold text-lg text-slate-800 truncate">{act.title}</h3>
+                                    <p className="text-sm text-slate-500 mt-1 flex items-center gap-1">
+                                        📍 {act.place}
+                                    </p>
+                                    <p className="text-sm text-slate-500 flex items-center gap-1">
+                                        🕒 {format(new Date(act.hour_start), "h:mm a")}
+                                    </p>
+                                </div>
+
+                                {/* Miniatura de la imagen (si tiene) */}
+                                {act.img && (
+                                    <div className="mt-3 h-32 w-full rounded-lg overflow-hidden relative border border-slate-100">
+                                        <img src={act.img} alt={act.title} className="w-full h-full object-cover" />
+                                    </div>
+                                )}
+
+                                <div className="flex justify-end mt-3 pt-3 border-t border-slate-50">
+                                    <form action={eliminarActividad.bind(null, act.id)}>
+                                        <button className="text-xs font-semibold text-red-500 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+                                            Eliminar 🗑️
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
       </div>
     </div>
   );

@@ -3,7 +3,13 @@ import prisma from "@/utils/prisma";
 export async function GET() {
   try {
     const activities = await prisma.activities.findMany({
-      orderBy: { hour_start: 'asc' } 
+      where: {
+        hour_start: {
+          gte: new Date()
+        }
+      },
+      orderBy: { hour_start: 'asc' },
+      take: 3 
     });
     return NextResponse.json(activities);
   } catch (error) {

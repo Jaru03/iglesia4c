@@ -1,19 +1,20 @@
-// prisma/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma/client"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // 1. DEFINICIÓN DE ROLES
 enum Role {
-  ADMIN
+  SUPERADMIN // <--- NUEVO: El único que puede crear otros admins
+  ADMIN // <--- Gestiona jóvenes y asistencias
+  LIDER // <--- Solo toma asistencia (Kiosco)
   REGISTRO
-  LIDER
 }
 
 // 2. MODELO DE USUARIO 
@@ -80,8 +81,8 @@ model Joven {
   fechaNacimiento DateTime?
   sede            String
 
-  ultimaVisita DateTime @default(now())
-  activo       Boolean  @default(true)
+  ultimaVisita DateTime? @default(now())
+  activo       Boolean   @default(true)
 
   asistencias Asistencia[]
 }
@@ -92,4 +93,13 @@ model Asistencia {
 
   jovenId Int
   joven   Joven @relation(fields: [jovenId], references: [id], onDelete: Cascade)
+}
+
+// --- NUEVO: GESTIÓN DE EQUIPO (Para que funcione el login seguro) ---
+model AllowedUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      String   @default("LIDER")
+  createdAt DateTime @default(now())
 }

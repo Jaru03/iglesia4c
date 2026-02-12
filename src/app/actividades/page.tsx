@@ -1,49 +1,93 @@
+import prisma from "@/utils/prisma";
 import { SpinningTextLabel } from "@/components/SpinningTextLabel";
 import Activity from "@/components/Activity";
 import CalendarActivities from "@/app/actividades/components/CalendarApp";
 import dayjs from "dayjs";
-import { events } from "@/mocks/activities";
+import "dayjs/locale/es";
 import { CallToAction } from "@/components/CallToAction";
 import { HeroTitle } from "@/components/typography/HeroTitle";
 import { Subtitle } from "@/components/typography/Subtitle";
+export const dynamic = "force-dynamic";
 
-const page = () => {
+const page = async () => {
+  // 1. Traemos TODOS los eventos desde hoy en adelante
+  const todasLasActividades = await prisma.activities.findMany({
+    where: {
+      hour_start: {
+        gte: new Date(), // Desde hoy
+      },
+    },
+    orderBy: {
+      hour_start: "asc",
+    },
+  });
+
+  // 2. LÓGICA DE SEPARACIÓN
+  const hoy = new Date();
+  const mesActual = hoy.getMonth(); // 0 = Enero, 1 = Febrero...
+  const anioActual = hoy.getFullYear();
+
+  const eventosEsteMes = todasLasActividades.filter((act) => {
+    const fecha = new Date(act.hour_start);
+    return fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual;
+  });
+
+  const eventosFuturos = todasLasActividades.filter((act) => {
+    const fecha = new Date(act.hour_start);
+    return (fecha.getMonth() !== mesActual && fecha.getFullYear() === anioActual) || fecha.getFullYear() > anioActual;
+  });
+
   return (
     <>
       <section>
+        {/* HERO */}
         <div className="relative bg-[url(../../public/actividades-banner.jpg)] h-screen bg-no-repeat bg-center bg-cover before:absolute before:inset-0 before:bg-black/50 before:content-[''] flex flex-col justify-center items-center">
           <HeroTitle title="Actividades" size="large" />
-
           <SpinningTextLabel />
         </div>
-        <div className="section-sm container-page flex flex-col gap-6">
-          <CalendarActivities />
-        </div>
 
+        {/* 📅 CALENDARIO (AGENDA DE ESTE MES) */}
+<div className="section-sm container-page flex flex-col gap-6">
+  <CalendarActivities activities={eventosEsteMes} />
+</div>
+
+        {/* 👇 LISTA DE PRÓXIMOS EVENTOS (MESES SIGUIENTES) */}
         <div className="bg-secondary section">
           <div className="container-page">
-            <Subtitle className="mb-8 text-center">Más actividades</Subtitle>
+            <Subtitle className="mb-8 text-center">Próximamente...</Subtitle>
 
             <div className="flex flex-col gap-y-8 max-w-7xl justify-center mx-auto">
-              {events.map((activity) => (
-                <Activity
-                  key={activity.index}
-                  button={false}
-                  description={activity.description}
-                  hour={dayjs(activity.start.toString()).format("HH:mm")}
-                  image={activity.img}
-                  place={activity.place}
-                  title={activity.title}
-                  className="pb-8"
-                />
-              ))}
+              {eventosFuturos.length === 0 ? (
+                <div className="text-center py-10">
+                  <p className="text-slate-500 text-lg">
+                    No hay eventos programados para los próximos meses todavía.
+                  </p>
+                  <p className="text-slate-400 text-sm">
+                    ¡Revisa la agenda de arriba para ver lo de este mes!
+                  </p>
+                </div>
+              ) : (
+                eventosFuturos.map((activity) => (
+                  <Activity
+                    key={activity.id}
+                    button={false}
+                    description={activity.description || "Te esperamos."}
+                    hour={dayjs(activity.hour_start).format("HH:mm")}
+                    image={activity.img || "/images/placeholder-evento.jpg"}
+                    place={activity.place}
+                    title={activity.title}
+                    className="pb-8"
+                  />
+                ))
+              )}
             </div>
           </div>
         </div>
 
+        {/* CALL TO ACTION */}
         <CallToAction
           title="¡Únete a Nuestra Comunidad!"
-          description="Participa en nuestras actividades y forma parte de una comunidad que crece en fe, amor y servicio. Cada actividad es una oportunidad para conectarte con Dios y con los demás miembros de nuestra iglesia."
+          description="Participa en nuestras actividades..."
           icon="users"
           iconLabel="Comunidad"
           buttons={[
@@ -61,7 +105,7 @@ const page = () => {
             },
           ]}
           quote={{
-            text: "Donde dos o tres se congregan en mi nombre, allí estoy yo en medio de ellos",
+            text: "Donde dos o tres se congregan en mi nombre...",
             reference: "- Mateo 18:20",
           }}
         />
