@@ -8,7 +8,7 @@ import {
   ClipboardCheck, 
   Activity, 
   Video, 
-  Calendar, 
+  Home,
   MessageCircle,
   LogOut,
   Shield // 2. Icono para el Superadmin
@@ -103,7 +103,14 @@ export default function Sidebar() {
       </nav>
 
       {/* FOOTER DEL SIDEBAR */}
-      <div className="p-4 border-t border-slate-800">
+      <div className="p-4 border-t border-slate-800 space-y-2">
+        <Link
+          href="/"
+          className="flex items-center gap-3 px-4 py-3 w-full text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition-all"
+        >
+          <Home size={20} />
+          Ir al Home
+        </Link>
         <button 
             onClick={() => signOut({ callbackUrl: "/login" })}
             className="flex items-center gap-3 px-4 py-3 w-full text-red-400 hover:bg-red-900/20 rounded-xl transition-all cursor-pointer"
