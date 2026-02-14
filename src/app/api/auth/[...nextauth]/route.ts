@@ -12,19 +12,22 @@ const handler = NextAuth({
         password: { label: "Contraseña", type: "password" }
       },
       async authorize(credentials) {
+        const email = credentials?.email?.toLowerCase().trim();
+        const password = credentials?.password;
+
         console.log("🔍 INTENTO DE LOGIN:");
-        console.log("   - Email recibido:", credentials?.email);
-        console.log("   - Password recibida:", credentials?.password);
+        console.log("   - Email recibido:", email);
+        console.log("   - Password recibida:", password);
 
         // 1. Validar que vengan datos
-        if (!credentials?.email || !credentials?.password) {
+        if (!email || !password) {
           console.log("❌ FALLO: Faltan credenciales");
           throw new Error("Faltan credenciales");
         }
 
         // 2. Buscar el usuario en la tabla de Usuarios Registrados (User)
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email }
+          where: { email }
         });
 
         console.log("   - Usuario en DB (Tabla User):", user ? "ENCONTRADO ✅" : "NO EXISTE ❌");
@@ -32,14 +35,14 @@ const handler = NextAuth({
         if (!user) throw new Error("Usuario no encontrado");
 
         // 3. Comparar contraseña
-        const isValid = await bcrypt.compare(credentials.password, user.password);
+        const isValid = await bcrypt.compare(password, user.password);
         console.log("   - Contraseña válida:", isValid ? "SÍ ✅" : "NO ❌");
         
         if (!isValid) throw new Error("Contraseña incorrecta");
 
         // 4. VALIDACIÓN DE SEGURIDAD (WHITELIST)
         const allowed = await prisma.allowedUser.findUnique({
-          where: { email: credentials.email } 
+          where: { email } 
         });
 
         console.log("   - Permiso en AllowedUser:", allowed ? "AUTORIZADO ✅" : "BLOQUEADO (No está en la lista) ❌");

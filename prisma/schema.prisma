@@ -11,9 +11,9 @@ datasource db {
 
 // 1. DEFINICIÓN DE ROLES
 enum Role {
-  SUPERADMIN  // <--- NUEVO: El único que puede crear otros admins
-  ADMIN       // <--- Gestiona jóvenes y asistencias
-  LIDER       // <--- Solo toma asistencia (Kiosco)
+  SUPERADMIN  
+  ADMIN       
+  LIDER       
   REGISTRO    
 }
 
@@ -80,10 +80,10 @@ model Joven {
   telefono        String?      
   fechaNacimiento DateTime?
   sede            String
-  
+  grupoId         Int?     
+  grupo           Grupo?    @relation(fields: [grupoId], references: [id])
   ultimaVisita    DateTime?     @default(now())
   activo          Boolean      @default(true)
-  
   asistencias     Asistencia[]
 }
 
@@ -95,11 +95,64 @@ model Asistencia {
   joven   Joven    @relation(fields: [jovenId], references: [id], onDelete: Cascade)
 }
 
-// --- NUEVO: GESTIÓN DE EQUIPO (Para que funcione el login seguro) ---
+// --- NUEVO: GESTIÓN DE EQUIPO ---
 model AllowedUser {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String?
   role      String   @default("LIDER") 
   createdAt DateTime @default(now())
+}
+// --- ZONA DE UJIERES Y REGISTRO ---
+
+model Persona {
+  id          String     @id @default(cuid())
+  nombre      String
+  telefono    String?   
+  FechaNacimiento DateTime?
+  esNuevo     Boolean    @default(true)
+  esJoven     Boolean    @default(false)
+  fechaVisita DateTime   @default(now())
+  estado          String     @default("NUEVO") 
+  conteoVisitas   Int        @default(1)       
+  jovenId         Int?
+  peticiones  Peticion[] 
+}
+
+model Peticion {
+  id          String   @id @default(cuid())
+  motivo      String  
+  estado      EstadoPeticion @default(PENDIENTE)
+  fecha       DateTime @default(now())
+  personaId   String?
+  persona     Persona? @relation(fields: [personaId], references: [id])
+}
+
+enum EstadoPeticion {
+  PENDIENTE
+  ORANDO
+  RESPONDIDA
+}
+// --- GRUPOS DE CONEXIÓN / CÉLULAS ---
+model Grupo {
+  id          Int      @id @default(autoincrement())
+  nombre      String   
+  lider       String   
+  dia         String   
+  hora        String   
+  direccion   String   
+  tipo        String   
+  activo      Boolean  @default(true)
+  miembros    Joven[]  
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  module      String
+  action      String
+  entity      String
+  entityId    String?
+  description String?
+  actorEmail  String?  @default("sistema")
+  createdAt   DateTime @default(now())
 }

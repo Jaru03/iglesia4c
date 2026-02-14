@@ -174,6 +174,7 @@ exports.Prisma.JovenScalarFieldEnum = {
   telefono: 'telefono',
   fechaNacimiento: 'fechaNacimiento',
   sede: 'sede',
+  grupoId: 'grupoId',
   ultimaVisita: 'ultimaVisita',
   activo: 'activo'
 };
@@ -189,6 +190,49 @@ exports.Prisma.AllowedUserScalarFieldEnum = {
   email: 'email',
   name: 'name',
   role: 'role',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.PersonaScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre',
+  telefono: 'telefono',
+  FechaNacimiento: 'FechaNacimiento',
+  esNuevo: 'esNuevo',
+  esJoven: 'esJoven',
+  fechaVisita: 'fechaVisita',
+  estado: 'estado',
+  conteoVisitas: 'conteoVisitas',
+  jovenId: 'jovenId'
+};
+
+exports.Prisma.PeticionScalarFieldEnum = {
+  id: 'id',
+  motivo: 'motivo',
+  estado: 'estado',
+  fecha: 'fecha',
+  personaId: 'personaId'
+};
+
+exports.Prisma.GrupoScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre',
+  lider: 'lider',
+  dia: 'dia',
+  hora: 'hora',
+  direccion: 'direccion',
+  tipo: 'tipo',
+  activo: 'activo'
+};
+
+exports.Prisma.AuditLogScalarFieldEnum = {
+  id: 'id',
+  module: 'module',
+  action: 'action',
+  entity: 'entity',
+  entityId: 'entityId',
+  description: 'description',
+  actorEmail: 'actorEmail',
   createdAt: 'createdAt'
 };
 
@@ -213,6 +257,12 @@ exports.Role = exports.$Enums.Role = {
   REGISTRO: 'REGISTRO'
 };
 
+exports.EstadoPeticion = exports.$Enums.EstadoPeticion = {
+  PENDIENTE: 'PENDIENTE',
+  ORANDO: 'ORANDO',
+  RESPONDIDA: 'RESPONDIDA'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Area: 'Area',
@@ -221,7 +271,11 @@ exports.Prisma.ModelName = {
   LastActivities: 'LastActivities',
   Joven: 'Joven',
   Asistencia: 'Asistencia',
-  AllowedUser: 'AllowedUser'
+  AllowedUser: 'AllowedUser',
+  Persona: 'Persona',
+  Peticion: 'Peticion',
+  Grupo: 'Grupo',
+  AuditLog: 'AuditLog'
 };
 
 /**

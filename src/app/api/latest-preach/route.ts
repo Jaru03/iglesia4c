@@ -1,7 +1,4 @@
 import { NextResponse } from "next/server";
-
-// Esto evita que se quede cacheado para siempre, pero tampoco llama a YouTube en cada visita.
-// Actualiza cada 1 hora (3600 segundos).
 export const revalidate = 3600;
 
 export async function GET() {

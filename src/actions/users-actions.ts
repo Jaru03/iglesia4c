@@ -2,6 +2,7 @@
 
 import prisma from "@/utils/prisma";
 import { revalidatePath } from "next/cache";
+import { logAudit } from "./audit-actions";
 
 export async function agregarUsuario(formData: FormData) {
   const email = formData.get("email") as string;
@@ -11,12 +12,19 @@ export async function agregarUsuario(formData: FormData) {
   if (!email) return;
 
   try {
-    await prisma.allowedUser.create({
+    const nuevo = await prisma.allowedUser.create({
       data: {
         email: email.toLowerCase(),
         name,
         role,
       },
+    });
+    await logAudit({
+      module: "EQUIPO",
+      action: "CREATE",
+      entity: "AllowedUser",
+      entityId: nuevo.id,
+      description: `Correo autorizado: ${nuevo.email}`,
     });
     revalidatePath("/admin/equipo");
   } catch (error) {
@@ -26,8 +34,15 @@ export async function agregarUsuario(formData: FormData) {
 }
 
 export async function eliminarUsuario(id: string) {
-  await prisma.allowedUser.delete({
+  const user = await prisma.allowedUser.delete({
     where: { id },
+  });
+  await logAudit({
+    module: "EQUIPO",
+    action: "DELETE",
+    entity: "AllowedUser",
+    entityId: id,
+    description: `Se retiró acceso a: ${user.email}`,
   });
   revalidatePath("/admin/equipo");
 }

@@ -72,9 +72,9 @@ export default function NuevoJovenPage() {
           <div className="col-span-2 md:col-span-1">
             <label className="block text-sm font-bold text-slate-700 mb-2">Sede *</label>
             <select name="sede" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer" onChange={handleChange}>
-              <option value="Plaza Castilla">Plaza Castilla</option>
-              <option value="Vallecas">Vallecas</option>
-              <option value="Villaverde">Villaverde</option>
+              <option value="P.Castilla">P.Castilla</option>
+              <option value="Pinto">Pinto</option>
+              <option value="Parla">Parla</option>
             </select>
           </div>
 
