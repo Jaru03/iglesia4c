@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { HandHeart, Mail, Phone, MessageSquare, Send, Loader2, User } from "lucide-react";
 import toast from "react-hot-toast";
-import emailjs from "@emailjs/browser";
+import { enviarPeticionOracion } from "@/actions/oracion-actions";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -52,36 +52,28 @@ const PrayForm = () => {
     },
   });
 
-  const { formState: { isSubmitting } } = form;
+  const {
+    formState: { isSubmitting },
+  } = form;
 
   const onSubmit = async (data: PrayFormData) => {
-    try {
-      setIsSubmitting(true);
+    const payload = new FormData();
+    payload.append("nombre", data.nombre);
+    payload.append("email", data.email);
+    payload.append("phone", data.phone);
+    payload.append("typePetition", data.typePetition);
+    payload.append("content", data.content);
 
-      const sendEmailPromise = emailjs.sendForm(
-        process.env.NEXT_PUBLIC_SERVICE_ID_API_KEY!,
-        process.env.NEXT_PUBLIC_TEMPLATE_ID_API_KEY!,
-        form.getValues() as unknown as HTMLFormElement,
-        { publicKey: process.env.NEXT_PUBLIC_PUBLIC_ID_API_KEY! }
-      );
+    const promise = enviarPeticionOracion(payload);
+    toast.promise(promise, {
+      loading: "Enviando petición...",
+      success: (res) => res?.success || "Petición enviada correctamente",
+      error: (res) => res?.error || "Hubo un problema al enviar la petición",
+    });
 
-      toast.promise(sendEmailPromise, {
-        loading: "Enviando petición...",
-        success: "Petición enviada correctamente",
-        error: "Hubo un problema al enviar la petición",
-      });
-
-      await sendEmailPromise;
-      form.reset();
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const setIsSubmitting = (value: boolean) => {
-    form.setValue("content" as never, value as never);
+    const result = await promise;
+    if (result?.error) return;
+    form.reset();
   };
 
   return (
@@ -226,10 +218,7 @@ const PrayForm = () => {
                   <FormItem>
                     <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md">
                       <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel className="text-sm text-gray-600">
@@ -246,13 +235,7 @@ const PrayForm = () => {
                 )}
               />
 
-              <Button
-                type="submit"
-                variant="cta"
-                size="lg"
-                className="w-full"
-                disabled={isSubmitting}
-              >
+              <Button type="submit" variant="cta" size="lg" className="w-full" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -268,9 +251,7 @@ const PrayForm = () => {
             </div>
 
             <div className="text-center text-xs text-gray-500 pt-4 border-t border-gray-100">
-              <p>
-                Tu petición será atendida por nuestro equipo pastoral con oración y discreción.
-              </p>
+              <p>Tu petición será atendida por nuestro equipo pastoral con oración y discreción.</p>
             </div>
           </div>
         </form>
