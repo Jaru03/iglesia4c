@@ -4,6 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -77,6 +78,13 @@ export default function LoginPage() {
             {loading ? 'Entrando...' : 'Iniciar Sesión'}
           </Button>
         </form>
+
+        <p className="mt-6 text-center text-sm text-slate-500">
+          ¿No tienes cuenta?{" "}
+          <Link href="/registrarse" className="text-blue-600 font-semibold hover:text-blue-700">
+            Registrarse
+          </Link>
+        </p>
       </div>
     </div>
   );

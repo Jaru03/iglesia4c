@@ -1,8 +1,7 @@
 import prisma from "@/utils/prisma";
-import ActivityForm from "./ActivityForm"; 
-import { eliminarActividad } from "@/actions/actividades-actions";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import ActivityForm from "./ActivityForm";
+import ActivitiesBoard from "./ActivitiesBoard";
+import { isFuture, isToday } from "date-fns";
 
 export const dynamic = "force-dynamic";
 
@@ -11,75 +10,54 @@ export default async function ActividadesPage() {
     orderBy: { hour_start: "asc" },
   });
 
+  const total = actividades.length;
+  const hoy = actividades.filter((a) => isToday(new Date(a.hour_start))).length;
+  const proximas = actividades.filter((a) => isFuture(new Date(a.hour_start))).length;
+  const conImagen = actividades.filter((a) => !!a.img).length;
+
+  const activitiesSerialized = actividades.map((a) => ({
+    id: a.id,
+    title: a.title,
+    place: a.place,
+    img: a.img,
+    hour_start: a.hour_start.toISOString(),
+    hour_end: a.hour_end.toISOString(),
+  }));
+
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      
-      <header className="mb-8 border-b border-slate-200 pb-6">
-        <h1 className="text-3xl font-bold text-slate-800">Agenda y Eventos</h1>
-        <p className="text-slate-500 mt-2">Programa las próximas actividades de la iglesia.</p>
+    <div className="w-full max-w-7xl mx-auto p-3 md:p-6 space-y-6">
+      <header className="rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-800">Agenda y Eventos</h1>
+        <p className="text-sm md:text-base text-slate-500 mt-1">
+          Crea, edita y organiza todas las actividades desde un solo panel.
+        </p>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* COLUMNA 1: Aquí cargamos el formulario quese crae en el otro archivo */}
-        <div className="lg:col-span-1">
-            <ActivityForm />
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <article className="bg-white border border-slate-200 rounded-xl p-4">
+          <p className="text-xs font-semibold uppercase text-slate-500">Total</p>
+          <p className="text-3xl font-black text-slate-800 mt-1">{total}</p>
+        </article>
+        <article className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+          <p className="text-xs font-semibold uppercase text-blue-600">Hoy</p>
+          <p className="text-3xl font-black text-blue-700 mt-1">{hoy}</p>
+        </article>
+        <article className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+          <p className="text-xs font-semibold uppercase text-emerald-700">Próximas</p>
+          <p className="text-3xl font-black text-emerald-700 mt-1">{proximas}</p>
+        </article>
+        <article className="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
+          <p className="text-xs font-semibold uppercase text-indigo-600">Con Imagen</p>
+          <p className="text-3xl font-black text-indigo-700 mt-1">{conImagen}</p>
+        </article>
+      </section>
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div className="xl:col-span-2 order-2 xl:order-1">
+          <ActivitiesBoard activities={activitiesSerialized} />
         </div>
-
-        {/* COLUMNA 2: Lista de Eventos*/}
-        <div className="lg:col-span-2 space-y-6">
-            <div className="flex items-center justify-between">
-                <h2 className="font-bold text-xl text-slate-700">
-                    Próximos Eventos <span className="text-sm font-normal text-slate-500 ml-2">({actividades.length})</span>
-                </h2>
-            </div>
-
-            {actividades.length === 0 ? (
-                <div className="py-12 text-center bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
-                    <p className="text-slate-400">No hay eventos programados.</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 gap-4">
-                    {actividades.map((act) => (
-                        <div key={act.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col sm:flex-row gap-5 hover:shadow-md transition group">
-                            
-                            {/* Fecha */}
-                            <div className="flex sm:flex-col items-center justify-center bg-blue-50 text-blue-700 w-full sm:w-24 rounded-lg p-3 h-16 sm:h-auto shrink-0 gap-2 sm:gap-0">
-                                <span className="text-sm font-bold uppercase tracking-wider">{format(new Date(act.hour_start), "MMM", { locale: es })}</span>
-                                <span className="text-2xl font-bold">{format(new Date(act.hour_start), "d")}</span>
-                            </div>
-
-                            {/* Info */}
-                            <div className="flex-1 flex flex-col justify-between overflow-hidden">
-                                <div>
-                                    <h3 className="font-bold text-lg text-slate-800 truncate">{act.title}</h3>
-                                    <p className="text-sm text-slate-500 mt-1 flex items-center gap-1">
-                                        📍 {act.place}
-                                    </p>
-                                    <p className="text-sm text-slate-500 flex items-center gap-1">
-                                        🕒 {format(new Date(act.hour_start), "h:mm a")}
-                                    </p>
-                                </div>
-
-                                {/* Miniatura de la imagen (si tiene) */}
-                                {act.img && (
-                                    <div className="mt-3 h-32 w-full rounded-lg overflow-hidden relative border border-slate-100">
-                                        <img src={act.img} alt={act.title} className="w-full h-full object-cover" />
-                                    </div>
-                                )}
-
-                                <div className="flex justify-end mt-3 pt-3 border-t border-slate-50">
-                                    <form action={eliminarActividad.bind(null, act.id)}>
-                                        <button className="text-xs font-semibold text-red-500 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition flex items-center gap-1">
-                                            Eliminar 🗑️
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+        <div className="xl:col-span-1 order-1 xl:order-2">
+          <ActivityForm />
         </div>
       </div>
     </div>

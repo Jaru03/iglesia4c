@@ -10,7 +10,8 @@ export default function HideInAdmin({ children }: { children: React.ReactNode })
     pathname.startsWith("/admin") || 
     pathname.startsWith("/check-in") || 
     pathname.startsWith("/kiosko") || 
-    pathname === "/login"
+    pathname === "/login" ||
+    pathname === "/registrarse"
   ) {
     return null;
   }
