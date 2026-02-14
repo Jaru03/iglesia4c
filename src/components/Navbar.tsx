@@ -33,6 +33,10 @@ const Navbar = () => {
 
   const currentRoute = usePathname();
 
+  if (currentRoute === "/registro") {
+    return null;
+  }
+
   const isActive = (value: string, name: string) => {
     if (value.startsWith("http")) return false;
     const normalizedValue = value.replace(/\/$/, "");
@@ -87,13 +91,13 @@ const Navbar = () => {
                           : `Ir a ${item.name}`
                       }
                       className={`transition-all duration-200 ease-in-out flex items-center justify-center
-                            ${
-                              isSpecial
-                                ? /* ESTILO VIP para Iniciar Sesión*/
-                                  "bg-white text-[#060735] font-bold px-2.5 py-1.5 text-sm text-center rounded-full shadow-md hover:scale-105"
-                                : /* ESTILO NORMAL mejorado*/
-                                  `text-white px-3 py-1.5 rounded-full hover:bg-white/10 hover:scale-105 ${active ? "font-bold bg-white/20" : ""}`
-                            }
+                          ${
+                            isSpecial
+                              ? /* ESTILO VIP para Iniciar Sesión*/
+                                "bg-white text-[#060735] font-bold px-2.5 py-1.5 text-sm text-center rounded-full shadow-md hover:scale-105"
+                              : /* ESTILO NORMAL mejorado*/
+                                `text-white px-3 py-1.5 rounded-full hover:bg-white/10 hover:scale-105 ${active ? "font-bold bg-white/20" : ""}`
+                          }
                         `}
                       suppressHydrationWarning
                     >

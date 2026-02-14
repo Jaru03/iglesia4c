@@ -1,125 +1,78 @@
 import prisma from "@/utils/prisma";
-import { formatDistanceToNow, format } from "date-fns";
-import { es } from "date-fns/locale";
+import TablaAsistentes from "./TablaAsistentes";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
-export default async function AsistenciasPage() {
- 
-  const fechaLimite = new Date();
-  fechaLimite.setDate(fechaLimite.getDate() - 15);
-
-  const jovenesEnRiesgo = await prisma.joven.findMany({
-    where: {
-      OR: [
-        { ultimaVisita: { lt: fechaLimite } }, 
-        { ultimaVisita: null } 
-      ],
-      activo: true, 
-    },
-    orderBy: { ultimaVisita: 'asc' }, 
-    });
-
-  const historialAsistencias = await prisma.asistencia.findMany({
-    take: 20, // Últimos 20 registros
-    orderBy: { fecha: 'desc' },
+export default async function AsistenciasGeneralPage() {
+  const asistentes = await prisma.persona.findMany({
     include: {
-      joven: true, // Traer el nombre del joven
+      peticiones: true, 
+    },
+    orderBy: {
+      fechaVisita: "desc", 
     },
   });
 
+  // --- LÓGICA DE CUMPLEAÑOS 🎉 ---
+  const hoy = new Date();
+  const mesActual = hoy.getMonth();
+  const diaActual = hoy.getDate();
+
+  const cumpleañeros = asistentes.filter(p => {
+    if (!p.FechaNacimiento) return false;
+    const fechaNac = new Date(p.FechaNacimiento);
+    const cumpleHoy = fechaNac.getDate() === diaActual && fechaNac.getMonth() === mesActual;
+    return cumpleHoy; 
+  });
+
+  const totalPersonas = asistentes.length;
+  const totalNuevos = asistentes.filter(p => p.esNuevo).length;
+  const oracionesPendientes = asistentes.reduce((acc, p) => {
+    return acc + p.peticiones.filter(pet => pet.estado === "PENDIENTE").length;
+  }, 0);
+
   return (
-    <div>
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-800">Control de Asistencias</h1>
-        <p className="text-slate-500">Detecta ausencias y revisa quién vino.</p>
+    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
+      
+      <header className="mb-6">
+        <h1 className="text-3xl font-bold text-slate-800">👥 Puerta y Consolidación</h1>
+        <p className="text-slate-500 mt-2">Gestión de visitantes y ministerio de oración.</p>
       </header>
 
-      {/* --- SECCIÓN 1: ALERTA DE RIESGO (LO MÁS IMPORTANTE) --- */}
-      <div className="bg-white rounded-2xl shadow-sm border border-red-100 overflow-hidden mb-8">
-        <div className="bg-red-50 p-6 border-b border-red-100 flex justify-between items-center">
-          <div>
-            <h2 className="text-xl font-bold text-red-800 flex items-center gap-2">
-              ⚠️ Radar de Ausencias
-            </h2>
-            <p className="text-red-600 text-sm mt-1">
-              Jóvenes que no han asistido en los últimos 15 días.
-            </p>
-          </div>
-          <span className="bg-red-200 text-red-800 py-1 px-3 rounded-full text-sm font-bold">
-            {jovenesEnRiesgo.length} en riesgo
-          </span>
-        </div>
-
-        <div className="p-0">
-          {jovenesEnRiesgo.length === 0 ? (
-            <div className="p-8 text-center text-green-600 font-medium">
-              ¡Increíble! Todos los jóvenes han venido recientemente. 🎉
+      {/* --- SECCIÓN DE ALERTAS (CUMPLEAÑOS) --- */}
+      {cumpleañeros.length > 0 && (
+        <div className="bg-gradient-to-r from-pink-500 to-rose-500 rounded-2xl p-6 shadow-lg text-white flex items-center justify-between animate-in slide-in-from-top duration-500">
+            <div>
+                <h3 className="text-2xl font-bold flex items-center gap-2">
+                    🎂 ¡Hay Cumpleaños Hoy!
+                </h3>
+                <p className="text-pink-100 mt-1">
+                    No olvides felicitar a: <span className="font-bold text-white text-lg">{cumpleañeros.map(c => c.nombre).join(", ")}</span>
+                </p>
             </div>
-          ) : (
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-medium">
-                <tr>
-                  <th className="px-6 py-4">Nombre</th>
-                  <th className="px-6 py-4">Última Vez Visto</th>
-                  <th className="px-6 py-4 text-center">Estado</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {jovenesEnRiesgo.map((joven) => (
-                  <tr key={joven.id} className="hover:bg-red-50/30 transition">
-                    <td className="px-6 py-4 font-medium text-slate-800">
-                      {joven.nombres} {joven.apellidos}
-                      <div className="text-xs text-slate-400">Telf: {joven.telefono || "Sin número"}</div>
-                    </td>
-                    <td className="px-6 py-4 text-slate-600">
-                      {joven.ultimaVisita 
-                        ? `Hace ${formatDistanceToNow(new Date(joven.ultimaVisita), { locale: es })}`
-                        : "Nunca ha marcado"}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <button className="text-xs bg-white border border-red-200 text-red-600 px-3 py-1 rounded hover:bg-red-600 hover:text-white transition">
-                        Contactar 📞
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+            <div className="text-4xl">🎉</div>
+        </div>
+      )}
+
+      {/* TARJETAS DE ESTADÍSTICAS */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+          <h3 className="text-slate-500 text-sm font-semibold uppercase tracking-wider">Total Lista</h3>
+          <p className="text-4xl font-black text-slate-800 mt-2">{totalPersonas}</p>
+        </div>
+        <div className="bg-blue-50 border border-blue-100 p-6 rounded-2xl shadow-sm">
+          <h3 className="text-blue-600 text-sm font-semibold uppercase tracking-wider">Total Nuevos ✨</h3>
+          <p className="text-4xl font-black text-blue-700 mt-2">{totalNuevos}</p>
+        </div>
+        <div className="bg-purple-50 border border-purple-100 p-6 rounded-2xl shadow-sm">
+          <h3 className="text-purple-600 text-sm font-semibold uppercase tracking-wider">Por Orar 🙏</h3>
+          <p className="text-4xl font-black text-purple-700 mt-2">{oracionesPendientes}</p>
         </div>
       </div>
 
-      {/* --- SECCIÓN 2: HISTORIAL DE ASISTENCIA --- */}
-      <h3 className="text-xl font-bold text-slate-700 mb-4">Historial Reciente</h3>
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-medium">
-            <tr>
-              <th className="px-6 py-4">Fecha y Hora</th>
-              <th className="px-6 py-4">Joven</th>
-              <th className="px-6 py-4">Sede</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {historialAsistencias.map((registro) => (
-              <tr key={registro.id} className="hover:bg-slate-50 transition">
-                <td className="px-6 py-4 text-slate-600 text-sm">
-                  {format(new Date(registro.fecha), "dd MMM yyyy - h:mm a", { locale: es })}
-                </td>
-                <td className="px-6 py-4 font-medium text-slate-800">
-                  {registro.joven.nombres} {registro.joven.apellidos}
-                </td>
-                <td className="px-6 py-4">
-                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded font-bold">
-                    {registro.joven.sede || "General"}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <TablaAsistentes asistentes={asistentes} />
+
     </div>
   );
 }

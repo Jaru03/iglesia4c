@@ -3,16 +3,22 @@
 import { crearActividad } from "@/actions/actividades-actions";
 import ImageUpload from "@/components/ImageUpload";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 export default function ActivityForm() {
   const [imgUrl, setImgUrl] = useState("");
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 sticky top-8">
+    <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100 md:sticky md:top-8">
       <h2 className="font-bold text-lg mb-4 text-slate-700">🗓️ Crear Evento</h2>
       
       <form action={async (formData) => {
-          await crearActividad(formData);
+          const res = await crearActividad(formData);
+          if (res?.error) {
+            toast.error(res.error);
+            return;
+          }
+          toast.success(res?.success || "Actividad guardada");
           setImgUrl("");
       }} className="space-y-4">
         
@@ -37,7 +43,7 @@ export default function ActivityForm() {
           <input type="date" name="fecha" required className="w-full p-2 border rounded-lg mt-1" />
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <div>
             <label className="text-xs font-bold text-slate-500 uppercase">Inicio</label>
             <input type="time" name="horaInicio" required className="w-full p-2 border rounded-lg mt-1" />

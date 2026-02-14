@@ -5,28 +5,32 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 import { type CarouselApi } from '@/components/ui/carousel'
 import { CallToAction } from '@/components/CallToAction'
 import { Subtitle } from '@/components/typography/Subtitle'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Autoplay from 'embla-carousel-autoplay'
 
 interface Slider {
-  key: number
+  id: number // Cambié 'key' a 'id' para evitar conflictos con palabras reservadas de React
   title: string
   image: string
 }
 
 const LastActivities = () => {
-
   const slider: Slider[] = [
-    { key: 1, title: "Culto del Domingo", image: "/cultoDomingo-2.jpg" },
-    { key: 2, title: "Culto del Domingo", image: "/cultoDomingo-1.jpg" },
-    { key: 3, title: "Culto del Domingo", image: "/cultoDomingo-3.jpg" },
-    { key: 4, title: "Santa Cena", image: "/cultoSantaCena-1.jpg" },
-    { key: 5, title: "Santa Cena", image: "/cultoSantaCena-2.jpg" },
+    { id: 1, title: "Culto del Domingo", image: "/cultoDomingo-2.jpg" },
+    { id: 2, title: "Culto del Domingo", image: "/cultoDomingo-1.jpg" },
+    { id: 3, title: "Culto del Domingo", image: "/cultoDomingo-3.jpg" },
+    { id: 4, title: "Santa Cena", image: "/cultoSantaCena-1.jpg" },
+    { id: 5, title: "Santa Cena", image: "/cultoSantaCena-2.jpg" },
   ]
 
   const [api, setApi] = useState<CarouselApi>()
   const [current, setCurrent] = useState(0)
   const [count, setCount] = useState(0)
+
+  // Usamos useRef para guardar el plugin y acceder a sus métodos (como .stop o .reset)
+  const plugin = useRef(
+    Autoplay({ delay: 4000, stopOnInteraction: false })
+  )
 
   useEffect(() => {
     if (!api) {
@@ -41,54 +45,75 @@ const LastActivities = () => {
     })
   }, [api])
 
+  // Función para manejar el clic en los puntos (dots)
+  const handleDotClick = (index: number) => {
+    if(!api) return;
+    api.scrollTo(index);
+    
+    // UX: Reiniciamos el temporizador del autoplay.
+    // Esto evita que el carrusel salte inmediatamente después de que el usuario haga clic manualmente.
+    const autoplay = api.plugins().autoplay;
+    if (autoplay) autoplay.reset(); 
+  }
+
   return (
     <section>
       <div className='p-6 md:p-16 max-w-7xl mx-auto'>
         <Subtitle className="text-center py-10">Últimas Actividades</Subtitle>
 
-        <div className="relative">
+        {/* UX: Pausar en Hover.
+           Cuando el usuario pasa el mouse por encima, el carrusel se detiene para que pueda ver la foto con calma.
+        */}
+        <div 
+          className="relative"
+          onMouseEnter={plugin.current.stop}
+          onMouseLeave={plugin.current.reset}
+        >
           <Carousel
             opts={{
               align: "start",
               loop: true,
             }}
             className="w-full"
-            plugins={[
-              Autoplay({
-                delay: 4000,
-              }),
-            ]}
+            plugins={[plugin.current]}
             setApi={setApi}
           >
             <CarouselContent>
               {slider.map((item) => (
-                <CarouselItem key={item.key} className="md:basis-1/2 lg:basis-1/3">
+                <CarouselItem key={item.id} className="md:basis-1/2 lg:basis-1/3 pl-4">
                   <div className="relative overflow-hidden rounded-xl shadow-lg aspect-[16/9] group">
+                    {/* OPTIMIZACIÓN: Usar 'fill' + 'sizes' 
+                      En lugar de width/height fijos, usamos 'fill' para que se adapte al contenedor padre.
+                      'sizes' ayuda al navegador a descargar la imagen del tamaño correcto (móvil vs escritorio).
+                    */}
                     <Image
-                      width={1000}
-                      height={1000}
                       src={item.image}
                       alt={item.title}
-                      className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
-                      suppressHydrationWarning
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
                     />
+                    
+                    {/* Opcional: Un gradiente sutil para mejorar contraste si añades texto encima */}
+                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-300" />
                   </div>
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="hidden md:flex" />
-            <CarouselNext className="hidden md:flex" />
+            
+            <CarouselPrevious className="hidden md:flex -left-4" />
+            <CarouselNext className="hidden md:flex -right-4" />
           </Carousel>
 
-          <div className="flex justify-center mt-4 gap-2">
+          <div className="flex justify-center mt-6 gap-2">
             {Array.from({ length: count }).map((_, index) => (
               <button
                 key={index}
-                onClick={() => api?.scrollTo(index)}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                onClick={() => handleDotClick(index)}
+                className={`h-2 rounded-full transition-all duration-300 ${
                   current === index + 1
-                    ? "bg-primary-3 w-6"
-                    : "bg-gray-300 hover:bg-gray-400"
+                    ? "bg-primary w-6" // Asegúrate de tener 'bg-primary' en tu config, o usa un color hexadecimal
+                    : "bg-gray-300 w-2 hover:bg-gray-400"
                 }`}
                 aria-label={`Ir a slide ${index + 1}`}
               />
@@ -107,7 +132,6 @@ const LastActivities = () => {
         ]}
       />
     </section>
-
   )
 }
 

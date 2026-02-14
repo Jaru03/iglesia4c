@@ -46,9 +46,9 @@ const page = async () => {
           <SpinningTextLabel />
         </div>
 
-        {/* 📅 CALENDARIO (AGENDA DE ESTE MES) */}
+        {/* 📅 CALENDARIO (AGENDA COMPLETA) */}
 <div className="section-sm container-page flex flex-col gap-6">
-  <CalendarActivities activities={eventosEsteMes} />
+  <CalendarActivities activities={todasLasActividades} />
 </div>
 
         {/* 👇 LISTA DE PRÓXIMOS EVENTOS (MESES SIGUIENTES) */}
