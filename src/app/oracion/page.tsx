@@ -1,8 +1,8 @@
 import { HeroTitle } from "@/components/typography/HeroTitle";
 import { SpinningTextLabel } from "@/components/SpinningTextLabel";
 import PrayForm from "@/app/oracion/components/PrayForm";
-import ToastProvider from "@/app/oracion/components/ToastProvider";
 import { CallToAction } from "@/components/CallToAction";
+import Link from "next/link";
 
 const page = () => {
   return (
@@ -13,8 +13,11 @@ const page = () => {
         <SpinningTextLabel />
       </div>
       <div className="section-sm flex flex-col justify-center items-center container-page">
-
-        <ToastProvider/>
+        <div className="w-full max-w-lg mb-4">
+          <Link href="/" className="text-sm font-semibold text-slate-500 hover:text-slate-700">
+            ← Volver
+          </Link>
+        </div>
         <PrayForm />
       </div>
 
