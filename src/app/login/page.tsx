@@ -38,6 +38,11 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-900 px-4">
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm">
+        <div className="mb-4">
+          <Link href="/" className="text-sm font-semibold text-slate-500 hover:text-slate-700">
+            ← Volver
+          </Link>
+        </div>
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-slate-800">Acceso Admin</h1>
           <p className="text-slate-500 text-sm mt-1">Iglesia Casa de Dios</p>
