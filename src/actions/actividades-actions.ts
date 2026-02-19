@@ -13,29 +13,31 @@ export async function crearActividad(formData: FormData) {
   const horaInicio = formData.get("horaInicio") as string;
   const horaFin = formData.get("horaFin") as string;
 
-  if (!title || !fecha || !horaInicio || !horaFin) {
+  if (!title || !place || !fecha || !horaInicio || !horaFin) {
     return { error: "Faltan datos obligatorios." };
   }
 
-  const hour_start = new Date(`${fecha}T${horaInicio}:00`);
-  const hour_end = new Date(`${fecha}T${horaFin}:00`);
+  const date = new Date(`${fecha}T00:00:00`);
+  const hourStart = new Date(`${fecha}T${horaInicio}:00`);
+  const hourEnd = new Date(`${fecha}T${horaFin}:00`);
 
-  const creada = await prisma.activities.create({
+  const creada = await prisma.activity.create({
     data: {
       title,
       place,
       description,
-      hour_start,
-      hour_end,
-      img: img || "",
-      urgent: false,
+      img: img || null,
+      date,
+      hourStart,
+      hourEnd,
+      showCalendar: true,
     },
   });
 
   await logAudit({
     module: "ACTIVIDADES",
     action: "CREATE",
-    entity: "Activities",
+    entity: "Activity",
     entityId: String(creada.id),
     description: `Actividad creada: ${creada.title}`,
   });
@@ -52,16 +54,16 @@ export async function eliminarActividad(id: number, _formData: FormData) {
 
 export async function eliminarActividadPorId(id: number) {
   try {
-    const actividad = await prisma.activities.findUnique({ where: { id } });
+    const actividad = await prisma.activity.findUnique({ where: { id } });
 
-    await prisma.activities.delete({
+    await prisma.activity.delete({
       where: { id },
     });
 
     await logAudit({
       module: "ACTIVIDADES",
       action: "DELETE",
-      entity: "Activities",
+      entity: "Activity",
       entityId: String(id),
       description: `Actividad eliminada: ${actividad?.title || id}`,
     });
@@ -84,29 +86,31 @@ export async function actualizarActividad(id: number, formData: FormData) {
   const horaInicio = formData.get("horaInicio") as string;
   const horaFin = formData.get("horaFin") as string;
 
-  if (!id || !title || !fecha || !horaInicio || !horaFin) {
+  if (!id || !title || !place || !fecha || !horaInicio || !horaFin) {
     return { error: "Faltan datos para actualizar." };
   }
 
-  const hour_start = new Date(`${fecha}T${horaInicio}:00`);
-  const hour_end = new Date(`${fecha}T${horaFin}:00`);
+  const date = new Date(`${fecha}T00:00:00`);
+  const hourStart = new Date(`${fecha}T${horaInicio}:00`);
+  const hourEnd = new Date(`${fecha}T${horaFin}:00`);
 
-  const actualizada = await prisma.activities.update({
+  const actualizada = await prisma.activity.update({
     where: { id },
     data: {
       title,
       place,
       description,
-      img: img || "",
-      hour_start,
-      hour_end,
+      img: img || null,
+      date,
+      hourStart,
+      hourEnd,
     },
   });
 
   await logAudit({
     module: "ACTIVIDADES",
     action: "UPDATE",
-    entity: "Activities",
+    entity: "Activity",
     entityId: String(id),
     description: `Actividad editada: ${actualizada.title}`,
   });

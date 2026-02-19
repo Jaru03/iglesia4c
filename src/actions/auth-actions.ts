@@ -3,50 +3,76 @@
 import bcrypt from "bcryptjs";
 import prisma from "@/utils/prisma";
 
-const ROLES_VALIDOS = ["SUPERADMIN", "ADMIN", "LIDER", "REGISTRO"] as const;
-type RolValido = (typeof ROLES_VALIDOS)[number];
+export async function verificarPersona(formData: FormData) {
+  const dato = formData.get("dato")?.toString().trim();
 
-export async function registrarUsuarioPermitido(formData: FormData) {
-  const nombre = formData.get("nombre")?.toString().trim();
-  const email = formData.get("email")?.toString().trim().toLowerCase();
+  if (!dato) {
+    return { error: "Ingresa tu email, teléfono o documento." };
+  }
+
+  const persona = await prisma.person.findFirst({
+    where: {
+      OR: [
+        { email: dato },
+        { phone: dato },
+        { document: dato },
+      ],
+    },
+    include: { user: true },
+  });
+
+  if (!persona) {
+    return { error: "No encontramos tus datos. Contacta con tu líder." };
+  }
+
+  if (persona.user) {
+    return { error: "Ya tienes una cuenta. Inicia sesión." };
+  }
+
+  return { 
+    personaId: persona.id, 
+    nombre: `${persona.name} ${persona.lastname}`,
+    email: persona.email 
+  };
+}
+
+export async function completarRegistro(formData: FormData) {
+  const personaId = parseInt(formData.get("personaId")?.toString() || "0");
   const password = formData.get("password")?.toString();
+  const passwordConfirm = formData.get("passwordConfirm")?.toString();
 
-  if (!email || !password) {
-    return { error: "Email y contraseña son obligatorios." };
+  if (!personaId || !password || !passwordConfirm) {
+    return { error: "Todos los campos son obligatorios." };
+  }
+
+  if (password !== passwordConfirm) {
+    return { error: "Las contraseñas no coinciden." };
   }
 
   if (password.length < 6) {
     return { error: "La contraseña debe tener al menos 6 caracteres." };
   }
 
-  const permitido = await prisma.allowedUser.findUnique({
-    where: { email },
+  const persona = await prisma.person.findUnique({
+    where: { id: personaId },
+    include: { user: true },
   });
 
-  if (!permitido) {
-    return { error: "Tu correo no está autorizado por el superadmin." };
+  if (!persona) {
+    return { error: "Usuario no encontrado." };
   }
 
-  const yaExiste = await prisma.user.findUnique({
-    where: { email },
-  });
-
-  if (yaExiste) {
-    return { error: "Este correo ya está registrado. Inicia sesión." };
+  if (persona.user) {
+    return { error: "Ya tienes una cuenta. Inicia sesión." };
   }
 
   const hash = await bcrypt.hash(password, 10);
-  const rolPermitido = permitido.role.toUpperCase();
-  const role: RolValido = ROLES_VALIDOS.includes(rolPermitido as RolValido)
-    ? (rolPermitido as RolValido)
-    : "LIDER";
 
   await prisma.user.create({
     data: {
-      email,
       password: hash,
-      nombre: nombre || permitido.name || email.split("@")[0],
-      role,
+      role: "USER",
+      personId: persona.id,
     },
   });
 

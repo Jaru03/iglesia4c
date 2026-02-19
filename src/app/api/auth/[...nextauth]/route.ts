@@ -9,83 +9,87 @@ const handler = NextAuth({
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Contraseña", type: "password" }
+        password: { label: "Contraseña", type: "password" },
       },
       async authorize(credentials) {
         const email = credentials?.email?.toLowerCase().trim();
         const password = credentials?.password;
 
-        console.log("🔍 INTENTO DE LOGIN:");
-        console.log("   - Email recibido:", email);
-        console.log("   - Password recibida:", password);
+        console.log("[AUTH] Intento de login:", { email });
 
-        // 1. Validar que vengan datos
         if (!email || !password) {
-          console.log("❌ FALLO: Faltan credenciales");
-          throw new Error("Faltan credenciales");
+          console.log("[AUTH] Fallo: email o password vacíos");
+          return null;
         }
 
-        // 2. Buscar el usuario en la tabla de Usuarios Registrados (User)
-        const user = await prisma.user.findUnique({
-          where: { email }
-        });
+        try {
+          const person = await prisma.person.findUnique({
+            where: { email },
+            include: { user: true },
+          });
 
-        console.log("   - Usuario en DB (Tabla User):", user ? "ENCONTRADO ✅" : "NO EXISTE ❌");
+          console.log("[AUTH] Persona encontrada:", person ? `id=${person.id}` : "null");
 
-        if (!user) throw new Error("Usuario no encontrado");
+          if (!person) {
+            console.log("[AUTH] Fallo: persona no encontrada");
+            return null;
+          }
 
-        // 3. Comparar contraseña
-        const isValid = await bcrypt.compare(password, user.password);
-        console.log("   - Contraseña válida:", isValid ? "SÍ ✅" : "NO ❌");
-        
-        if (!isValid) throw new Error("Contraseña incorrecta");
+          if (!person.user) {
+            console.log("[AUTH] Fallo: persona sin cuenta de usuario");
+            return null;
+          }
 
-        // 4. VALIDACIÓN DE SEGURIDAD (WHITELIST)
-        const allowed = await prisma.allowedUser.findUnique({
-          where: { email } 
-        });
+          const user = person.user;
+          const isValidPassword = await bcrypt.compare(password, user.password);
+          console.log("[AUTH] Password válida:", isValidPassword);
 
-        console.log("   - Permiso en AllowedUser:", allowed ? "AUTORIZADO ✅" : "BLOQUEADO (No está en la lista) ❌");
-        console.log("   - Datos de AllowedUser:", allowed);
+          if (!isValidPassword) {
+            return null;
+          }
 
-        if (!allowed) {
-          throw new Error("No tienes permisos para acceder.");
+          return {
+            id: user.id.toString(),
+            email: person.email,
+            role: user.role,
+            name: `${person.name} ${person.lastname}`,
+          };
+        } catch (error) {
+          console.error("[AUTH] Error de Prisma:", error);
+          return null;
         }
-
-        // 5. Devolvemos el usuario
-        return {
-          id: user.id.toString(),
-          name: user.nombre,
-          email: user.email,
-          role: allowed.role, 
-        };
-      }
-    })
+      },
+    }),
   ],
+
   pages: {
-    signIn: '/login',
+    signIn: "/login",
   },
+
   session: {
     strategy: "jwt",
   },
- callbacks: {
-    // 6. [NUEVO] Pasar el Rol al Token
+
+  callbacks: {
     async jwt({ token, user }) {
-      if (user) {
-        // Usamos (user as any) para saltarnos la restricción de tipos de TS
-        token.role = (user as any).role; 
-      }
+      if (!user) return token;
+
+      token.id = user.id;
+      token.role = user.role;
+
       return token;
     },
-    // 7. [NUEVO] Pasar el Rol a la Sesión (Cliente)
+
     async session({ session, token }) {
-      if (session.user) {
-        // @ts-ignore - Esto le dice a TS que ignore la siguiente línea
-        session.user.role = token.role; 
-      }
+      if (!session.user) return session;
+
+      session.user.id = token.id as string;
+      session.user.role = token.role as string;
+
       return session;
-    }
+    },
   },
+
   secret: process.env.NEXTAUTH_SECRET,
 });
 

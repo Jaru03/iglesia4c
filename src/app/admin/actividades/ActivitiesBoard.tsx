@@ -11,8 +11,8 @@ type ActivityItem = {
   title: string;
   place: string;
   img: string | null;
-  hour_start: string;
-  hour_end: string;
+  hourStart: string;
+  hourEnd: string;
 };
 
 export default function ActivitiesBoard({ activities }: { activities: ActivityItem[] }) {
@@ -21,11 +21,8 @@ export default function ActivitiesBoard({ activities }: { activities: ActivityIt
 
   const filtered = useMemo(() => {
     return activities.filter((act) => {
-      const start = new Date(act.hour_start);
-      const textOk =
-        act.title.toLowerCase().includes(query.toLowerCase()) ||
-        act.place.toLowerCase().includes(query.toLowerCase());
-
+      const start = new Date(act.hourStart);
+      const textOk = act.title.toLowerCase().includes(query.toLowerCase()) || act.place.toLowerCase().includes(query.toLowerCase());
       if (!textOk) return false;
       if (estado === "TODAS") return true;
       if (estado === "HOY") return isToday(start);
@@ -53,8 +50,8 @@ export default function ActivitiesBoard({ activities }: { activities: ActivityIt
         />
         <select
           value={estado}
-          onChange={(e) => setEstado(e.target.value as "TODAS" | "HOY" | "PROXIMAS" | "PASADAS")}
-          className="px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-100"
+          onChange={(e) => setEstado(e.target.value as typeof estado)}
+          className="px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 outline-none"
         >
           <option value="TODAS">Todas</option>
           <option value="HOY">Hoy</option>
@@ -65,38 +62,25 @@ export default function ActivitiesBoard({ activities }: { activities: ActivityIt
 
       <div className="grid grid-cols-1 gap-4">
         {filtered.map((act) => {
-          const start = new Date(act.hour_start);
+          const start = new Date(act.hourStart);
           const estadoLabel = isToday(start) ? "HOY" : isFuture(start) ? "PRÓXIMA" : "PASADA";
-          const estadoClass = isToday(start)
-            ? "bg-blue-100 text-blue-700"
-            : isFuture(start)
-              ? "bg-emerald-100 text-emerald-700"
-              : "bg-slate-100 text-slate-600";
+          const estadoClass = isToday(start) ? "bg-blue-100 text-blue-700" : isFuture(start) ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600";
 
           return (
-            <div
-              key={act.id}
-              className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition"
-            >
+            <div key={act.id} className="bg-white p-4 rounded-2xl border border-slate-200">
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="w-full md:w-28 shrink-0 rounded-xl bg-blue-50 text-blue-700 flex md:flex-col items-center justify-center py-3 px-2">
-                  <span className="text-xs font-bold uppercase tracking-wider">
-                    {format(start, "MMM", { locale: es })}
-                  </span>
-                  <span className="text-2xl font-bold leading-none md:mt-1">
-                    {format(start, "d")}
-                  </span>
+                  <span className="text-xs font-bold uppercase">{format(start, "MMM", { locale: es })}</span>
+                  <span className="text-2xl font-bold">{format(start, "d")}</span>
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-3">
                     <h3 className="font-bold text-lg text-slate-800">{act.title}</h3>
-                    <span className={`text-[10px] px-2 py-1 rounded-full font-bold ${estadoClass}`}>
-                      {estadoLabel}
-                    </span>
+                    <span className={`text-[10px] px-2 py-1 rounded-full font-bold ${estadoClass}`}>{estadoLabel}</span>
                   </div>
                   <p className="text-sm text-slate-500 mt-1">📍 {act.place}</p>
-                  <p className="text-sm text-slate-500">🕒 {format(start, "h:mm a")} - {format(new Date(act.hour_end), "h:mm a")}</p>
+                  <p className="text-sm text-slate-500">🕒 {format(start, "h:mm a")} - {format(new Date(act.hourEnd), "h:mm a")}</p>
 
                   {act.img && (
                     <div className="mt-3 h-36 rounded-xl overflow-hidden border border-slate-100">
@@ -105,12 +89,7 @@ export default function ActivitiesBoard({ activities }: { activities: ActivityIt
                   )}
 
                   <div className="flex justify-end gap-2 mt-3 pt-3 border-t border-slate-100">
-                    <Link
-                      href={`/admin/actividades/${act.id}/editar`}
-                      className="text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition flex items-center gap-1"
-                    >
-                      Editar ✏️
-                    </Link>
+                    <Link href={`/admin/actividades/${act.id}/editar`} className="text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg">Editar</Link>
                     <ActivityDeleteButton id={act.id} title={act.title} />
                   </div>
                 </div>

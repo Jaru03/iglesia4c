@@ -1,57 +1,65 @@
 import { NextResponse } from "next/server";
 import prisma from "@/utils/prisma";
+
 export async function GET() {
   try {
-    const activities = await prisma.activities.findMany({
+    const activities = await prisma.activity.findMany({
       where: {
-        hour_start: {
-          gte: new Date()
-        }
+        hourStart: {
+          gte: new Date(),
+        },
       },
-      orderBy: { hour_start: 'asc' },
-      take: 3 
+      orderBy: { hourStart: "asc" },
+      take: 3,
     });
     return NextResponse.json(activities);
   } catch (error) {
-    return NextResponse.json({ error: "Error al cargar actividades" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error al cargar actividades" },
+      { status: 500 },
+    );
   }
 }
-
 
 export async function POST(request: Request) {
   try {
     const data = await request.json();
 
-
-    const newActivity = await prisma.activities.create({
+    const newActivity = await prisma.activity.create({
       data: {
-        title: data.title,
-        description: data.description,
-        place: data.place,
-        hour_start: new Date(data.hour_start),
-        hour_end: new Date(data.hour_end),
-        urgent: data.urgent === "true" || data.urgent === true, 
-        img: data.img || "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?q=80&w=2073&auto=format&fit=crop" // Imagen por defecto si no ponen nada
+        title: data?.title,
+        description: data?.description,
+        place: data?.place,
+        hourStart: new Date(data?.hourStart),
+        hourEnd: new Date(data?.hourEnd),
+        date: new Date(data?.date || data?.hourStart),
+        showCalendar: data?.showCalendar ?? true,
+        img:
+          data?.img ||
+          "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?q=80&w=2073&auto=format&fit=crop",
       },
     });
 
     return NextResponse.json(newActivity);
   } catch (error) {
-    console.log(error);
-    return NextResponse.json({ error: "Error creando actividad" }, { status: 500 });
+    console.error(error);
+    return NextResponse.json(
+      { error: "Error creando actividad" },
+      { status: 500 },
+    );
   }
 }
-
 
 export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
-    if (!id) return NextResponse.json({ error: "ID requerido" }, { status: 400 });
+    if (!id)
+      return NextResponse.json({ error: "ID requerido" }, { status: 400 });
 
-    await prisma.activities.delete({
-      where: { id: Number(id) }
+    await prisma.activity.delete({
+      where: { id: Number(id) },
     });
 
     return NextResponse.json({ success: true });

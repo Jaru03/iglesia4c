@@ -5,32 +5,30 @@ import { isFuture, isToday } from "date-fns";
 
 export const dynamic = "force-dynamic";
 
-export default async function ActividadesPage() {
-  const actividades = await prisma.activities.findMany({
-    orderBy: { hour_start: "asc" },
+export default async function ActividadesAdminPage() {
+  const actividades = await prisma.activity.findMany({
+    orderBy: { hourStart: "asc" },
   });
 
   const total = actividades.length;
-  const hoy = actividades.filter((a) => isToday(new Date(a.hour_start))).length;
-  const proximas = actividades.filter((a) => isFuture(new Date(a.hour_start))).length;
+  const hoy = actividades.filter((a) => isToday(new Date(a.hourStart))).length;
+  const proximas = actividades.filter((a) => isFuture(new Date(a.hourStart))).length;
   const conImagen = actividades.filter((a) => !!a.img).length;
 
-  const activitiesSerialized = actividades.map((a) => ({
+  const serialized = actividades.map((a) => ({
     id: a.id,
     title: a.title,
     place: a.place,
     img: a.img,
-    hour_start: a.hour_start.toISOString(),
-    hour_end: a.hour_end.toISOString(),
+    hourStart: a.hourStart.toISOString(),
+    hourEnd: a.hourEnd.toISOString(),
   }));
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-3 md:p-6 space-y-6">
-      <header className="rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-800">Agenda y Eventos</h1>
-        <p className="text-sm md:text-base text-slate-500 mt-1">
-          Crea, edita y organiza todas las actividades desde un solo panel.
-        </p>
+    <div className="w-full max-w-7xl mx-auto p-6 space-y-6">
+      <header className="rounded-2xl border border-slate-200 bg-white p-6">
+        <h1 className="text-3xl font-bold text-slate-800">Agenda y Eventos</h1>
+        <p className="text-slate-500 mt-1">Gestiona todas las actividades</p>
       </header>
 
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -53,10 +51,10 @@ export default async function ActividadesPage() {
       </section>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2 order-2 xl:order-1">
-          <ActivitiesBoard activities={activitiesSerialized} />
+        <div className="xl:col-span-2">
+          <ActivitiesBoard activities={serialized} />
         </div>
-        <div className="xl:col-span-1 order-1 xl:order-2">
+        <div className="xl:col-span-1">
           <ActivityForm />
         </div>
       </div>

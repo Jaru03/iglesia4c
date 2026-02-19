@@ -1,25 +1,34 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
+type Role = "ADMIN" | "MEMBER" | "USER";
+
 export default withAuth(
   function middleware(req) {
-    const role = req.nextauth.token?.role as string;
+    const role = req.nextauth.token?.role as Role | undefined;
     const path = req.nextUrl.pathname;
 
-    // --- REGLAS PARA EL LIDER ---
-    if (path.startsWith("/admin") && role === "LIDER") {
-      return NextResponse.redirect(new URL("/kiosko", req.url));
+    if (!role) return NextResponse.next();
+
+    if (path.startsWith("/admin")) {
+      if (role !== "ADMIN") {
+        return NextResponse.redirect(new URL("/", req.url));
+      }
+      return NextResponse.next();
     }
 
-    // --- REGLAS PARA ADMIN NORMAL ---
-    if (path.startsWith("/admin/equipo") && role === "ADMIN") {
-       return NextResponse.redirect(new URL("/admin", req.url));
+    if (path.startsWith("/kiosko")) {
+      if (role !== "ADMIN" && role !== "MEMBER") {
+        return NextResponse.redirect(new URL("/", req.url));
+      }
+      return NextResponse.next();
     }
 
-    // --- REGLAS PARA UJIERES (NUEVO) ---
-    // Si tiene rol REGISTRO y quiere entrar al admin o a la home -> ¡Al registro!
-    if ((path.startsWith("/admin") || path === "/") && role === "REGISTRO") {
-      return NextResponse.redirect(new URL("/registro", req.url));
+    if (path.startsWith("/registro")) {
+      if (!["ADMIN", "MEMBER"].includes(role)) {
+        return NextResponse.redirect(new URL("/", req.url));
+      }
+      return NextResponse.next();
     }
 
     return NextResponse.next();
