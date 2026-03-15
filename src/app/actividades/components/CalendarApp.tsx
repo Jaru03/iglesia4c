@@ -48,7 +48,7 @@ export default function CalendarApp({ events: rawEvents = [] }: { events?: Calen
       start: toUtcZdt(event.hourStart),
       end: toUtcZdt(event.hourEnd),
       location: event.place,
-      description: event.description,
+      description: event.description ?? undefined,
       calendarId: 'default',
     }))
   }, [rawEvents])
