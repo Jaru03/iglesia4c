@@ -3,7 +3,19 @@
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Activity, Shield, LogOut, Menu } from "lucide-react";
+import {
+  Calendar,
+  Church,
+  ClipboardCheck,
+  Home,
+  LogOut,
+  Megaphone,
+  Menu,
+  MessageSquare,
+  Settings,
+  UserCircle,
+  Users,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -17,12 +29,24 @@ import {
 import { useState } from "react";
 
 const navItems = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/actividades", label: "Actividades", icon: Activity },
+  { href: "/admin", label: "Dashboard", icon: Home },
+  { href: "/admin/iglesias", label: "Iglesias", icon: Church },
+  { href: "/admin/departamentos", label: "Departamentos", icon: Megaphone },
+  { href: "/admin/personas", label: "Personas", icon: UserCircle },
+  { href: "/admin/equipo", label: "Usuarios", icon: Users },
+  { href: "/admin/peticiones", label: "Peticiones", icon: MessageSquare },
+  { href: "/admin/actividades", label: "Actividades", icon: Calendar },
+  { href: "/admin/asistencias", label: "Asistencias", icon: ClipboardCheck },
 ];
 
-const adminItems = [
-  { href: "/admin/equipo", label: "Gestión Equipo", icon: Shield },
+const responsableItems = [
+  { href: "/responsable", label: "Dashboard", icon: Home, exact: true },
+  { href: "/responsable/personas", label: "Personas", icon: UserCircle },
+  { href: "/responsable/miembros", label: "Miembros", icon: Users },
+  { href: "/responsable/departamentos", label: "Departamentos", icon: Megaphone },
+  { href: "/responsable/actividades", label: "Actividades", icon: Calendar },
+  { href: "/responsable/asistencias", label: "Asistencias", icon: ClipboardCheck },
+  { href: "/responsable/configuracion", label: "Configuración", icon: Settings },
 ];
 
 function NavContent({ onNavigate }: { onNavigate?: () => void }) {
@@ -33,10 +57,12 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
   const isActive = (href: string) =>
     href === "/admin" ? pathname === href : pathname.startsWith(href);
 
+  const items = role === "RESPONSIBLE" ? responsableItems : navItems;
+
   return (
     <>
       <nav className="flex-1 p-4 space-y-1">
-        {navItems.map((item) => (
+        {items.map((item) => (
           <Button
             key={item.href}
             asChild
@@ -50,26 +76,6 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
             </Link>
           </Button>
         ))}
-
-        {role === "ADMIN" && (
-          <>
-            <Separator className="bg-slate-800 my-4" />
-            {adminItems.map((item) => (
-              <Button
-                key={item.href}
-                asChild
-                variant={isActive(item.href) ? "secondary" : "ghost"}
-                className={`w-full justify-start ${isActive(item.href) ? "" : "text-emerald-400 hover:text-emerald-300 hover:bg-emerald-900/20"}`}
-                onClick={onNavigate}
-              >
-                <Link href={item.href}>
-                  <item.icon className="h-4 w-4 mr-3" />
-                  {item.label}
-                </Link>
-              </Button>
-            ))}
-          </>
-        )}
       </nav>
 
       <Separator className="bg-slate-800" />
