@@ -12,9 +12,11 @@ datasource db {
 //
 
 enum Role {
-  ADMIN // Control global del sistema
-  MEMBER // Usuario que puede servir y editar dentro de su departamento
-  USER // Usuario con acceso básico
+  ADMIN
+  MEMBER
+  USER
+  RESPONSIBLE
+  LEADER
 }
 
 enum MembershipStatus {
@@ -47,11 +49,14 @@ model Church {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  schedules   ChurchSchedule[]
-  pastors     ChurchPastor[]
-  socialLinks ChurchSocialLink[]
-  persons     Person[]
-  departments Department[]
+  schedules    ChurchSchedule[]
+  pastors      ChurchPastor[]
+  socialLinks  ChurchSocialLink[]
+  persons      Person[]
+  departments  Department[]
+  leaders      ChurchLeader[]
+  responsable  User?   @relation(fields: [responsableId], references: [id])
+  responsableId Int?   @unique
 }
 
 model ChurchSchedule {
@@ -83,6 +88,20 @@ model ChurchSocialLink {
   church   Church @relation(fields: [churchId], references: [id])
 }
 
+model ChurchLeader {
+  id           Int           @id @default(autoincrement())
+  role         Role
+  order        Int           @default(0)
+
+  churchId Int
+  church   Church @relation(fields: [churchId], references: [id])
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  @@unique([churchId, userId])
+}
+
 //
 // ================= PERSON =================
 //
@@ -105,6 +124,7 @@ model Person {
 
   user        User?
   attendances Attendance[]
+  departments PersonDepartment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -125,6 +145,8 @@ model User {
   person   Person @relation(fields: [personId], references: [id])
 
   departmentMemberships DepartmentMember[]
+  churches              Church[]
+  churchLeaderRoles     ChurchLeader[]
 }
 
 //
@@ -141,6 +163,7 @@ model Department {
   church   Church @relation(fields: [churchId], references: [id])
 
   members    DepartmentMember[]
+  persons    PersonDepartment[]
   activities Activity[]
 
   createdAt DateTime @default(now())
@@ -156,7 +179,7 @@ model DepartmentMember {
   userId       Int
   departmentId Int
 
-  roleInDept String? // Ej: Líder, Servidor, Coordinador
+  roleInDept Role?
   joinedAt   DateTime @default(now())
   active     Boolean  @default(true)
 
@@ -164,6 +187,26 @@ model DepartmentMember {
   department Department @relation(fields: [departmentId], references: [id])
 
   @@unique([userId, departmentId])
+}
+
+//
+// ================= PERSON DEPARTMENT =================
+//
+
+model PersonDepartment {
+  id Int @id @default(autoincrement())
+
+  personId     Int
+  departmentId Int
+
+  roleInDept Role?
+  joinedAt   DateTime @default(now())
+  active     Boolean  @default(true)
+
+  person     Person     @relation(fields: [personId], references: [id])
+  department Department @relation(fields: [departmentId], references: [id])
+
+  @@unique([personId, departmentId])
 }
 
 //
@@ -181,8 +224,8 @@ model Activity {
   hourEnd      DateTime
   showCalendar Boolean  @default(true)
 
-  departmentId Int?
-  department   Department? @relation(fields: [departmentId], references: [id])
+  departmentId Int
+  department   Department @relation(fields: [departmentId], references: [id])
 
   attendances Attendance[]
 
@@ -204,4 +247,19 @@ model Attendance {
   activity Activity @relation(fields: [activityId], references: [id])
 
   @@unique([personId, activityId])
+}
+
+//
+// ================= PETITION =================
+//
+
+model Petition {
+  id           Int      @id @default(autoincrement())
+  nombre       String
+  email        String
+  phone        String
+  typePetition String
+  content      String
+  status       String   @default("PENDIENTE")
+  createdAt    DateTime @default(now())
 }
