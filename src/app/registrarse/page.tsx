@@ -3,6 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { verificarPersona, completarRegistro } from "@/actions/auth-actions";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Church, CheckCircle2, ArrowLeft } from "lucide-react";
 
 type VerificacionData = {
   personaId: number;
@@ -58,19 +63,20 @@ export default function RegistrarsePage() {
   if (paso === 3) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 px-4">
-        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl">✅</span>
-          </div>
-          <h1 className="text-2xl font-bold text-slate-800">¡Cuenta creada!</h1>
-          <p className="text-slate-500 mt-2 mb-6">{mensaje}</p>
-          <Link
-            href="/login"
-            className="block w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition"
-          >
-            Ir a iniciar sesión
-          </Link>
-        </div>
+        <Card className="w-full max-w-sm">
+          <CardContent className="pt-6 text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 className="w-8 h-8 text-green-600" />
+            </div>
+            <CardTitle className="text-2xl">¡Cuenta creada!</CardTitle>
+            <p className="text-slate-500 mt-2 mb-6">{mensaje}</p>
+            <Button asChild className="w-full">
+              <Link href="/login">
+                Ir a iniciar sesión
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -78,113 +84,113 @@ export default function RegistrarsePage() {
   if (paso === 2 && verificacion) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 px-4">
-        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm">
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-slate-800">Completa tu registro</h1>
-            <p className="text-slate-500 text-sm mt-1">Hola, {verificacion.nombre}</p>
-            {verificacion.email && (
-              <p className="text-slate-400 text-xs mt-1">{verificacion.email}</p>
-            )}
-          </div>
-
-          {error && (
-            <div className="bg-red-100 text-red-600 p-3 rounded-lg mb-4 text-sm text-center font-medium border border-red-200">
-              {error}
-            </div>
-          )}
-
-          <form action={handleCompletar} className="space-y-4">
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-1">Contraseña</label>
-              <input
-                name="password"
-                type="password"
-                required
-                placeholder="Mínimo 6 caracteres"
-                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-1">Confirmar contraseña</label>
-              <input
-                name="passwordConfirm"
-                type="password"
-                required
-                placeholder="Repite tu contraseña"
-                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-200 disabled:opacity-60"
+        <Card className="w-full max-w-sm">
+          <CardHeader className="space-y-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => { setPaso(1); setError(""); setVerificacion(null); }}
+              className="w-fit -ml-2"
             >
-              {loading ? "Creando cuenta..." : "Crear cuenta"}
-            </button>
-          </form>
+              <ArrowLeft className="w-4 h-4 mr-1" />
+              Volver
+            </Button>
+            <CardTitle className="text-xl">Completa tu registro</CardTitle>
+            <CardDescription>
+              Hola, {verificacion.nombre}
+              {verificacion.email && <span className="block text-xs">{verificacion.email}</span>}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {error && (
+              <div className="bg-red-100 text-red-600 p-3 rounded-lg mb-4 text-sm text-center font-medium border border-red-200">
+                {error}
+              </div>
+            )}
 
-          <button
-            onClick={() => { setPaso(1); setError(""); setVerificacion(null); }}
-            className="mt-4 w-full text-slate-500 text-sm hover:text-slate-700"
-          >
-            ← Volver
-          </button>
-        </div>
+            <form action={handleCompletar} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="password">Contraseña</Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  placeholder="Mínimo 6 caracteres"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="passwordConfirm">Confirmar contraseña</Label>
+                <Input
+                  id="passwordConfirm"
+                  name="passwordConfirm"
+                  type="password"
+                  required
+                  placeholder="Repite tu contraseña"
+                />
+              </div>
+
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading ? "Creando cuenta..." : "Crear cuenta"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-900 px-4">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm">
-        <div className="mb-4">
-          <Link href="/login" className="text-sm font-semibold text-slate-500 hover:text-slate-700">
-            ← Volver
+      <Card className="w-full max-w-sm">
+        <CardHeader className="space-y-1">
+          <Link href="/login" className="inline-flex items-center text-sm text-slate-500 hover:text-slate-700 -ml-2">
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            Volver
           </Link>
-        </div>
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-800">Registrarse</h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+              <Church className="h-5 w-5 text-white" />
+            </div>
+          </div>
+          <CardTitle className="text-2xl text-center">Registrarse</CardTitle>
+          <CardDescription className="text-center">
             Ingresa tu email, teléfono o documento
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {error && (
+            <div className="bg-red-100 text-red-600 p-3 rounded-lg mb-4 text-sm text-center font-medium border border-red-200">
+              {error}
+            </div>
+          )}
+
+          <form action={handleVerificar} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="dato">Email, teléfono o documento</Label>
+              <Input
+                id="dato"
+                name="dato"
+                type="text"
+                required
+                placeholder="ejemplo@correo.com"
+              />
+            </div>
+
+            <Button type="submit" disabled={loading} className="w-full">
+              {loading ? "Verificando..." : "Continuar"}
+            </Button>
+          </form>
+
+          <p className="mt-4 text-center text-sm text-slate-500">
+            ¿Ya tienes cuenta?{" "}
+            <Link href="/login" className="text-primary font-semibold hover:underline">
+              Iniciar sesión
+            </Link>
           </p>
-        </div>
-
-        {error && (
-          <div className="bg-red-100 text-red-600 p-3 rounded-lg mb-4 text-sm text-center font-medium border border-red-200">
-            {error}
-          </div>
-        )}
-
-        <form action={handleVerificar} className="space-y-5">
-          <div>
-            <label className="block text-sm font-bold text-slate-700 mb-1">Email, teléfono o documento</label>
-            <input
-              name="dato"
-              type="text"
-              required
-              placeholder="ejemplo@correo.com"
-              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-200 disabled:opacity-60"
-          >
-            {loading ? "Verificando..." : "Continuar"}
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-slate-500">
-          ¿Ya tienes cuenta?{" "}
-          <Link href="/login" className="text-blue-600 font-semibold hover:text-blue-700">
-            Iniciar sesión
-          </Link>
-        </p>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

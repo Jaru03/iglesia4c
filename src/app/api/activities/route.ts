@@ -3,11 +3,16 @@ import prisma from "@/utils/prisma";
 
 export async function GET() {
   try {
+    const daysOfWeek = ["LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO", "DOMINGO"];
+    
     const activities = await prisma.activity.findMany({
       where: {
         hourStart: {
           gte: new Date(),
         },
+        NOT: daysOfWeek.map(day => ({
+          title: { contains: day, mode: "insensitive" }
+        }))
       },
       orderBy: { hourStart: "asc" },
       take: 3,
@@ -25,6 +30,13 @@ export async function POST(request: Request) {
   try {
     const data = await request.json();
 
+    if (!data?.departmentId) {
+      return NextResponse.json(
+        { error: "departmentId es requerido" },
+        { status: 400 },
+      );
+    }
+
     const newActivity = await prisma.activity.create({
       data: {
         title: data?.title,
@@ -37,6 +49,7 @@ export async function POST(request: Request) {
         img:
           data?.img ||
           "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?q=80&w=2073&auto=format&fit=crop",
+        departmentId: data.departmentId,
       },
     });
 
