@@ -3,6 +3,12 @@
 import prisma from "@/utils/prisma";
 import { revalidatePath } from "next/cache";
 import { logAudit } from "./audit-actions";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export async function crearActividad(formData: FormData) {
   const title = formData.get("title") as string;
@@ -12,9 +18,11 @@ export async function crearActividad(formData: FormData) {
   const fecha = formData.get("fecha") as string;
   const horaInicio = formData.get("horaInicio") as string;
   const horaFin = formData.get("horaFin") as string;
+  const departmentId = parseInt(formData.get("departmentId") as string);
+  const showCalendar = formData.get("showCalendar") === "on";
 
-  if (!title || !place || !fecha || !horaInicio || !horaFin) {
-    return { error: "Faltan datos obligatorios." };
+  if (!title || !place || !fecha || !horaInicio || !horaFin || !departmentId) {
+    return { error: "Faltan datos obligatorios (título, lugar, fecha, hora y departamento)." };
   }
 
   const date = new Date(`${fecha}T00:00:00`);
@@ -30,7 +38,8 @@ export async function crearActividad(formData: FormData) {
       date,
       hourStart,
       hourEnd,
-      showCalendar: true,
+      showCalendar,
+      departmentId,
     },
   });
 
@@ -42,8 +51,8 @@ export async function crearActividad(formData: FormData) {
     description: `Actividad creada: ${creada.title}`,
   });
 
-  revalidatePath("/admin/actividades");
-  revalidatePath("/admin/calendario");
+  revalidatePath("/app/actividades");
+  revalidatePath("/app/dashboard");
   revalidatePath("/");
   return { success: "Actividad creada." };
 }
@@ -55,6 +64,13 @@ export async function eliminarActividad(id: number, _formData: FormData) {
 export async function eliminarActividadPorId(id: number) {
   try {
     const actividad = await prisma.activity.findUnique({ where: { id } });
+
+    if (actividad?.img) {
+      const fileName = actividad.img.split("/img-activities/").at(-1);
+      if (fileName) {
+        await supabase.storage.from("img-activities").remove([fileName]);
+      }
+    }
 
     await prisma.activity.delete({
       where: { id },
@@ -70,6 +86,9 @@ export async function eliminarActividadPorId(id: number) {
 
     revalidatePath("/admin/actividades");
     revalidatePath("/admin/calendario");
+    revalidatePath("/app/actividades");
+    
+    
     revalidatePath("/");
     return { success: "Actividad eliminada." };
   } catch (error) {
@@ -85,8 +104,10 @@ export async function actualizarActividad(id: number, formData: FormData) {
   const fecha = formData.get("fecha") as string;
   const horaInicio = formData.get("horaInicio") as string;
   const horaFin = formData.get("horaFin") as string;
+  const departmentId = parseInt(formData.get("departmentId") as string);
+  const showCalendar = formData.get("showCalendar") === "on";
 
-  if (!id || !title || !place || !fecha || !horaInicio || !horaFin) {
+  if (!id || !title || !place || !fecha || !horaInicio || !horaFin || !departmentId) {
     return { error: "Faltan datos para actualizar." };
   }
 
@@ -104,6 +125,8 @@ export async function actualizarActividad(id: number, formData: FormData) {
       date,
       hourStart,
       hourEnd,
+      departmentId,
+      showCalendar,
     },
   });
 
@@ -115,8 +138,8 @@ export async function actualizarActividad(id: number, formData: FormData) {
     description: `Actividad editada: ${actualizada.title}`,
   });
 
-  revalidatePath("/admin/actividades");
-  revalidatePath("/admin/calendario");
+  revalidatePath("/app/actividades");
+  revalidatePath("/app/dashboard");
   revalidatePath("/");
   return { success: "Actividad actualizada." };
 }
