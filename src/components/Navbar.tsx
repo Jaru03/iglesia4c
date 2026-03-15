@@ -63,7 +63,7 @@ const Navbar = () => {
               <Image
                 src={"/logoCCCD.jpg"}
                 alt="Logo 4C"
-                className="w-[120px] h-[85px]"
+                className="w-30 h-21.25"
                 width={100}
                 height={100}
               />
@@ -118,7 +118,7 @@ const Navbar = () => {
               src={"/logoCCCD.jpg"}
               width={90}
               height={70}
-              className={`${currentRoute === "/" ? "hidden" : ""} pt-2 mx-auto w-[120px] h-[100px] filter invert brightness-0`}
+              className={`${currentRoute === "/" ? "hidden" : ""} pt-2 mx-auto w-30 h-25 filter invert brightness-0`}
               suppressHydrationWarning
             />
 
@@ -145,7 +145,7 @@ const Navbar = () => {
                 src={"/logoCCCD-white.jpg"}
                 width={90}
                 height={70}
-                className="pt-2 mt-2 w-[120px] h-[100px] filter invert brightness-0"
+                className="pt-2 mt-2 w-30 h-25 filter invert brightness-0"
               />
               <div
                 className={`absolute top-7 xs:right-6 right-10 z-50 flex items-center justify-center w-10 h-10 bg-secondary rounded-lg ${buttonOpen ? "block" : "hidden"}`}

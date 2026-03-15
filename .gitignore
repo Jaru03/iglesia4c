@@ -36,3 +36,11 @@ yarn-error.log*
 .vercel
 
 # typescript
+
+docker-compose.yml
+
+seed.
+
+.vscode
+
+generated/**

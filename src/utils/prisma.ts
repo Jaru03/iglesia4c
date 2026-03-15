@@ -1,24 +1,12 @@
-// src/utils/prisma.ts
+import "dotenv/config";
+import { PrismaPg } from '@prisma/adapter-pg'
+import { PrismaClient } from '../../generated/prisma/client/client'
 
-// 1. MANTENEMOS TU RUTA PERSONALIZADA
-// Asegúrate de que esta carpeta exista. Si te da error, usa '@prisma/client'
-import { PrismaClient } from '../../generated/prisma/client';
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
 
-const prismaClientSingleton = () => {
-  // 2. Instanciamos el cliente DIRECTAMENTE.
-  return new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
-  });
-};
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
+const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter })
 
-type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>;
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClientSingleton | undefined;
-};
-
-const prisma = globalForPrisma.prisma ?? prismaClientSingleton();
-
-export default prisma;
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+export default prisma

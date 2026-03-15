@@ -1,158 +1,265 @@
 generator client {
-  provider        = "prisma-client-js"
-  output          = "../generated/prisma/client"
+  provider = "prisma-client"
+  output   = "../generated/prisma/client"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
-// 1. DEFINICIÓN DE ROLES
+//
+// ================= ENUMS =================
+//
+
 enum Role {
-  SUPERADMIN  
-  ADMIN       
-  LIDER       
-  REGISTRO    
+  ADMIN
+  MEMBER
+  USER
+  RESPONSIBLE
+  LEADER
 }
 
-// 2. MODELO DE USUARIO 
-model User {
-  id       Int     @id @default(autoincrement())
-  email    String  @unique
-  password String
-  nombre   String
-  role     Role    @default(LIDER) 
-  sede     String?
+enum MembershipStatus {
+  VISITOR
+  MEMBER
+  INACTIVE
 }
 
-// --- GESTIÓN DE ÁREAS Y ACTIVIDADES ---
-
-model Area {
-  id          Int      @id @default(autoincrement())
-  title       String       
-  description String?
-  img         String?
-  value       String       @unique 
-  rol         String
-  
-  activities  Activities[] 
+enum LifeStage {
+  KID
+  TEEN
+  YOUNG
+  ADULT
+  SENIOR
 }
 
-model Activities {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String?
-  img         String?
-  place       String
-  hour_start  DateTime
-  hour_end    DateTime
-  urgent      Boolean  @default(false)
+//
+// ================= CHURCH =================
+//
 
-  areaId      Int?
-  area        Area?    @relation(fields: [areaId], references: [id])
-}
-
-// --- CONTENIDO WEB ---
-
-model Preachs {
+model Church {
   id          Int     @id @default(autoincrement())
   title       String
-  description String?
-  img         String?
-  urlVideo    String? 
+  description String
+  place       String
+  latitude    Float
+  longitude   Float
+  active      Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  schedules    ChurchSchedule[]
+  pastors      ChurchPastor[]
+  socialLinks  ChurchSocialLink[]
+  persons      Person[]
+  departments  Department[]
+  leaders      ChurchLeader[]
+  responsable  User?   @relation(fields: [responsableId], references: [id])
+  responsableId Int?   @unique
 }
 
-model LastActivities {
+model ChurchSchedule {
+  id   Int    @id @default(autoincrement())
+  day  String
+  time String
+
+  churchId Int
+  church   Church @relation(fields: [churchId], references: [id])
+}
+
+model ChurchPastor {
   id    Int     @id @default(autoincrement())
-  title String
-  img   String?
+  name  String
+  image String?
+
+  churchId Int
+  church   Church @relation(fields: [churchId], references: [id])
 }
 
-// --- GESTIÓN DE JÓVENES ---
+model ChurchSocialLink {
+  id    Int     @id @default(autoincrement())
+  name  String
+  url   String
+  icon  String?
+  value String?
 
-model Joven {
-  id              Int          @id @default(autoincrement())
-  nombres         String
-  apellidos       String
-  documento       String       @unique
-  telefono        String?      
-  fechaNacimiento DateTime?
-  sede            String
-  grupoId         Int?     
-  grupo           Grupo?    @relation(fields: [grupoId], references: [id])
-  ultimaVisita    DateTime?     @default(now())
-  activo          Boolean      @default(true)
-  asistencias     Asistencia[]
+  churchId Int
+  church   Church @relation(fields: [churchId], references: [id])
 }
 
-model Asistencia {
-  id      Int      @id @default(autoincrement())
-  fecha   DateTime @default(now())
-  
-  jovenId Int
-  joven   Joven    @relation(fields: [jovenId], references: [id], onDelete: Cascade)
+model ChurchLeader {
+  id           Int           @id @default(autoincrement())
+  role         Role
+  order        Int           @default(0)
+
+  churchId Int
+  church   Church @relation(fields: [churchId], references: [id])
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  @@unique([churchId, userId])
 }
 
-// --- NUEVO: GESTIÓN DE EQUIPO ---
-model AllowedUser {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  role      String   @default("LIDER") 
+//
+// ================= PERSON =================
+//
+
+model Person {
+  id               Int              @id @default(autoincrement())
+  name             String
+  lastname         String
+  email            String?          @unique
+  phone            String?
+  document         String?          @unique
+  birthDate        DateTime?
+  lifeStage        LifeStage?
+  address          String?
+  membershipStatus MembershipStatus @default(VISITOR)
+  active           Boolean          @default(true)
+
+  churchId Int?
+  church   Church? @relation(fields: [churchId], references: [id])
+
+  user        User?
+  attendances Attendance[]
+  departments PersonDepartment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//
+// ================= USER =================
+//
+
+model User {
+  id       Int    @id @default(autoincrement())
+  password String
+  role     Role   @default(USER)
+
+  createdAt DateTime @default(now())
+
+  personId Int    @unique
+  person   Person @relation(fields: [personId], references: [id])
+
+  departmentMemberships DepartmentMember[]
+  churches              Church[]
+  churchLeaderRoles     ChurchLeader[]
+}
+
+//
+// ================= DEPARTMENT =================
+//
+
+model Department {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+  active      Boolean @default(true)
+
+  churchId Int
+  church   Church @relation(fields: [churchId], references: [id])
+
+  members    DepartmentMember[]
+  persons    PersonDepartment[]
+  activities Activity[]
+
   createdAt DateTime @default(now())
 }
-// --- ZONA DE UJIERES Y REGISTRO ---
 
-model Persona {
-  id          String     @id @default(cuid())
-  nombre      String
-  telefono    String?   
-  FechaNacimiento DateTime?
-  esNuevo     Boolean    @default(true)
-  esJoven     Boolean    @default(false)
-  fechaVisita DateTime   @default(now())
-  estado          String     @default("NUEVO") 
-  conteoVisitas   Int        @default(1)       
-  jovenId         Int?
-  peticiones  Peticion[] 
+//
+// ================= DEPARTMENT MEMBER =================
+//
+
+model DepartmentMember {
+  id Int @id @default(autoincrement())
+
+  userId       Int
+  departmentId Int
+
+  roleInDept Role?
+  joinedAt   DateTime @default(now())
+  active     Boolean  @default(true)
+
+  user       User       @relation(fields: [userId], references: [id])
+  department Department @relation(fields: [departmentId], references: [id])
+
+  @@unique([userId, departmentId])
 }
 
-model Peticion {
-  id          String   @id @default(cuid())
-  motivo      String  
-  estado      EstadoPeticion @default(PENDIENTE)
-  fecha       DateTime @default(now())
-  personaId   String?
-  persona     Persona? @relation(fields: [personaId], references: [id])
+//
+// ================= PERSON DEPARTMENT =================
+//
+
+model PersonDepartment {
+  id Int @id @default(autoincrement())
+
+  personId     Int
+  departmentId Int
+
+  roleInDept Role?
+  joinedAt   DateTime @default(now())
+  active     Boolean  @default(true)
+
+  person     Person     @relation(fields: [personId], references: [id])
+  department Department @relation(fields: [departmentId], references: [id])
+
+  @@unique([personId, departmentId])
 }
 
-enum EstadoPeticion {
-  PENDIENTE
-  ORANDO
-  RESPONDIDA
-}
-// --- GRUPOS DE CONEXIÓN / CÉLULAS ---
-model Grupo {
-  id          Int      @id @default(autoincrement())
-  nombre      String   
-  lider       String   
-  dia         String   
-  hora        String   
-  direccion   String   
-  tipo        String   
-  activo      Boolean  @default(true)
-  miembros    Joven[]  
+//
+// ================= ACTIVITY =================
+//
+
+model Activity {
+  id           Int      @id @default(autoincrement())
+  title        String
+  description  String?
+  place        String
+  img          String?
+  date         DateTime
+  hourStart    DateTime
+  hourEnd      DateTime
+  showCalendar Boolean  @default(true)
+
+  departmentId Int
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  attendances Attendance[]
+
+  createdAt DateTime @default(now())
 }
 
-model AuditLog {
-  id          String   @id @default(cuid())
-  module      String
-  action      String
-  entity      String
-  entityId    String?
-  description String?
-  actorEmail  String?  @default("sistema")
-  createdAt   DateTime @default(now())
+//
+// ================= ATTENDANCE =================
+//
+
+model Attendance {
+  id       Int     @id @default(autoincrement())
+  attended Boolean @default(false)
+
+  personId   Int
+  activityId Int
+
+  person   Person   @relation(fields: [personId], references: [id])
+  activity Activity @relation(fields: [activityId], references: [id])
+
+  @@unique([personId, activityId])
+}
+
+//
+// ================= PETITION =================
+//
+
+model Petition {
+  id           Int      @id @default(autoincrement())
+  nombre       String
+  email        String
+  phone        String
+  typePetition String
+  content      String
+  status       String   @default("PENDIENTE")
+  createdAt    DateTime @default(now())
 }

@@ -1,40 +1,72 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
+type Role = "ADMIN" | "MEMBER" | "USER" | "RESPONSIBLE" | "LEADER" | "PASTOR" | "COUNCIL_MEMBER" | "CO_LEADER" | "SERVANT" | "VOLUNTEER";
+
 export default withAuth(
   function middleware(req) {
-    const role = req.nextauth.token?.role as string;
+    const role = req.nextauth.token?.role as Role | undefined;
     const path = req.nextUrl.pathname;
 
-    // --- REGLAS PARA EL LIDER ---
-    if (path.startsWith("/admin") && role === "LIDER") {
-      return NextResponse.redirect(new URL("/kiosko", req.url));
+    if (!role) return NextResponse.next();
+
+    // kiosko — ADMIN y MEMBER
+    if (path.startsWith("/kiosko")) {
+      if (!["ADMIN", "MEMBER"].includes(role)) {
+        return NextResponse.redirect(new URL("/login", req.url));
+      }
     }
 
-    // --- REGLAS PARA ADMIN NORMAL ---
-    if (path.startsWith("/admin/equipo") && role === "ADMIN") {
-       return NextResponse.redirect(new URL("/admin", req.url));
+    // iglesias — ADMIN only
+    if (path.startsWith("/app/iglesias")) {
+      if (role !== "ADMIN") {
+        return NextResponse.redirect(new URL("/app/dashboard", req.url));
+      }
     }
 
-    // --- REGLAS PARA UJIERES (NUEVO) ---
-    // Si tiene rol REGISTRO y quiere entrar al admin o a la home -> ¡Al registro!
-    if ((path.startsWith("/admin") || path === "/") && role === "REGISTRO") {
-      return NextResponse.redirect(new URL("/registro", req.url));
+    // iglesia — RESPONSIBLE only
+    if (path.startsWith("/app/iglesia") && !path.startsWith("/app/iglesias")) {
+      if (role !== "RESPONSIBLE") {
+        return NextResponse.redirect(new URL("/app/dashboard", req.url));
+      }
+    }
+
+    // miembros, peticiones — ADMIN y RESPONSIBLE
+    if (path.startsWith("/app/miembros") || path.startsWith("/app/peticiones")) {
+      if (!["ADMIN", "RESPONSIBLE"].includes(role)) {
+        return NextResponse.redirect(new URL("/app/dashboard", req.url));
+      }
+    }
+
+    // departamentos, actividades — ADMIN, RESPONSIBLE, LEADER
+    if (
+      path.startsWith("/app/departamentos") ||
+      path.startsWith("/app/actividades")
+    ) {
+      if (!["ADMIN", "RESPONSIBLE", "LEADER"].includes(role)) {
+        return NextResponse.redirect(new URL("/app/dashboard", req.url));
+      }
+    }
+
+    // personas — ADMIN, RESPONSIBLE, LEADER tienen acceso completo
+    // /app/personas/nuevo también es accesible para MEMBER (Atención Primaria, verificado en la página)
+    if (path.startsWith("/app/personas") && path !== "/app/personas/nuevo") {
+      if (!["ADMIN", "RESPONSIBLE", "LEADER"].includes(role)) {
+        return NextResponse.redirect(new URL("/app/dashboard", req.url));
+      }
     }
 
     return NextResponse.next();
   },
   {
-    callbacks: {
-      authorized: ({ token }) => !!token,
-    },
+    pages: { signIn: "/login" },
+    callbacks: { authorized: ({ token }) => !!token },
   }
 );
 
 export const config = {
   matcher: [
-    "/admin/:path*",
+    "/app/:path*",
     "/kiosko/:path*",
-    "/registro/:path*",
   ],
 };
