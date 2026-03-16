@@ -10,22 +10,22 @@ const Consejo = () => {
       name: "Roberto Ricardo López Esquivel"
     },
     {
-      src: "/secretariaLili.png",
+      src: "/secretariaLili.jpeg",
       title: "Secretaria",
       name: "Liliana Beatríz Bogado Acosta"
     },
     {
-      src: "/tesoreroWilson-2.png",
+      src: "/tesoreroWilson.jpeg",
       title: "Tesorero",
       name: "Wilson Perdomo González"
     },
     {
-      src: "/vocalAlberto-2.png",
+      src: "/vocalAlberto.jpeg",
       title: "Vocal",
       name: "Alberto Reyen Larramendia"
     },
     {
-      src: "/vocalIvan-3.png",
+      src: "/vocalIvan.jpeg",
       title: "Vocal",
       name: "Iván Gerardo Ibarrola"
     },

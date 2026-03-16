@@ -36,7 +36,7 @@ const HowItStarted = () => {
           <div className="grid md:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto">
             <div className="text-center">
               <Icons
-                description="Nuestra visión es pastorear a cada persona con amor y dedicación, asegurándonos de que ninguno se pierda, tal como Jesús lo expresó en Juan 17:2. Creemos en el llamado de plantar nuevas iglesias que sean centros de transformación, donde cada vida sea alcanzada, discipulada y enviada a impactar el mundo con el evangelio."
+                description="Que El Reino de Dios junto con sus principios y estatuos se establezca en la nación de España para salvación del perdido a través de la predicación del evangelio y la plantación de nuevas iglesias."
                 image="/vision-icon.png"
                 alt="Visión Icon"
               />

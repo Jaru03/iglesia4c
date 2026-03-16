@@ -16,7 +16,7 @@ const ConsejoItem = ({ item }: Props) => {
           src={item.src}
           alt={item.title}
           fill
-          className="object-cover rounded-full border-4 border-gray-100 grayscale hover:grayscale-0 transition-all duration-300"
+          className="object-cover rounded-full border-4 border-gray-100"
           suppressHydrationWarning
         />
       </div>
