@@ -55,8 +55,6 @@ model Church {
   persons      Person[]
   departments  Department[]
   leaders      ChurchLeader[]
-  responsable  User?   @relation(fields: [responsableId], references: [id])
-  responsableId Int?   @unique
 }
 
 model ChurchSchedule {
@@ -145,7 +143,6 @@ model User {
   person   Person @relation(fields: [personId], references: [id])
 
   departmentMemberships DepartmentMember[]
-  churches              Church[]
   churchLeaderRoles     ChurchLeader[]
 }
 
