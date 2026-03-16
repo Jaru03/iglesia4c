@@ -111,7 +111,6 @@ export async function actualizarIglesia(id: number, formData: FormData) {
   try {
     console.log("--- actualizarIglesia ---");
     console.log("churchId:", id);
-    console.log("pastorId:", pastorId);
     console.log("responsableIds:", responsableIds);
 
     const oldLeaders = await prisma.churchLeader.findMany({
