@@ -9,7 +9,6 @@ export async function crearIglesia(formData: FormData) {
   const place = formData.get("place")?.toString().trim();
   const latitude = parseFloat(formData.get("latitude") as string);
   const longitude = parseFloat(formData.get("longitude") as string);
-  const pastorId = formData.get("pastorId") as string;
   const responsableIds = formData.getAll("responsableIds") as string[];
   const schedules = formData.getAll("schedules") as string[];
 
@@ -45,17 +44,6 @@ export async function crearIglesia(formData: FormData) {
           })),
         });
       }
-    }
-
-    if (pastorId) {
-      await prisma.churchLeader.create({
-        data: {
-          churchId: church.id,
-          userId: parseInt(pastorId),
-          role: "PASTOR",
-          order: 0,
-        },
-      });
     }
 
     const responsablePromises = responsableIds
@@ -113,7 +101,6 @@ export async function actualizarIglesia(id: number, formData: FormData) {
   const latitude = parseFloat(formData.get("latitude") as string);
   const longitude = parseFloat(formData.get("longitude") as string);
   const active = formData.get("active") === "on";
-  const pastorId = formData.get("pastorId") as string;
   const responsableIds = formData.getAll("responsableIds") as string[];
   const schedules = formData.getAll("schedules") as string[];
 
@@ -168,17 +155,6 @@ export async function actualizarIglesia(id: number, formData: FormData) {
     await prisma.churchLeader.deleteMany({
       where: { churchId: id },
     });
-
-    if (pastorId) {
-      await prisma.churchLeader.create({
-        data: {
-          churchId: id,
-          userId: parseInt(pastorId),
-          role: "PASTOR",
-          order: 0,
-        },
-      });
-    }
 
     const newResponsableIds = responsableIds.filter((userId) => userId).map((id) => parseInt(id));
     const newResponsableSet = new Set(newResponsableIds);
