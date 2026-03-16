@@ -16,7 +16,6 @@ export interface IglesiaItem {
   _count: { persons: number };
   schedules: { id: number }[];
   leaders: { user: { person: { name: string; lastname: string } } | null }[];
-  responsable: { person: { name: string; lastname: string } } | null;
 }
 
 interface IglesiaListItemProps {
@@ -31,10 +30,8 @@ export function IglesiaListItem({ iglesia, editHref }: IglesiaListItemProps) {
     iglesia.leaders && iglesia.leaders.length > 0
       ? iglesia.leaders
           .filter((l) => l.user?.person)
-          .map((l) => l.user!.person.name)
+          .map((l) => `${l.user!.person.name} ${l.user!.person.lastname}`)
           .join(", ")
-      : iglesia.responsable
-      ? `${iglesia.responsable.person.name} ${iglesia.responsable.person.lastname}`
       : null;
 
   return (

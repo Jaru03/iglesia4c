@@ -28,11 +28,6 @@ export default async function IglesiasPage() {
           },
         },
       },
-      responsable: {
-        include: {
-          person: { select: { name: true, lastname: true } },
-        },
-      },
     },
   });
 
@@ -44,7 +39,6 @@ export default async function IglesiasPage() {
     _count: { persons: i._count.persons },
     schedules: i.schedules,
     leaders: i.leaders,
-    responsable: i.responsable,
   }));
 
   return <IglesiasClient items={data} />;
