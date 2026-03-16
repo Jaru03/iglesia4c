@@ -46,8 +46,8 @@ export const dashboardNav: NavItem[] = [
   // Responsable only
   { href: "/app/iglesia", label: "Mi Iglesia", icon: Church, roles: ["RESPONSIBLE"] },
 
-  // Atención Primaria - add people
-  { href: "/app/personas/nuevo", label: "Añadir Persona", icon: UserPlus, roles: ["ADMIN", "RESPONSIBLE"] },
+  // Atención Primaria only
+  { href: "/app/personas/nuevo", label: "Añadir Persona", icon: UserPlus, roles: [] },
 
   // All users
   { href: "/app/perfil", label: "Mi Perfil", icon: User, roles: ["ADMIN", "RESPONSIBLE", "LEADER", "USER", "MEMBER", "PASTOR", "COUNCIL_MEMBER", "CO_LEADER", "SERVANT", "VOLUNTEER"] },
