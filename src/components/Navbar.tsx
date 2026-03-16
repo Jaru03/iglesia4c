@@ -80,7 +80,7 @@ const Navbar = () => {
                 return (
                   <li
                     key={item.name}
-                    className="text-xs xs:text-sm lg:text-lg flex items-center justify-center"
+                    className="text-xs xs:text-sm lg:text-sm flex items-center justify-center"
                   >
                     <Link
                       href={item.value}

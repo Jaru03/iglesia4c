@@ -11,7 +11,7 @@ interface ActivityData {
   description: string | null;
   img: string | null;
   place: string;
-  hour_start: string; 
+  hourStart: string; 
 }
 
 const UpcomingActivities = () => {
@@ -42,6 +42,8 @@ const UpcomingActivities = () => {
     return null // O puedes poner un <div>Cargando...</div>
   }
 
+  console.log(activities)
+
   return (
     <section className="bg-white">
       <div className="max-w-7xl mx-auto p-6">
@@ -66,7 +68,7 @@ const UpcomingActivities = () => {
                 description={activity.description || "Te esperamos."}
                 place={activity.place}
                 // Usamos dayjs para formatear la hora (ej: 18:30)
-                hour={dayjs(activity.hour_start).format('HH:mm')} 
+                hour={dayjs(activity.hourStart).format('HH:mm')} 
                 image={activity.img || "/images/placeholder-evento.jpg"}
                 title={activity.title}
               />
