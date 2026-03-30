@@ -17,6 +17,9 @@ export default async function ProtectedLayout({
 
   const { role, name, churchTitle, departmentName, id } = session.user;
   const userId = parseInt(id as string);
+  if (isNaN(userId)) {
+    redirect("/login");
+  }
 
   let title: string;
   let roleLabel: string;
@@ -30,14 +33,14 @@ export default async function ProtectedLayout({
       mobileHeaderLabel = "Panel Admin";
       break;
     case "RESPONSIBLE":
-      title = churchTitle || "Mi Iglesia";
+      title = name || "Mi Panel";
       roleLabel = "Responsable";
-      mobileHeaderLabel = "Panel Responsable";
+      mobileHeaderLabel = name || "Mi Panel";
       break;
     case "LEADER":
-      title = departmentName || "Mi Departamento";
+      title = name || "Mi Panel";
       roleLabel = "Líder";
-      mobileHeaderLabel = "Mi Departamento";
+      mobileHeaderLabel = name || "Mi Panel";
       break;
     default:
       title = name || "Mi Panel";
@@ -45,10 +48,11 @@ export default async function ProtectedLayout({
       mobileHeaderLabel = "Mi Panel";
   }
 
-  const person = await prisma.person.findFirst({
-    where: { user: { id: userId } },
-    select: { id: true, churchId: true },
+  const userRecord = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { person: { select: { id: true, churchId: true } } },
   });
+  const person = userRecord?.person ?? null;
   const resolvedChurchId = session.user.churchId ?? person?.churchId ?? null;
 
   if (resolvedChurchId && person) {

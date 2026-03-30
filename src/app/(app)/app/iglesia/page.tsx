@@ -40,16 +40,10 @@ export default async function IglesiaPage() {
     active: church.active,
   };
 
-  const currentSchedules = church.schedules.map((s) => ({
-    day: s.day,
-    time: s.time,
-  }));
-
   return (
     <div className="container mx-auto py-6 px-4">
       <ChurchForm
         church={churchData}
-        currentSchedules={currentSchedules}
         redirectTo="/app/iglesia"
         isEdit={true}
         role="RESPONSIBLE"

@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { Activity, ArrowRight, Church } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { DepartamentosGrid, type DepartmentGridItem } from "@/components/dashboard/DepartamentosGrid";
 import { ActivityCard } from "@/components/responsable/ActivityCard";
+import { DashboardCalendar, type CalendarEvent } from "@/components/dashboard/DashboardCalendar";
 
 export interface ActivityItem {
   id: number;
@@ -15,6 +16,7 @@ export interface ActivityItem {
   place: string;
   img?: string | null;
   departmentName?: string;
+  allowPreRegistration?: boolean;
 }
 
 interface Props {
@@ -24,6 +26,8 @@ interface Props {
   memberActivities?: ActivityItem[];    // solo si el usuario es también miembro de otros depts
   userPersonId?: number;
   attendedSet?: Set<number>;
+  preRegisteredSet?: Set<number>;
+  autoMarkedSet?: Set<number>;
   deptNameForMember?: string;
 
   // Grid de departamentos (abajo)
@@ -79,6 +83,8 @@ export function DepartamentosTab({
   memberActivities = [],
   userPersonId,
   attendedSet,
+  preRegisteredSet,
+  autoMarkedSet,
   deptNameForMember,
   departments,
   visibleDepartmentIds,
@@ -92,13 +98,7 @@ export function DepartamentosTab({
     memberActivities.length > 0 ||
     departments.length > 0;
 
-  const daysOfWeek = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
-
-  const actividadesGenerales = calendarActivities.filter(activity =>
-    !daysOfWeek.some(day => activity.title.includes(day))
-  )
-
-
+  const actividadesGenerales = calendarActivities;
 
   if (!hasAnything) {
     return (
@@ -139,14 +139,58 @@ export function DepartamentosTab({
     );
   }
 
-  const actividadesComoMiembro = memberActivities.filter(activity =>
-    !daysOfWeek.some(day => activity.title.includes(day))
-  )
+  const actividadesComoMiembro = memberActivities;
 
-
+  const seenIds = new Set<number>();
+  const calendarEvents: CalendarEvent[] = [
+    ...calendarActivities.map((a): CalendarEvent => {
+      seenIds.add(a.id);
+      return {
+        id: a.id, title: a.title, place: a.place,
+        hourStart: a.hourStart, type: "actividad",
+        departmentName: a.departmentName,
+        attended: attendedSet?.has(a.id),
+        preRegistered: preRegisteredSet?.has(a.id),
+        autoMarked: autoMarkedSet?.has(a.id),
+        allowPreRegistration: a.allowPreRegistration,
+      };
+    }),
+    ...cultoActivities.map((a): CalendarEvent => {
+      seenIds.add(a.id);
+      return {
+        id: a.id, title: a.title, place: a.place,
+        hourStart: a.hourStart, type: "culto",
+        attended: attendedSet?.has(a.id),
+        preRegistered: preRegisteredSet?.has(a.id),
+        autoMarked: autoMarkedSet?.has(a.id),
+        allowPreRegistration: a.allowPreRegistration,
+      };
+    }),
+    ...memberActivities
+      .filter((a) => !seenIds.has(a.id))
+      .map((a): CalendarEvent => ({
+        id: a.id, title: a.title, place: a.place,
+        hourStart: a.hourStart, type: "actividad",
+        departmentName: a.departmentName,
+        attended: attendedSet?.has(a.id),
+        preRegistered: preRegisteredSet?.has(a.id),
+        autoMarked: autoMarkedSet?.has(a.id),
+        allowPreRegistration: a.allowPreRegistration,
+        isInternal: true,
+      })),
+  ];
 
   return (
     <div className="space-y-6">
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Calendario</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DashboardCalendar events={calendarEvents} personId={userPersonId} />
+        </CardContent>
+      </Card>
+
       <ActivityCarousel
         title="Actividades"
         activities={actividadesGenerales}
@@ -160,6 +204,9 @@ export function DepartamentosTab({
               img: a.img ?? null,
               departmentName: a.departmentName ?? "",
               attended: attendedSet?.has(a.id),
+              preRegistered: preRegisteredSet?.has(a.id),
+              autoMarked: autoMarkedSet?.has(a.id),
+              allowPreRegistration: a.allowPreRegistration,
             }}
             personId={userPersonId}
           />
@@ -181,6 +228,9 @@ export function DepartamentosTab({
               img: a.img ?? null,
               departmentName: a.departmentName ?? "",
               attended: attendedSet?.has(a.id),
+              preRegistered: preRegisteredSet?.has(a.id),
+              autoMarked: autoMarkedSet?.has(a.id),
+              allowPreRegistration: a.allowPreRegistration,
             }}
             isCulto
             personId={userPersonId}
@@ -193,7 +243,6 @@ export function DepartamentosTab({
           title="Mis Actividades como Miembro"
           activities={actividadesComoMiembro}
           renderItem={(a) => (
-
             <ActivityCard
               activity={{
                 id: a.id,
@@ -203,12 +252,16 @@ export function DepartamentosTab({
                 img: a.img ?? null,
                 departmentName: a.departmentName ?? deptNameForMember ?? "",
                 attended: attendedSet?.has(a.id),
+                preRegistered: preRegisteredSet?.has(a.id),
+                autoMarked: autoMarkedSet?.has(a.id),
+                allowPreRegistration: a.allowPreRegistration,
               }}
               personId={userPersonId}
             />
           )}
         />
       )}
+
     </div>
   );
 }

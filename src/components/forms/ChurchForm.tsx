@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useRouter } from "next/navigation";
 import { crearIglesia, actualizarIglesia } from "@/actions/iglesias-actions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { TimePicker } from "@/components/ui/time-picker";
 import {
   Card,
   CardContent,
@@ -56,50 +56,29 @@ interface User {
   lastname: string;
 }
 
-interface Schedule {
-  id?: number;
-  day: string;
-  time: string;
-}
-
 interface Props {
   church?: Church;
   users?: User[];
   currentResponsableIds?: number[];
-  currentSchedules?: Schedule[];
   redirectTo: string;
   isEdit?: boolean;
   role?: "ADMIN" | "RESPONSIBLE";
 }
 
-const DAYS_OF_WEEK = [
-  { value: "LUNES", label: "Lunes" },
-  { value: "MARTES", label: "Martes" },
-  { value: "MIERCOLES", label: "Miércoles" },
-  { value: "JUEVES", label: "Jueves" },
-  { value: "VIERNES", label: "Viernes" },
-  { value: "SABADO", label: "Sábado" },
-  { value: "DOMINGO", label: "Domingo" },
-];
-
 export default function ChurchForm({
   church,
   users = [],
   currentResponsableIds = [],
-  currentSchedules = [],
   redirectTo,
   isEdit = false,
   role = "ADMIN",
 }: Props) {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
   const [loading, setLoading] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [selectedResponsables, setSelectedResponsables] = useState<string[]>(
     currentResponsableIds.map(String)
-  );
-  const [schedules, setSchedules] = useState<Schedule[]>(
-    currentSchedules.length > 0
-      ? currentSchedules
-      : [{ day: "DOMINGO", time: "11:00" }]
   );
   const [active, setActive] = useState(church?.active ?? true);
 
@@ -115,26 +94,6 @@ export default function ChurchForm({
     .filter(Boolean)
     .map((u) => `${u!.name} ${u!.lastname}`);
 
-  const addSchedule = () => {
-    setSchedules([...schedules, { day: "LUNES", time: "09:00" }]);
-  };
-
-  const removeSchedule = (index: number) => {
-    setSchedules(schedules.filter((_, i) => i !== index));
-  };
-
-  const updateScheduleDay = (index: number, day: string) => {
-    const newSchedules = [...schedules];
-    newSchedules[index] = { ...newSchedules[index], day };
-    setSchedules(newSchedules);
-  };
-
-  const updateScheduleTime = (index: number, time: string) => {
-    const newSchedules = [...schedules];
-    newSchedules[index] = { ...newSchedules[index], time };
-    setSchedules(newSchedules);
-  };
-
   const handleSubmit = async (formData: FormData) => {
     if (!formData.get("title")?.toString().trim()) {
       toast.error("El nombre es obligatorio");
@@ -149,9 +108,6 @@ export default function ChurchForm({
 
     formData.delete("responsableIds");
     selectedResponsables.forEach((id) => formData.append("responsableIds", id));
-
-    formData.delete("schedules");
-    schedules.forEach((s) => formData.append("schedules", `${s.day}|${s.time}`));
 
     formData.set("active", active ? "on" : "off");
 
@@ -200,7 +156,7 @@ export default function ChurchForm({
       </CardHeader>
 
       <CardContent className="pt-6">
-        <form action={handleSubmit}>
+        <form ref={formRef} action={handleSubmit}>
           <FieldGroup className="gap-6">
             {/* Información básica */}
             <div className="space-y-4">
@@ -342,58 +298,16 @@ export default function ChurchForm({
                 </Field>
               </div>
             )}
-
-            {/* Horarios */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-foreground">Horarios</h3>
-
-              <div className="space-y-2">
-                {schedules.map((schedule, index) => (
-                  <div key={index} className="flex gap-2 items-center">
-                    <select
-                      value={schedule.day}
-                      onChange={(e) => updateScheduleDay(index, e.target.value)}
-                      className="flex-1 h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm"
-                    >
-                      {DAYS_OF_WEEK.map((day) => (
-                        <option key={day.value} value={day.value}>
-                          {day.label}
-                        </option>
-                      ))}
-                    </select>
-                    <TimePicker
-                      value={schedule.time}
-                      onChange={(time) => updateScheduleTime(index, time)}
-                      className="w-32"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeSchedule(index)}
-                      className="text-destructive hover:text-destructive"
-                      disabled={schedules.length === 1}
-                    >
-                      ×
-                    </Button>
-                  </div>
-                ))}
-              </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={addSchedule}
-              >
-                + Añadir horario
-              </Button>
-            </div>
           </FieldGroup>
 
           {/* Actions */}
           <div className="flex items-center gap-3 pt-6 mt-6 border-t">
-            <Button type="submit" disabled={loading} className="gap-2">
+            <Button
+              type="button"
+              disabled={loading}
+              className="gap-2"
+              onClick={() => setConfirmOpen(true)}
+            >
               {loading ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
@@ -410,6 +324,22 @@ export default function ChurchForm({
           </div>
         </form>
       </CardContent>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={isEdit ? "¿Guardar cambios?" : "¿Crear iglesia?"}
+        description={
+          isEdit
+            ? "Los cambios se guardarán y no podrán deshacerse."
+            : "Se creará la iglesia con los datos introducidos."
+        }
+        confirmLabel={isEdit ? "Guardar" : "Crear"}
+        onConfirm={() => {
+          setConfirmOpen(false);
+          formRef.current?.requestSubmit();
+        }}
+      />
     </Card>
   );
 }

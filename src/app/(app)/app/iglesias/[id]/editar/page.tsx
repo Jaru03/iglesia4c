@@ -65,10 +65,6 @@ export default async function EditarIglesiaPage({
   };
 
   const currentResponsableIds = responsables.map((r) => r.userId);
-  const currentSchedules = church.schedules.map((s) => ({
-    day: s.day,
-    time: s.time,
-  }));
 
   return (
     <div className="container mx-auto py-6 px-4">
@@ -76,7 +72,6 @@ export default async function EditarIglesiaPage({
         church={churchData}
         users={userData}
         currentResponsableIds={currentResponsableIds}
-        currentSchedules={currentSchedules}
         redirectTo="/app/iglesias"
         isEdit={true}
       />

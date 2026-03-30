@@ -5,7 +5,7 @@ import { Subtitle } from "@/components/typography/Subtitle"
 const Consejo = () => {
   const consejo = [
     {
-      src: "/presidenteItem-1.png",
+      src: "/presidente2.jpeg",
       title: "Presidente",
       name: "Roberto Ricardo López Esquivel"
     },

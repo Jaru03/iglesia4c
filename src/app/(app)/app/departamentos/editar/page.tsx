@@ -90,6 +90,7 @@ export default async function EditarDepartamentoPage({
     });
   } else if (role === "RESPONSIBLE" && churchId) {
     const dbUsers = await prisma.user.findMany({
+      where: { person: { churchId } },
       include: { person: { select: { name: true, lastname: true } } },
     });
     users = dbUsers.map((u) => ({

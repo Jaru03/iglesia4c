@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { crearActividad, actualizarActividad } from "@/actions/actividades-actions";
 import ImageUpload from "@/components/ImageUpload";
 import { uploadImageToSupabase } from "@/lib/upload";
@@ -49,9 +50,10 @@ interface Activity {
   fecha: string;
   horaInicio: string;
   horaFin: string;
-  departmentId: number;
-  churchId?: number;
+  departmentId: number | null;
+  churchId?: number | null;
   showCalendar: boolean;
+  allowPreRegistration: boolean;
 }
 
 interface Department {
@@ -85,8 +87,11 @@ export default function ActivityForm({
   role = "LEADER",
 }: Props) {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
   const [loading, setLoading] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [showCalendar, setShowCalendar] = useState(activity?.showCalendar ?? true);
+  const [allowPreRegistration, setAllowPreRegistration] = useState(activity?.allowPreRegistration ?? false);
   const [departamentoId, setDepartamentoId] = useState<string>(
     activity?.departmentId
       ? String(activity.departmentId)
@@ -161,6 +166,7 @@ export default function ActivityForm({
 
     formData.set("img", finalImgUrl);
     formData.set("showCalendar", showCalendar ? "on" : "");
+    formData.set("allowPreRegistration", allowPreRegistration ? "on" : "");
     formData.set("horaInicio", horaInicio);
     formData.set("horaFin", horaFin);
 
@@ -207,7 +213,7 @@ export default function ActivityForm({
       </CardHeader>
 
       <CardContent className="pt-6">
-        <form action={handleSubmit}>
+        <form ref={formRef} action={handleSubmit}>
           <FieldGroup className="gap-8">
             {/* Información básica */}
             <div className="space-y-4">
@@ -454,12 +460,27 @@ export default function ActivityForm({
                   Mostrar en el calendario general
                 </label>
               </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="allowPreRegistration"
+                  checked={allowPreRegistration}
+                  onCheckedChange={(v) => setAllowPreRegistration(v as boolean)}
+                />
+                <label htmlFor="allowPreRegistration" className="text-sm text-foreground cursor-pointer">
+                  Permitir pre-registro
+                </label>
+              </div>
             </div>
           </FieldGroup>
 
           {/* Actions */}
           <div className="flex items-center gap-3 pt-6 mt-8 border-t">
-            <Button type="submit" disabled={loading} className="gap-2">
+            <Button
+              type="button"
+              disabled={loading}
+              className="gap-2"
+              onClick={() => setConfirmOpen(true)}
+            >
               {loading ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
@@ -476,6 +497,22 @@ export default function ActivityForm({
           </div>
         </form>
       </CardContent>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={isEdit ? "¿Guardar cambios?" : "¿Crear actividad?"}
+        description={
+          isEdit
+            ? "Los cambios se guardarán y no podrán deshacerse."
+            : "Se creará la actividad con los datos introducidos."
+        }
+        confirmLabel={isEdit ? "Guardar" : "Crear"}
+        onConfirm={() => {
+          setConfirmOpen(false);
+          formRef.current?.requestSubmit();
+        }}
+      />
     </Card>
   );
 }

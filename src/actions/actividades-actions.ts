@@ -4,13 +4,20 @@ import prisma from "@/utils/prisma";
 import { revalidatePath } from "next/cache";
 import { logAudit } from "./audit-actions";
 import { createClient } from "@supabase/supabase-js";
+import { getSessionUser, canManageActivity, canManageDepartment } from "@/lib/auth-helpers";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+const MANAGE_ROLES = ["ADMIN", "RESPONSIBLE", "LEADER"];
+
 export async function crearActividad(formData: FormData) {
+  const user = await getSessionUser();
+  if (!user) return { error: "No autenticado" };
+  if (!MANAGE_ROLES.includes(user.role)) return { error: "Sin permisos" };
+
   const title = formData.get("title") as string;
   const place = formData.get("place") as string;
   const description = formData.get("description") as string;
@@ -20,10 +27,14 @@ export async function crearActividad(formData: FormData) {
   const horaFin = formData.get("horaFin") as string;
   const departmentId = parseInt(formData.get("departmentId") as string);
   const showCalendar = formData.get("showCalendar") === "on";
+  const allowPreRegistration = formData.get("allowPreRegistration") === "on";
 
   if (!title || !place || !fecha || !horaInicio || !horaFin || !departmentId) {
     return { error: "Faltan datos obligatorios (título, lugar, fecha, hora y departamento)." };
   }
+
+  const allowed = await canManageDepartment(user, departmentId);
+  if (!allowed) return { error: "Sin permisos sobre ese departamento" };
 
   const date = new Date(`${fecha}T00:00:00`);
   const hourStart = new Date(`${fecha}T${horaInicio}:00`);
@@ -39,6 +50,7 @@ export async function crearActividad(formData: FormData) {
       hourStart,
       hourEnd,
       showCalendar,
+      allowPreRegistration,
       departmentId,
     },
   });
@@ -53,7 +65,6 @@ export async function crearActividad(formData: FormData) {
 
   revalidatePath("/app/actividades");
   revalidatePath("/app/dashboard");
-  revalidatePath("/");
   return { success: "Actividad creada." };
 }
 
@@ -62,6 +73,13 @@ export async function eliminarActividad(id: number, _formData: FormData) {
 }
 
 export async function eliminarActividadPorId(id: number) {
+  const user = await getSessionUser();
+  if (!user) return { error: "No autenticado" };
+  if (!MANAGE_ROLES.includes(user.role)) return { error: "Sin permisos" };
+
+  const allowed = await canManageActivity(user, id);
+  if (!allowed) return { error: "Sin permisos sobre esa actividad" };
+
   try {
     const actividad = await prisma.activity.findUnique({ where: { id } });
 
@@ -72,9 +90,7 @@ export async function eliminarActividadPorId(id: number) {
       }
     }
 
-    await prisma.activity.delete({
-      where: { id },
-    });
+    await prisma.activity.delete({ where: { id } });
 
     await logAudit({
       module: "ACTIVIDADES",
@@ -84,19 +100,22 @@ export async function eliminarActividadPorId(id: number) {
       description: `Actividad eliminada: ${actividad?.title || id}`,
     });
 
-    revalidatePath("/admin/actividades");
-    revalidatePath("/admin/calendario");
     revalidatePath("/app/actividades");
-    
-    
-    revalidatePath("/");
+    revalidatePath("/app/dashboard");
     return { success: "Actividad eliminada." };
-  } catch (error) {
+  } catch {
     return { error: "No se pudo eliminar la actividad." };
   }
 }
 
 export async function actualizarActividad(id: number, formData: FormData) {
+  const user = await getSessionUser();
+  if (!user) return { error: "No autenticado" };
+  if (!MANAGE_ROLES.includes(user.role)) return { error: "Sin permisos" };
+
+  const allowed = await canManageActivity(user, id);
+  if (!allowed) return { error: "Sin permisos sobre esa actividad" };
+
   const title = formData.get("title") as string;
   const place = formData.get("place") as string;
   const description = formData.get("description") as string;
@@ -106,6 +125,7 @@ export async function actualizarActividad(id: number, formData: FormData) {
   const horaFin = formData.get("horaFin") as string;
   const departmentId = parseInt(formData.get("departmentId") as string);
   const showCalendar = formData.get("showCalendar") === "on";
+  const allowPreRegistration = formData.get("allowPreRegistration") === "on";
 
   if (!id || !title || !place || !fecha || !horaInicio || !horaFin || !departmentId) {
     return { error: "Faltan datos para actualizar." };
@@ -127,6 +147,7 @@ export async function actualizarActividad(id: number, formData: FormData) {
       hourEnd,
       departmentId,
       showCalendar,
+      allowPreRegistration,
     },
   });
 
@@ -140,6 +161,5 @@ export async function actualizarActividad(id: number, formData: FormData) {
 
   revalidatePath("/app/actividades");
   revalidatePath("/app/dashboard");
-  revalidatePath("/");
   return { success: "Actividad actualizada." };
 }

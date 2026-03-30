@@ -16,6 +16,7 @@ import {
 type Schedule = {
   day: string;
   time: string;
+  name: string;
 };
 
 type ScheduleInputProps = {
@@ -41,15 +42,15 @@ export function ScheduleInput({ schedules = [], onChange, name, defaultValue = [
   useEffect(() => {
     if (defaultValue.length > 0 && schedules.length === 0) {
       const parsed = defaultValue.map((s) => {
-        const [day, time] = s.split("|");
-        return { day, time };
+        const [day, time, name = ""] = s.split("|");
+        return { day, time, name };
       });
       setItems(parsed);
     }
   }, [defaultValue, schedules.length]);
 
   const handleAdd = () => {
-    const newItems = [...items, { day: "DOMINGO", time: "10:00" }];
+    const newItems = [...items, { day: "DOMINGO", time: "10:00", name: "" }];
     setItems(newItems);
     onChange?.(newItems);
   };
@@ -61,7 +62,7 @@ export function ScheduleInput({ schedules = [], onChange, name, defaultValue = [
   };
 
   const handleChange = (index: number, field: keyof Schedule, value: string) => {
-    const newItems = items.map((item, i) => 
+    const newItems = items.map((item, i) =>
       i === index ? { ...item, [field]: value } : item
     );
     setItems(newItems);
@@ -93,6 +94,13 @@ export function ScheduleInput({ schedules = [], onChange, name, defaultValue = [
             onChange={(e) => handleChange(index, "time", e.target.value)}
             className="w-[120px]"
           />
+          <Input
+            type="text"
+            value={schedule.name}
+            onChange={(e) => handleChange(index, "name", e.target.value)}
+            placeholder="Nombre del culto (ej. Culto General)"
+            className="flex-1"
+          />
           <Button
             type="button"
             variant="ghost"
@@ -114,8 +122,8 @@ export function ScheduleInput({ schedules = [], onChange, name, defaultValue = [
         <Plus className="h-4 w-4" />
         Añadir horario
       </Button>
-      {name && items.map((_, index) => (
-        <input key={index} type="hidden" name={name} value={`${items[index].day}|${items[index].time}`} />
+      {name && items.map((item, index) => (
+        <input key={index} type="hidden" name={name} value={`${item.day}|${item.time}|${item.name}`} />
       ))}
     </div>
   );

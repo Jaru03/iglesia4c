@@ -53,19 +53,20 @@ export default async function ActividadesPage({
   let activeDeptId: number | null = null;
   let activeDeptName: string;
   let showAllOption = false;
+  let leaderChurchId: number | null = null;
 
   if (role === "ADMIN") {
     const allDeptsRaw = await prisma.department.findMany({
-      where: { active: true, NOT: { name: { contains: "Culto", mode: "insensitive" } } },
+      where: { active: true },
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     });
-    
+
     allDepts = groupDepartmentsByName(allDeptsRaw);
     showAllOption = true;
   } else if (role === "RESPONSIBLE" && churchId) {
     const deptsRaw = await prisma.department.findMany({
-      where: { churchId, active: true, NOT: { name: { contains: "Culto", mode: "insensitive" } } },
+      where: { churchId, active: true },
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     });
@@ -75,18 +76,30 @@ export default async function ActividadesPage({
     const userId = parseInt(session.user.id);
     const memberships = await prisma.departmentMember.findMany({
       where: { userId, roleInDept: "LEADER", active: true },
-      include: { department: { select: { id: true, name: true } } },
+      include: { department: { select: { id: true, name: true, churchId: true } } },
     });
     const deptsRaw = memberships.map((m) => ({ id: m.department.id, name: m.department.name }));
     allDepts = groupDepartmentsByName(deptsRaw);
     showAllOption = allDepts.length > 1;
-  }
-
-  if (allDepts.length === 0) {
-    redirect("/app/dashboard");
+    leaderChurchId = memberships[0]?.department.churchId ?? null;
   }
 
   const { dept } = await searchParams;
+
+  if (allDepts.length === 0) {
+    const { ActividadesClient } = await import("./components/ActividadesClient");
+    return (
+      <ActividadesClient
+        actividades={[]}
+        departmentId={null}
+        departmentName=""
+        allDepts={[]}
+        activeDeptId={null}
+        showAllOption={false}
+        role={role as "ADMIN" | "RESPONSIBLE" | "LEADER"}
+      />
+    );
+  }
   
   const selectedDept = allDepts.find((d) => d.name === dept) || 
                       allDepts.find((d) => d.departmentIds.includes(parseInt(dept || "")) || false) ||
@@ -105,50 +118,59 @@ export default async function ActividadesPage({
 
   const activeDeptGroup = allDepts.find((d) => d.name === activeDeptName) || allDepts[0];
 
-  const nonCultoDeptIds = allDepts
-    .filter(d => !d.name.toLowerCase().includes("culto"))
-    .flatMap(d => d.departmentIds);
+  const allDeptIds = allDepts.flatMap(d => d.departmentIds);
 
   const whereClause = (() => {
     if (activeDeptId === -1) {
       if (role === "ADMIN") {
-        return { departmentId: { in: nonCultoDeptIds } };
+        return { isCulto: false, departmentId: { in: allDeptIds } };
       }
       if (role === "RESPONSIBLE" && churchId) {
-        return { department: { churchId }, departmentId: { in: nonCultoDeptIds } };
+        return { isCulto: false, department: { churchId } };
       }
       if (role === "LEADER") {
-        return { departmentId: { in: nonCultoDeptIds } };
+        return { isCulto: false, departmentId: { in: allDeptIds } };
       }
-      return {};
+      return { isCulto: false };
     }
     if (activeDeptGroup.isGrouped) {
-      return { department: { name: activeDeptGroup.name } };
+      return { isCulto: false, department: { name: activeDeptGroup.name } };
     }
     if (activeDeptId && activeDeptId > 0) {
-      return { departmentId: activeDeptId };
+      return { isCulto: false, departmentId: activeDeptId };
     }
     if (role === "RESPONSIBLE" && churchId) {
-      return { department: { churchId }, departmentId: { in: nonCultoDeptIds } };
+      return { isCulto: false, department: { churchId } };
     }
     if (role === "LEADER") {
-      return { departmentId: { in: nonCultoDeptIds } };
+      return { isCulto: false, departmentId: { in: allDeptIds } };
     }
-    return {};
+    return { isCulto: false };
   })();
 
-  const actividades = await prisma.activity.findMany({
-    where: whereClause,
-    orderBy: { hourStart: "desc" },
-    select: {
-      id: true,
-      title: true,
-      place: true,
-      img: true,
-      hourStart: true,
-      hourEnd: true,
-    },
-  });
+  const now = new Date();
+
+  const [actividadesRaw, calendarActividades] = await Promise.all([
+    prisma.activity.findMany({
+      where: whereClause,
+      select: { id: true, title: true, place: true, img: true, hourStart: true, hourEnd: true },
+    }),
+    role === "LEADER" && leaderChurchId
+      ? prisma.activity.findMany({
+          where: { isCulto: false, department: { churchId: leaderChurchId } },
+          orderBy: { hourStart: "asc" },
+          select: {
+            id: true, title: true, place: true, hourStart: true, hourEnd: true, img: true,
+            showCalendar: true,
+            department: { select: { name: true } },
+          },
+        })
+      : Promise.resolve([]),
+  ]);
+
+  const future = actividadesRaw.filter((a) => a.hourStart >= now).sort((a, b) => a.hourStart.getTime() - b.hourStart.getTime());
+  const past = actividadesRaw.filter((a) => a.hourStart < now).sort((a, b) => b.hourStart.getTime() - a.hourStart.getTime());
+  const actividades = [...future, ...past];
 
   const { ActividadesClient } = await import("./components/ActividadesClient");
   return (
@@ -160,6 +182,16 @@ export default async function ActividadesPage({
       activeDeptId={activeDeptId}
       showAllOption={showAllOption}
       role={role as "ADMIN" | "RESPONSIBLE" | "LEADER"}
+      calendarActividades={calendarActividades.map((a) => ({
+        id: a.id,
+        title: a.title,
+        place: a.place,
+        hourStart: a.hourStart.toISOString(),
+        hourEnd: a.hourEnd.toISOString(),
+        img: a.img,
+        showCalendar: a.showCalendar,
+        departmentName: a.department?.name ?? "",
+      }))}
     />
   );
 }

@@ -31,6 +31,7 @@ export default async function DepartamentosPage({
       include: {
         church: { select: { id: true, title: true } },
         _count: { select: { persons: true, activities: true } },
+        members: { where: { roleInDept: "LEADER", active: true }, select: { id: true } },
       },
     });
 
@@ -40,6 +41,7 @@ export default async function DepartamentosPage({
       description: d.description,
       active: d.active,
       church: d.church,
+      leadersCount: d.members.length,
       _count: { persons: d._count.persons, activities: d._count.activities },
     }));
 
@@ -47,6 +49,7 @@ export default async function DepartamentosPage({
       <DepartamentosClient
         items={data}
         subtitle={role === "RESPONSIBLE" ? "Departamentos de tu iglesia" : "Todos los departamentos"}
+        isAdmin={role === "ADMIN"}
       />
     );
   }
@@ -66,28 +69,53 @@ export default async function DepartamentosPage({
     const isValid = !isNaN(paramDeptId) && allDepts.some((d) => d.id === paramDeptId);
     const activeDeptId = isValid ? paramDeptId : allDepts[0].id;
 
-    const activeDept = await prisma.department.findUnique({
-      where: { id: activeDeptId },
-      include: {
-        persons: {
-          where: { active: true },
-          include: {
-            person: { select: { id: true, name: true, lastname: true, email: true } },
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const [activeDept, recentAttendances] = await Promise.all([
+      prisma.department.findUnique({
+        where: { id: activeDeptId },
+        include: {
+          persons: {
+            where: { active: true },
+            include: {
+              person: {
+                select: { id: true, name: true, lastname: true, email: true, phone: true, birthDate: true, membershipStatus: true, attendsChurch: true },
+              },
+            },
+            orderBy: { person: { name: "asc" } },
           },
-          orderBy: { person: { name: "asc" } },
+          _count: { select: { activities: true } },
         },
-        _count: { select: { activities: true } },
-      },
-    });
+      }),
+      // People who have attended at least one activity of this dept in the last 30 days
+      prisma.attendance.findMany({
+        where: {
+          attended: true,
+          activity: { departmentId: activeDeptId, hourStart: { gte: thirtyDaysAgo } },
+        },
+        select: { personId: true },
+        distinct: ["personId"],
+      }),
+    ]);
 
     if (!activeDept) redirect("/app/dashboard");
+
+    const recentPersonIds = new Set(recentAttendances.map((a) => a.personId));
 
     const members = activeDept.persons.map((pd) => ({
       personId: pd.person.id,
       name: pd.person.name,
       lastname: pd.person.lastname,
       email: pd.person.email,
+      phone: pd.person.phone,
+      birthDate: pd.person.birthDate,
+      membershipStatus: pd.person.membershipStatus,
+      attendsChurch: pd.person.attendsChurch,
     }));
+
+    // Members who haven't attended any department activity in the last 30 days
+    const followUpMembers = members.filter((m) => !recentPersonIds.has(m.personId));
 
     async function handleRemoveMember(personId: number, deptId: number) {
       "use server";
@@ -107,6 +135,7 @@ export default async function DepartamentosPage({
           activityCount: activeDept._count.activities,
         }}
         members={members}
+        followUpMembers={followUpMembers}
         allDepts={allDepts}
         activeDeptId={activeDeptId}
         canEdit

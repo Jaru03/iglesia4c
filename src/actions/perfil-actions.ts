@@ -3,8 +3,23 @@
 import bcrypt from "bcryptjs";
 import prisma from "@/utils/prisma";
 import { revalidatePath } from "next/cache";
+import { getSessionUser } from "@/lib/auth-helpers";
 
 export async function actualizarPerfil(personId: number, formData: FormData) {
+  const user = await getSessionUser();
+  if (!user) return { error: "No autenticado" };
+
+  // Verify the user is editing their own profile
+  const person = await prisma.person.findUnique({
+    where: { id: personId },
+    include: { user: { select: { id: true, password: true } } },
+  });
+
+  if (!person) return { error: "Persona no encontrada." };
+  if (!person.user || String(person.user.id) !== user.id) {
+    return { error: "Solo puedes editar tu propio perfil." };
+  }
+
   const name = formData.get("name")?.toString().trim();
   const lastname = formData.get("lastname")?.toString().trim();
   const email = formData.get("email")?.toString().trim() || null;
@@ -21,21 +36,9 @@ export async function actualizarPerfil(personId: number, formData: FormData) {
   }
 
   try {
-    const person = await prisma.person.findUnique({
-      where: { id: personId },
-      include: { user: true },
-    });
-
-    if (!person) {
-      return { error: "Persona no encontrada." };
-    }
-
     if (newPassword) {
       if (!currentPassword) {
         return { error: "Introduce la contraseña actual." };
-      }
-      if (!person.user) {
-        return { error: "No tienes contraseña configurada." };
       }
       const isValid = await bcrypt.compare(currentPassword, person.user.password);
       if (!isValid) {

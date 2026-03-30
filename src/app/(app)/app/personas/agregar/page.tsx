@@ -70,7 +70,7 @@ export default async function AgregarPersonaPage({
       ) : (
         <div className="space-y-2">
           {personas.map((persona) => (
-            <form key={persona.id} action={agregarPersonaAlDepartamento}>
+            <form key={persona.id} action={agregarPersonaAlDepartamento as (formData: FormData) => Promise<void>}>
               <input type="hidden" name="departmentId" value={activeDeptId} />
               <input type="hidden" name="personId" value={persona.id} />
               <div className="flex items-center justify-between p-3 bg-white rounded-lg border hover:shadow-sm">

@@ -75,7 +75,7 @@ export function DashboardTabs({
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
           {/* Title + optional dept selector */}
           <div className="flex items-center gap-3 flex-wrap">
-            {deptSelector && deptSelector.depts.length > 1 && (
+            {deptSelector && deptSelector.depts.length > 1 && activeTab !== "departamentos" && (
               <Tabs
                 value={deptSelector.activeDeptId.toString()}
                 onValueChange={(id) => {

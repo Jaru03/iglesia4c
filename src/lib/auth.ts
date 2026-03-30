@@ -12,19 +12,27 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Contraseña", type: "password" },
       },
       async authorize(credentials) {
-        const email = credentials?.email?.toLowerCase().trim();
+        const input = credentials?.email?.trim();
         const password = credentials?.password;
 
-        console.log("[AUTH] Intento de login:", { email });
+        console.log("[AUTH] Intento de login:", { input });
 
-        if (!email || !password) {
-          console.log("[AUTH] Fallo: email o password vacíos");
+        if (!input || !password) {
+          console.log("[AUTH] Fallo: identificador o password vacíos");
           return null;
         }
 
+        const email = input.toLowerCase();
+        const phone = input;
+
         try {
-          const person = await prisma.person.findUnique({
-            where: { email },
+          let person = await prisma.person.findFirst({
+            where: {
+              OR: [
+                { email: email },
+                { phone: phone },
+              ],
+            },
             include: { user: true },
           });
 

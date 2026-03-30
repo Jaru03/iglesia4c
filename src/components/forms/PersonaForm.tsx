@@ -1,10 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useRouter } from "next/navigation";
 import { crearPersona, actualizarPersona } from "@/actions/personas-actions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Card,
   CardContent,
@@ -31,6 +42,38 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { ArrowLeft, Loader2, X, Save, UserPlus, Pencil } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import ReactSignature, { type SignatureRef } from "@uiw/react-signature";
+import { uploadSignatureToSupabase } from "@/lib/upload";
+
+function svgToPngBase64(svgEl: SVGSVGElement): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const width = svgEl.clientWidth || 600;
+    const height = svgEl.clientHeight || 160;
+    const svgData = new XMLSerializer().serializeToString(svgEl);
+    const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d")!;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, width, height);
+      ctx.drawImage(img, 0, 0, width, height);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL("image/png").split(",")[1]); // solo base64
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+const MEMBERSHIP_STATUS_OPTIONS = [
+  { value: "VISITOR", label: "Visitante" },
+  { value: "ACTIVE", label: "Activo" },
+  { value: "INACTIVE", label: "Inactivo" },
+];
 
 interface Persona {
   id?: number;
@@ -41,6 +84,8 @@ interface Persona {
   document: string | null;
   birthDate: Date | null;
   churchId: number | null;
+  isMember?: boolean;
+  membershipStatus?: string;
   departments?: { departmentId: number }[];
 }
 
@@ -60,6 +105,7 @@ interface Props {
   churches: Church[];
   isEdit?: boolean;
   isAtencionPrimaria?: boolean;
+  defaultChurchId?: number | null;
 }
 
 export default function PersonaForm({
@@ -68,18 +114,33 @@ export default function PersonaForm({
   churches,
   isEdit = false,
   isAtencionPrimaria = false,
+  defaultChurchId,
 }: Props) {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
   const [loading, setLoading] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [selectedDepts, setSelectedDepts] = useState<string[]>(
     persona?.departments?.map((d) => String(d.departmentId)) ?? []
   );
   const [churchId, setChurchId] = useState<string>(
-    persona?.churchId ? String(persona.churchId) : ""
+    persona?.churchId ? String(persona.churchId) : defaultChurchId ? String(defaultChurchId) : ""
   );
   const [birthDate, setBirthDate] = useState<Date | undefined>(
     persona?.birthDate ? new Date(persona.birthDate) : undefined
   );
+  const [membershipStatus, setMembershipStatus] = useState<string>(
+    persona?.membershipStatus ?? "VISITOR"
+  );
+  const [isMember, setIsMember] = useState<boolean>(
+    persona?.isMember ?? false
+  );
+
+  // Campos de visitante (solo Atención Primaria)
+  const [arrivedAt, setArrivedAt] = useState<Date | undefined>(new Date());
+  const [attendsChurch, setAttendsChurch] = useState<"true" | "false" | "">("");
+  const [authorizedContact, setAuthorizedContact] = useState(false);
+  const signatureRef = useRef<SignatureRef>(null);
 
   const deptsAnchor = useComboboxAnchor();
 
@@ -108,11 +169,43 @@ export default function PersonaForm({
     }
 
     if (birthDate) {
-      formData.set("birthDate", birthDate.toISOString().split("T")[0]);
+      const y = birthDate.getFullYear();
+      const m = String(birthDate.getMonth() + 1).padStart(2, "0");
+      const d = String(birthDate.getDate()).padStart(2, "0");
+      formData.set("birthDate", `${y}-${m}-${d}`);
     }
+
+    formData.set("membershipStatus", membershipStatus);
+    formData.set("isMember", String(isMember));
 
     formData.delete("departmentIds");
     selectedDepts.forEach((id) => formData.append("departmentIds", id));
+
+    if (isAtencionPrimaria) {
+      if (arrivedAt) {
+        const y = arrivedAt.getFullYear();
+        const m = String(arrivedAt.getMonth() + 1).padStart(2, "0");
+        const d = String(arrivedAt.getDate()).padStart(2, "0");
+        formData.set("arrivedAt", `${y}-${m}-${d}T12:00:00`);
+      }
+      if (attendsChurch) formData.set("attendsChurch", attendsChurch);
+      formData.set("authorizedContact", String(authorizedContact));
+
+      // Subir firma a Supabase como PNG
+      if (signatureRef.current?.svg) {
+        try {
+          const pngBase64 = await svgToPngBase64(signatureRef.current.svg);
+          const name = (formData.get("name") as string ?? "").trim();
+          const lastname = (formData.get("lastname") as string ?? "").trim();
+          const url = await uploadSignatureToSupabase(pngBase64, name, lastname);
+          formData.set("signature", url);
+        } catch {
+          toast.error("Error al subir la firma");
+          setLoading(false);
+          return;
+        }
+      }
+    }
 
     const result = isEdit
       ? await actualizarPersona(persona!.id!, formData)
@@ -157,7 +250,7 @@ export default function PersonaForm({
       </CardHeader>
 
       <CardContent className="pt-6">
-        <form action={handleSubmit}>
+        <form ref={formRef} action={handleSubmit}>
           <FieldGroup className="gap-8">
             {/* Información Personal */}
             <div className="space-y-4">
@@ -216,6 +309,40 @@ export default function PersonaForm({
                 </Field>
               </div>
             </div>
+
+            {/* Rol y membresía */}
+            {!isAtencionPrimaria && (
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-foreground">Estatus y membresía</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                  <Field>
+                    <FieldLabel>Estatus</FieldLabel>
+                    <Select value={membershipStatus} onValueChange={setMembershipStatus}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar rol..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MEMBERSHIP_STATUS_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <div className="flex items-center gap-3 pb-1">
+                    <Checkbox
+                      id="isMember"
+                      checked={isMember}
+                      onCheckedChange={(v) => setIsMember(v === true)}
+                    />
+                    <Label htmlFor="isMember" className="cursor-pointer text-sm">
+                      Es miembro
+                    </Label>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Información de Contacto */}
             <div className="space-y-4">
@@ -354,9 +481,93 @@ export default function PersonaForm({
             )}
           </FieldGroup>
 
+          {/* Campos de visitante — solo Atención Primaria */}
+          {isAtencionPrimaria && (
+            <div className="space-y-4 pt-4">
+              <h3 className="text-sm font-medium text-foreground">Registro de visita</h3>
+
+              {/* ¿Asiste a una iglesia? */}
+              <Field>
+                <FieldLabel>¿Asiste actualmente a una iglesia?</FieldLabel>
+                <div className="flex gap-6 mt-1">
+                  {[{ label: "Sí", value: "true" }, { label: "No", value: "false" }].map(({ label, value }) => (
+                    <label key={value} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="attendsChurch"
+                        value={value}
+                        checked={attendsChurch === value}
+                        onChange={() => setAttendsChurch(value as "true" | "false")}
+                        className="accent-primary"
+                      />
+                      <span className="text-sm">{label}</span>
+                    </label>
+                  ))}
+                </div>
+              </Field>
+
+              {/* Cómo nos conociste */}
+              <Field>
+                <FieldLabel htmlFor="howDidYouMeetUs">¿Cómo nos conociste?</FieldLabel>
+                <Input
+                  id="howDidYouMeetUs"
+                  name="howDidYouMeetUs"
+                  placeholder="Ej: redes sociales, un amigo..."
+                />
+              </Field>
+
+              {/* Motivo de oración */}
+              <Field>
+                <FieldLabel htmlFor="prayerRequest">Motivo de oración (opcional)</FieldLabel>
+                <Textarea
+                  id="prayerRequest"
+                  name="prayerRequest"
+                  placeholder="Comparte tu petición de oración..."
+                  rows={3}
+                />
+              </Field>
+
+              {/* Autorización de contacto */}
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  id="authorizedContact"
+                  checked={authorizedContact}
+                  onCheckedChange={(v) => setAuthorizedContact(v === true)}
+                />
+                <Label htmlFor="authorizedContact" className="cursor-pointer text-sm">
+                  Nos autorizas a contactar contigo
+                </Label>
+              </div>
+
+              {/* Firma */}
+              <Field>
+                <FieldLabel>Firma del visitante</FieldLabel>
+                <div className="rounded-lg border bg-white overflow-hidden">
+                  <ReactSignature
+                    ref={signatureRef}
+                    style={{ width: "100%", height: 160 }}
+                    strokeWidth={3}
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="mt-1 text-xs text-muted-foreground underline"
+                  onClick={() => signatureRef.current?.clear()}
+                >
+                  Limpiar firma
+                </button>
+              </Field>
+            </div>
+          )}
+
           {/* Actions */}
           <div className="flex items-center gap-3 pt-6 mt-8 border-t">
-            <Button type="submit" disabled={loading} className="gap-2">
+            <Button
+              type="button"
+              disabled={loading}
+              className="gap-2"
+              onClick={() => setConfirmOpen(true)}
+            >
               {loading ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
@@ -373,6 +584,22 @@ export default function PersonaForm({
           </div>
         </form>
       </CardContent>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={isEdit ? "¿Guardar cambios?" : "¿Crear persona?"}
+        description={
+          isEdit
+            ? "Los cambios se guardarán y no podrán deshacerse."
+            : "Se creará el registro con los datos introducidos."
+        }
+        confirmLabel={isEdit ? "Guardar" : "Crear"}
+        onConfirm={() => {
+          setConfirmOpen(false);
+          formRef.current?.requestSubmit();
+        }}
+      />
     </Card>
   );
 }

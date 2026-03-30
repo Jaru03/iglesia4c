@@ -38,7 +38,7 @@ export default async function IglesiasPage() {
     active: i.active,
     _count: { persons: i._count.persons },
     schedules: i.schedules,
-    leaders: i.leaders,
+    leaders: i.leaders.map((l) => ({ role: l.role, user: l.user })),
   }));
 
   return <IglesiasClient items={data} />;

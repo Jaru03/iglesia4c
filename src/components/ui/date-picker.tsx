@@ -52,14 +52,11 @@ function DatePicker({
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
-          mode="single"
           selected={value}
           onSelect={(date) => {
             onChange?.(date)
             setOpen(false)
           }}
-          locale={es}
-          initialFocus
         />
       </PopoverContent>
     </Popover>

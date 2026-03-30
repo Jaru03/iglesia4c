@@ -56,11 +56,27 @@ export function AsistenciasUserClient({ attendances }: Props) {
               },
             ]}
             badges={[
-              { 
-                label: attendance.attended ? "Asistió" : "No asistió", 
-                variant: attendance.attended ? "secondary" as const : "destructive" as const 
+              {
+                label: attendance.attended ? "Asistió" : "No asistió",
+                variant: attendance.attended ? "secondary" as const : "destructive" as const
               },
             ]}
+            modalContent={
+              <div className="space-y-3 pt-1 text-sm">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span>{attendance.activity.place}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span>{new Date(attendance.activity.hourStart).toLocaleString("es-ES", { dateStyle: "long", timeStyle: "short" })}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ClipboardCheck className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span>{attendance.attended ? "Asististe a esta actividad" : "No asististe a esta actividad"}</span>
+                </div>
+              </div>
+            }
           />
         )}
       />

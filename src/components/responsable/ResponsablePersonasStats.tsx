@@ -17,7 +17,7 @@ export async function ResponsablePersonasStats() {
     prisma.person.count({ where: { churchId } }),
     prisma.person.count({ where: { churchId, active: true } }),
     prisma.person.count({ where: { churchId, active: false } }),
-    prisma.person.count({ where: { churchId, active: true, membershipStatus: "MEMBER" } }),
+    prisma.person.count({ where: { churchId, active: true, membershipStatus: "ACTIVE" } }),
     prisma.person.count({ where: { churchId, active: true, membershipStatus: "VISITOR" } }),
   ]);
 
