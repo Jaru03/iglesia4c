@@ -43,7 +43,7 @@ export default async function EditarActividadPage({
     redirect("/app/actividades");
   }
 
-  const activityChurchId = activity.department.churchId;
+  const activityChurchId = activity.department?.churchId ?? activity.churchId ?? undefined;
 
   let departments: { id: number; name: string; churchId?: number | null }[] = [];
   let churches: { id: number; title: string }[] = [];
@@ -98,6 +98,7 @@ export default async function EditarActividadPage({
     departmentId: activity.departmentId,
     churchId: activityChurchId,
     showCalendar: activity.showCalendar,
+    allowPreRegistration: activity.allowPreRegistration,
   };
 
   const redirectTo = dept

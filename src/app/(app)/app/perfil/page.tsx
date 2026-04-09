@@ -21,6 +21,7 @@ import {
   Pencil,
 } from "lucide-react";
 import Link from "next/link";
+import { BirthdayReminderButton } from "./components/BirthdayReminderButton";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +39,6 @@ const roleLabel: Record<string, string> = {
   ADMIN: "Administrador",
   RESPONSIBLE: "Responsable de Iglesia",
   LEADER: "Líder de Departamento",
-  MEMBER: "Miembro",
   USER: "Usuario",
   PASTOR: "Pastor",
   COUNCIL_MEMBER: "Miembro del Consejo",
@@ -56,19 +56,18 @@ const roleColors: Record<string, string> = {
   CO_LEADER: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400",
   SERVANT: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400",
   VOLUNTEER: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400",
-  MEMBER: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
   USER: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
 };
 
 const membershipLabel: Record<string, string> = {
   VISITOR: "Visitante",
-  MEMBER: "Miembro activo",
+  ACTIVE: "Activo",
   INACTIVE: "Inactivo",
 };
 
 const membershipColors: Record<string, string> = {
   VISITOR: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-  MEMBER: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+  ACTIVE: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
   INACTIVE: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
 };
 
@@ -82,10 +81,8 @@ const lifeStageLabel: Record<string, string> = {
 
 const deptRoleLabel: Record<string, string> = {
   LEADER: "Líder",
-  CO_LEADER: "Co-líder",
-  SERVANT: "Servidor",
-  VOLUNTEER: "Voluntario",
-  MEMBER: "Miembro",
+  OBRERO: "Obrero",
+  USER: "Miembro",
 };
 
 export default async function PerfilPage() {
@@ -95,18 +92,33 @@ export default async function PerfilPage() {
   const { role, name, churchTitle, email, id } = session.user;
   const userId = parseInt(id as string);
 
-  const person = await prisma.person.findFirst({
-    where: { user: { id: userId } },
-    include: {
-      church: { select: { id: true, title: true } },
-      departments: {
-        where: { active: true },
-        include: { department: { select: { id: true, name: true } } },
-        orderBy: { joinedAt: "asc" },
+  const [person, leaderMemberships] = await Promise.all([
+    prisma.person.findFirst({
+      where: { user: { id: userId } },
+      include: {
+        church: { select: { id: true, title: true } },
+        departments: {
+          where: { active: true },
+          include: { department: { select: { id: true, name: true } } },
+          orderBy: { joinedAt: "asc" },
+        },
+        _count: { select: { attendances: true } },
       },
-      _count: { select: { attendances: true } },
-    },
-  });
+    }),
+    prisma.departmentMember.findMany({
+      where: { userId, active: true },
+      include: { department: { select: { id: true, name: true } } },
+    }),
+  ]);
+
+  // Merge PersonDepartment + DepartmentMember (leaders), deduplicated by department id
+  const personDeptIds = new Set(person?.departments.map((d) => d.department.id) ?? []);
+  const allDepartments: { id: number; departmentId: number; department: { id: number; name: string }; roleInDept: string | null }[] = [
+    ...(person?.departments.map((d) => ({ ...d, departmentId: d.department.id, roleInDept: d.roleInDept ?? null })) ?? []),
+    ...leaderMemberships
+      .filter((m) => !personDeptIds.has(m.department.id))
+      .map((m) => ({ id: m.id, departmentId: m.department.id, department: m.department, roleInDept: m.roleInDept ?? "LEADER" })),
+  ];
 
   const initials = getInitials(name);
   const memberStatus = person?.membershipStatus ?? "VISITOR";
@@ -150,12 +162,15 @@ export default async function PerfilPage() {
                     </h1>
                     <p className="text-sm text-muted-foreground truncate">{email}</p>
                   </div>
-                  <Button asChild variant="outline" size="sm" className="gap-2">
-                    <Link href="/app/perfil/editar">
-                      <Pencil className="size-4" />
-                      Editar
-                    </Link>
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    {role === "ADMIN" && <BirthdayReminderButton />}
+                    <Button asChild variant="outline" size="sm" className="gap-2">
+                      <Link href="/app/perfil/editar">
+                        <Pencil className="size-4" />
+                        Editar
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Badge
@@ -189,7 +204,7 @@ export default async function PerfilPage() {
                 icon={<CalendarCheck className="h-4 w-4 text-emerald-500" />}
               />
               <QuickStat
-                value={person?.departments.length ?? 0}
+                value={allDepartments.length}
                 label="Departamentos"
                 icon={<Users className="h-4 w-4 text-blue-500" />}
               />
@@ -255,20 +270,20 @@ export default async function PerfilPage() {
         </Card>
 
         {/* ── Departamentos ── */}
-        {person && person.departments.length > 0 && (
+        {allDepartments.length > 0 && (
           <Card className="border-0 shadow-sm">
             <CardHeader className="pb-2 px-6 pt-5">
               <CardTitle className="text-sm font-semibold text-foreground flex items-center gap-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
                 Departamentos
                 <span className="ml-auto text-xs font-normal text-muted-foreground">
-                  {person.departments.length} {person.departments.length === 1 ? "ministerio" : "ministerios"}
+                  {allDepartments.length} {allDepartments.length === 1 ? "ministerio" : "ministerios"}
                 </span>
               </CardTitle>
             </CardHeader>
             <CardContent className="px-6 pb-5">
               <div className="space-y-2">
-                {person.departments.map((d, i) => (
+                {allDepartments.map((d, i) => (
                   <div key={d.id}>
                     {i > 0 && <Separator className="my-2" />}
                     <div className="flex items-center justify-between py-1">

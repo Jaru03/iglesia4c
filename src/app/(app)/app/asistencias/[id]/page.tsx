@@ -42,10 +42,11 @@ export default async function AttendancePage({
   }
 
   // Verificar acceso según el rol
-  if (role === "RESPONSIBLE" && churchId !== activity.department.churchId) {
+  const activityChurchId = activity.department?.churchId ?? activity.churchId;
+  if (role === "RESPONSIBLE" && churchId !== activityChurchId) {
     redirect("/app/asistencias");
   }
-  if (role === "LEADER" && departmentId !== activity.department.id) {
+  if (role === "LEADER" && activity.department && departmentId !== activity.department.id) {
     redirect("/app/asistencias");
   }
 
@@ -65,10 +66,12 @@ export default async function AttendancePage({
     });
   } else if (role === "LEADER") {
     // Obtener personas del departamento del líder
-    const deptPersons = await prisma.personDepartment.findMany({
-      where: { departmentId: activity.department.id, active: true },
-      select: { personId: true },
-    });
+    const deptPersons = activity.department
+      ? await prisma.personDepartment.findMany({
+          where: { departmentId: activity.department.id, active: true },
+          select: { personId: true },
+        })
+      : [];
     const personIds = deptPersons.map((p) => p.personId);
 
     persons = await prisma.person.findMany({
@@ -82,7 +85,7 @@ export default async function AttendancePage({
 
   const attendances = await prisma.attendance.findMany({
     where: { activityId },
-    select: { personId: true, attended: true },
+    select: { personId: true, attended: true, preRegistered: true },
   });
 
   const activityData = {
@@ -90,6 +93,7 @@ export default async function AttendancePage({
     title: activity.title,
     place: activity.place,
     hourStart: activity.hourStart,
+    allowPreRegistration: activity.allowPreRegistration,
   };
 
   return (

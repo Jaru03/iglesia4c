@@ -18,7 +18,7 @@ async function main() {
       name: "Admin",
       lastname: "Principal",
       email: "admin@iglesia.com",
-      membershipStatus: "MEMBER",
+      membershipStatus: "ACTIVE",
     },
   });
   await prisma.user.upsert({
@@ -39,7 +39,7 @@ async function main() {
       name: "Juan",
       lastname: "Pérez",
       email: "member@iglesia.com",
-      membershipStatus: "MEMBER",
+      membershipStatus: "ACTIVE",
     },
   });
   await prisma.user.upsert({
@@ -47,7 +47,7 @@ async function main() {
     update: {},
     create: {
       password,
-      role: "MEMBER",
+      role: "USER",
       personId: memberPerson.id,
     },
   });

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Activity from "@/components/Activity"
 import CalendarActivities from "@/app/actividades/components/CalendarApp"
 import dayjs from "dayjs"
@@ -6,22 +8,17 @@ import { HeroTitle } from "@/components/typography/HeroTitle"
 import { Subtitle } from "@/components/typography/Subtitle"
 import prisma from "@/utils/prisma"
 
-const daysOfWeek = ["LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO", "DOMINGO"]
-
 const page = async () => {
   const now = new Date()
 
   const [calendarActivities, upcomingActivities] = await Promise.all([
     prisma.activity.findMany({
-      where: { showCalendar: true },
+      where: { isCulto: false, showCalendar: true },
       orderBy: { hourStart: "asc" },
       select: { id: true, title: true, hourStart: true, hourEnd: true, place: true, description: true },
     }),
     prisma.activity.findMany({
-      where: {
-        hourStart: { gte: now },
-        NOT: daysOfWeek.map(day => ({ title: { contains: day, mode: "insensitive" as const } })),
-      },
+      where: { isCulto: false, hourStart: { gte: now } },
       orderBy: { hourStart: "asc" },
       take: 10,
       select: { id: true, title: true, description: true, hourStart: true, img: true, place: true },

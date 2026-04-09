@@ -34,8 +34,8 @@ export default async function MiembrosPage() {
   }
 
   const whereClause = role === "RESPONSIBLE" && churchId 
-    ? { churchId, membershipStatus: "MEMBER" as const }
-    : { membershipStatus: "MEMBER" as const };
+    ? { churchId, membershipStatus: "ACTIVE" as const }
+    : { membershipStatus: "ACTIVE" as const };
 
   personas = await prisma.person.findMany({
     where: whereClause,
@@ -49,6 +49,13 @@ export default async function MiembrosPage() {
       document: true,
       membershipStatus: true,
       active: true,
+      birthDate: true,
+      arrivedAt: true,
+      attendsChurch: true,
+      howDidYouMeetUs: true,
+      authorizedContact: true,
+      prayerRequest: true,
+      signature: true,
     },
   });
 

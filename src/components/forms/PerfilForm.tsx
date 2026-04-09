@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useRouter } from "next/navigation";
 import { actualizarPerfil } from "@/actions/perfil-actions";
 import { Input } from "@/components/ui/input";
@@ -45,7 +46,9 @@ export default function PerfilForm({
   redirectTo,
 }: Props) {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
   const [loading, setLoading] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [birthDate, setBirthDate] = useState<Date | undefined>(
     persona?.birthDate ? new Date(persona.birthDate as string) : undefined
   );
@@ -102,7 +105,7 @@ export default function PerfilForm({
       </CardHeader>
 
       <CardContent className="pt-6">
-        <form action={handleSubmit}>
+        <form ref={formRef} action={handleSubmit}>
           <FieldGroup className="gap-6">
             {/* Información Personal */}
             <div className="space-y-4">
@@ -237,7 +240,12 @@ export default function PerfilForm({
 
           {/* Actions */}
           <div className="flex items-center gap-3 pt-6 mt-6 border-t">
-            <Button type="submit" disabled={loading} className="gap-2">
+            <Button
+              type="button"
+              disabled={loading}
+              className="gap-2"
+              onClick={() => setConfirmOpen(true)}
+            >
               {loading ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
@@ -254,6 +262,18 @@ export default function PerfilForm({
           </div>
         </form>
       </CardContent>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="¿Guardar cambios?"
+        description="Los cambios en tu perfil se guardarán y no podrán deshacerse."
+        confirmLabel="Guardar"
+        onConfirm={() => {
+          setConfirmOpen(false);
+          formRef.current?.requestSubmit();
+        }}
+      />
     </Card>
   );
 }

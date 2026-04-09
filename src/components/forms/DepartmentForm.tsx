@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useRouter } from "next/navigation";
 import { crearDepartamento, actualizarDepartamento } from "@/actions/departamentos-actions";
 import { Input } from "@/components/ui/input";
@@ -92,7 +93,9 @@ export default function DepartmentForm({
   showInfoSection = true,
 }: Props) {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
   const [loading, setLoading] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [churchId, setChurchId] = useState<string>(
     currentChurchId
       ? String(currentChurchId)
@@ -207,7 +210,7 @@ export default function DepartmentForm({
       </CardHeader>
 
       <CardContent className="pt-6">
-        <form action={handleSubmit}>
+        <form ref={formRef} action={handleSubmit}>
           <FieldGroup className="gap-6">
             {/* Información básica */}
             {canEditInfo && showInfoSection && (
@@ -414,7 +417,12 @@ export default function DepartmentForm({
 
           {/* Actions */}
           <div className="flex items-center gap-3 pt-6 mt-6 border-t">
-            <Button type="submit" disabled={loading} className="gap-2">
+            <Button
+              type="button"
+              disabled={loading}
+              className="gap-2"
+              onClick={() => setConfirmOpen(true)}
+            >
               {loading ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
@@ -431,6 +439,22 @@ export default function DepartmentForm({
           </div>
         </form>
       </CardContent>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={isEdit ? "¿Guardar cambios?" : "¿Crear departamento?"}
+        description={
+          isEdit
+            ? "Los cambios se guardarán y no podrán deshacerse."
+            : "Se creará el departamento con los datos introducidos."
+        }
+        confirmLabel={isEdit ? "Guardar" : "Crear"}
+        onConfirm={() => {
+          setConfirmOpen(false);
+          formRef.current?.requestSubmit();
+        }}
+      />
     </Card>
   );
 }

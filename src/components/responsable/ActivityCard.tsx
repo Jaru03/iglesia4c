@@ -13,6 +13,9 @@ type ActivityCardWithAttendanceProps = {
     img: string | null;
     departmentName: string;
     attended?: boolean;
+    preRegistered?: boolean;
+    autoMarked?: boolean;
+    allowPreRegistration?: boolean;
   };
   personId?: number;
   isCulto?: boolean;
@@ -22,12 +25,15 @@ export function ActivityCard({ activity, personId, isCulto = false }: ActivityCa
   return (
     <SharedActivityCard activity={activity} isCulto={isCulto}>
       {personId && (
-        <ConfirmAttendanceButton 
-          activityId={activity.id} 
+        <ConfirmAttendanceButton
+          activityId={activity.id}
           activityTitle={activity.title}
           activityDate={activity.hourStart}
           personId={personId}
           alreadyAttended={activity.attended}
+          preRegistered={activity.preRegistered}
+          autoMarked={activity.autoMarked}
+          allowPreRegistration={activity.allowPreRegistration}
         />
       )}
     </SharedActivityCard>

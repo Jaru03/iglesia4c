@@ -13,15 +13,15 @@ datasource db {
 
 enum Role {
   ADMIN
-  MEMBER
   USER
   RESPONSIBLE
   LEADER
+  OBRERO
 }
 
 enum MembershipStatus {
   VISITOR
-  MEMBER
+  ACTIVE
   INACTIVE
 }
 
@@ -55,14 +55,15 @@ model Church {
   persons      Person[]
   departments  Department[]
   leaders      ChurchLeader[]
-  responsable  User?   @relation(fields: [responsableId], references: [id])
-  responsableId Int?   @unique
+  appointments Appointment[]
+  activities   Activity[]
 }
 
 model ChurchSchedule {
   id   Int    @id @default(autoincrement())
   day  String
   time String
+  name String @default("")
 
   churchId Int
   church   Church @relation(fields: [churchId], references: [id])
@@ -116,8 +117,18 @@ model Person {
   birthDate        DateTime?
   lifeStage        LifeStage?
   address          String?
-  membershipStatus MembershipStatus @default(VISITOR)
-  active           Boolean          @default(true)
+  membershipStatus   MembershipStatus @default(VISITOR)
+  active             Boolean          @default(true)
+
+  // Campos de registro de visitantes (Atención Primaria)
+  arrivedAt          DateTime?
+  attendsChurch      Boolean?
+  howDidYouMeetUs    String?
+  authorizedContact  Boolean          @default(false)
+  prayerRequest      String?
+  signature          String?          // URL pública en Supabase Storage (bucket: signatures)
+
+  isMember Boolean @default(false)
 
   churchId Int?
   church   Church? @relation(fields: [churchId], references: [id])
@@ -128,6 +139,9 @@ model Person {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([churchId, active, membershipStatus])
+  @@index([active, createdAt])
 }
 
 //
@@ -145,8 +159,13 @@ model User {
   person   Person @relation(fields: [personId], references: [id])
 
   departmentMemberships DepartmentMember[]
-  churches              Church[]
   churchLeaderRoles     ChurchLeader[]
+  availability          Availability[]
+  appointmentsAsHost    Appointment[]      @relation("ResponsableAppointments")
+  appointmentsAsUser    Appointment[]      @relation("UserAppointments")
+  memberAvailabilities  MemberAvailability[]    @relation("UserMemberAvailability")
+  unavailableDates      MemberUnavailableDate[] @relation("UserUnavailableDates")
+  calendarEntries       CalendarEntry[]         @relation("UserCalendarEntry")
 }
 
 //
@@ -165,6 +184,8 @@ model Department {
   members    DepartmentMember[]
   persons    PersonDepartment[]
   activities Activity[]
+  teamCalendars TeamCalendar[]
+  cargos     DepartmentCargo[]
 
   createdAt DateTime @default(now())
 }
@@ -187,6 +208,8 @@ model DepartmentMember {
   department Department @relation(fields: [departmentId], references: [id])
 
   @@unique([userId, departmentId])
+  @@index([userId, roleInDept, active])
+  @@index([departmentId, active])
 }
 
 //
@@ -207,6 +230,7 @@ model PersonDepartment {
   department Department @relation(fields: [departmentId], references: [id])
 
   @@unique([personId, departmentId])
+  @@index([departmentId, active])
 }
 
 //
@@ -222,14 +246,24 @@ model Activity {
   date         DateTime
   hourStart    DateTime
   hourEnd      DateTime
-  showCalendar Boolean  @default(true)
+  showCalendar         Boolean  @default(true)
+  isCulto              Boolean  @default(false)
+  allowPreRegistration Boolean  @default(false)
 
-  departmentId Int
-  department   Department @relation(fields: [departmentId], references: [id])
+  departmentId Int?
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  churchId Int?
+  church   Church? @relation(fields: [churchId], references: [id])
 
   attendances Attendance[]
 
   createdAt DateTime @default(now())
+
+  @@index([hourStart])
+  @@index([departmentId, isCulto, hourStart])
+  @@index([churchId, isCulto, hourStart])
+  @@index([departmentId, showCalendar])
 }
 
 //
@@ -237,8 +271,10 @@ model Activity {
 //
 
 model Attendance {
-  id       Int     @id @default(autoincrement())
-  attended Boolean @default(false)
+  id            Int     @id @default(autoincrement())
+  attended      Boolean @default(false)
+  preRegistered Boolean @default(false)
+  autoMarked    Boolean @default(false)
 
   personId   Int
   activityId Int
@@ -247,6 +283,8 @@ model Attendance {
   activity Activity @relation(fields: [activityId], references: [id])
 
   @@unique([personId, activityId])
+  @@index([activityId, attended])
+  @@index([personId])
 }
 
 //
@@ -262,4 +300,113 @@ model Petition {
   content      String
   status       String   @default("PENDIENTE")
   createdAt    DateTime @default(now())
+}
+
+//
+// ================= APPOINTMENTS =================
+//
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model Availability {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id])
+  dayOfWeek    Int      // 0=Dom, 1=Lun, 2=Mar, 3=Mie, 4=Jue, 5=Vie, 6=Sab
+  slotIndex    Int      @default(0) // 0=primera franja, 1=segunda franja
+  startTime    String   // "09:00"
+  endTime      String   // "17:00"
+  slotDuration Int      @default(30) // minutos
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, dayOfWeek, slotIndex])
+}
+
+model Appointment {
+  id            Int               @id @default(autoincrement())
+  responsableId Int
+  responsable   User              @relation("ResponsableAppointments", fields: [responsableId], references: [id])
+  userId        Int
+  user          User              @relation("UserAppointments", fields: [userId], references: [id])
+  churchId      Int
+  church        Church            @relation(fields: [churchId], references: [id])
+  date          DateTime
+  startTime     String            // "10:00"
+  endTime       String            // "10:30"
+  status        AppointmentStatus @default(PENDING)
+  notes         String?
+  reminderSent  Boolean           @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//
+// ================= TEAM CALENDAR =================
+//
+
+model MemberAvailability {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  dayOfWeek Int      // 0=Dom...6=Sáb
+  user      User     @relation("UserMemberAvailability", fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, dayOfWeek])
+}
+
+model MemberUnavailableDate {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  date      DateTime // fecha UTC exacta en que no puede
+  user      User     @relation("UserUnavailableDates", fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, date])
+}
+
+model DepartmentCargo {
+  id           Int        @id @default(autoincrement())
+  name         String
+  departmentId Int
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+
+  @@unique([departmentId, name])
+}
+
+model TeamCalendar {
+  id           Int             @id @default(autoincrement())
+  departmentId Int
+  month        Int             // 1-12
+  year         Int
+  department   Department      @relation(fields: [departmentId], references: [id])
+  entries      CalendarEntry[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@unique([departmentId, month, year])
+}
+
+model CalendarEntry {
+  id         Int          @id @default(autoincrement())
+  calendarId Int
+  date       DateTime
+  userId     Int?
+  task       String?
+  notes      String?
+  calendar   TeamCalendar @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+  user       User?        @relation("UserCalendarEntry", fields: [userId], references: [id])
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@index([calendarId, date])
+  @@index([userId, date])
 }

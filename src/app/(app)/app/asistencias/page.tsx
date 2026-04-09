@@ -164,22 +164,43 @@ export default async function AsistenciasPage({
     return {};
   })();
 
-  const actividades = await prisma.activity.findMany({
+  const actividadesRaw = await prisma.activity.findMany({
     where: whereClause,
-    orderBy: { hourStart: "desc" },
     select: {
       id: true,
       title: true,
       place: true,
       hourStart: true,
+      allowPreRegistration: true,
       _count: { select: { attendances: true } },
     },
   });
 
+  const nowDate = new Date();
+  const futureAct = actividadesRaw.filter((a) => a.hourStart >= nowDate).sort((a, b) => a.hourStart.getTime() - b.hourStart.getTime());
+  const pastAct = actividadesRaw.filter((a) => a.hourStart < nowDate).sort((a, b) => b.hourStart.getTime() - a.hourStart.getTime());
+  const actividades = [...futureAct, ...pastAct];
+
+  const preRegCounts = await prisma.attendance.groupBy({
+    by: ["activityId"],
+    where: {
+      activityId: { in: actividades.map((a) => a.id) },
+      preRegistered: true,
+      attended: false,
+    },
+    _count: { activityId: true },
+  });
+  const preRegMap = new Map(preRegCounts.map((r) => [r.activityId, r._count.activityId]));
+
+  const actividadesWithPreReg = actividades.map((a) => ({
+    ...a,
+    preRegisteredCount: preRegMap.get(a.id) ?? 0,
+  }));
+
   const { AsistenciasClient } = await import("./components/AsistenciasClient");
   return (
     <AsistenciasClient
-      actividades={actividades}
+      actividades={actividadesWithPreReg}
       departmentName={activeDeptName}
       allDepts={allDepts}
       activeDeptId={activeDeptId ?? allDepts[0].departmentIds[0]}

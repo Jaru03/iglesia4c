@@ -13,14 +13,9 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  ArrowLeft,
-  Loader2,
-  ClipboardCheck,
-  Search,
-} from "lucide-react";
+import { ArrowLeft, ClipboardCheck, Search } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import toast from "react-hot-toast";
 
 interface Person {
   id: number;
@@ -32,6 +27,7 @@ interface Person {
 interface AttendanceRecord {
   personId: number;
   attended: boolean;
+  preRegistered?: boolean;
 }
 
 interface Activity {
@@ -39,6 +35,7 @@ interface Activity {
   title: string;
   place: string;
   hourStart: Date | string;
+  allowPreRegistration?: boolean;
 }
 
 interface Props {
@@ -58,6 +55,9 @@ export default function AttendanceForm({
 
   const attendanceMap = new Map(
     attendances.map((a) => [a.personId, a.attended])
+  );
+  const preRegisteredSet = new Set(
+    attendances.filter((a) => a.preRegistered && !a.attended).map((a) => a.personId)
   );
 
   const filteredPersons = persons.filter(
@@ -122,15 +122,23 @@ export default function AttendanceForm({
           ) : (
             filteredPersons.map((person) => {
               const isChecked = attendanceMap.get(person.id) ?? false;
+              const isPreReg = preRegisteredSet.has(person.id);
               return (
                 <div
                   key={person.id}
                   className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex-1">
-                    <p className="font-medium">
-                      {person.name} {person.lastname}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">
+                        {person.name} {person.lastname}
+                      </p>
+                      {isPreReg && (
+                        <Badge variant="outline" className="text-xs text-blue-600 border-blue-300">
+                          Pre-registrado
+                        </Badge>
+                      )}
+                    </div>
                     {person.email && (
                       <p className="text-sm text-muted-foreground">
                         {person.email}

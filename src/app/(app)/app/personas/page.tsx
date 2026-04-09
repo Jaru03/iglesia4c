@@ -6,6 +6,33 @@ import { PersonasClient } from "./components/PersonasClient";
 
 export const dynamic = "force-dynamic";
 
+const personSelect = {
+  id: true,
+  name: true,
+  lastname: true,
+  email: true,
+  phone: true,
+  document: true,
+  membershipStatus: true,
+  active: true,
+  arrivedAt: true,
+  birthDate: true,
+  attendsChurch: true,
+  howDidYouMeetUs: true,
+  authorizedContact: true,
+  prayerRequest: true,
+  signature: true,
+  isMember: true,
+  churchId: true,
+  church: { select: { title: true } },
+  user: { select: { id: true, role: true } },
+  departments: {
+    where: { active: true },
+    select: { departmentId: true },
+    orderBy: { id: "asc" as const },
+  },
+} as const;
+
 export default async function PersonasPage() {
   const session = await getServerSession(authOptions);
 
@@ -15,55 +42,31 @@ export default async function PersonasPage() {
 
   const { role, churchId, departmentId } = session.user;
 
-  // Solo ADMIN, RESPONSIBLE y LEADER pueden acceder
   if (!["ADMIN", "RESPONSIBLE", "LEADER"].includes(role)) {
     redirect("/app/dashboard");
   }
 
-  // Cargar datos según el rol
   if (role === "ADMIN") {
-    const personas = await prisma.person.findMany({
-      orderBy: { name: "asc" },
-      select: {
-        id: true,
-        name: true,
-        lastname: true,
-        email: true,
-        phone: true,
-        document: true,
-        membershipStatus: true,
-        active: true,
-      },
-    });
+    const [personas, allDepartments] = await Promise.all([
+      prisma.person.findMany({ orderBy: { name: "asc" }, select: personSelect }),
+      prisma.department.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
+    ]);
 
     return (
       <PersonasClient
         personasData={{ type: "persons", data: personas }}
         role={role}
+        allDepartments={allDepartments}
       />
     );
   }
 
   if (role === "RESPONSIBLE" && churchId) {
-    const church = await prisma.church.findUnique({
-      where: { id: churchId },
-      select: { title: true },
-    });
-
-    const personas = await prisma.person.findMany({
-      where: { churchId },
-      orderBy: { name: "asc" },
-      select: {
-        id: true,
-        name: true,
-        lastname: true,
-        email: true,
-        phone: true,
-        document: true,
-        membershipStatus: true,
-        active: true,
-      },
-    });
+    const [church, personas, allDepartments] = await Promise.all([
+      prisma.church.findUnique({ where: { id: churchId }, select: { title: true } }),
+      prisma.person.findMany({ where: { churchId }, orderBy: { name: "asc" }, select: personSelect }),
+      prisma.department.findMany({ where: { churchId }, orderBy: { name: "asc" }, select: { id: true, name: true } }),
+    ]);
 
     return (
       <PersonasClient
@@ -71,34 +74,20 @@ export default async function PersonasPage() {
         role={role}
         churchId={churchId}
         churchName={church?.title}
+        allDepartments={allDepartments}
       />
     );
   }
 
   if (role === "LEADER" && departmentId) {
-    const department = await prisma.department.findUnique({
-      where: { id: departmentId },
-      select: { name: true },
-    });
-
-    const miembros = await prisma.personDepartment.findMany({
-      where: { departmentId, active: true },
-      include: {
-        person: {
-          select: {
-            id: true,
-            name: true,
-            lastname: true,
-            email: true,
-            phone: true,
-            document: true,
-            membershipStatus: true,
-            active: true,
-          },
-        },
-      },
-      orderBy: { person: { name: "asc" } },
-    });
+    const [department, miembros] = await Promise.all([
+      prisma.department.findUnique({ where: { id: departmentId }, select: { name: true } }),
+      prisma.personDepartment.findMany({
+        where: { departmentId, active: true },
+        include: { person: { select: personSelect } },
+        orderBy: { person: { name: "asc" } },
+      }),
+    ]);
 
     return (
       <PersonasClient
@@ -106,10 +95,10 @@ export default async function PersonasPage() {
         role={role}
         departmentId={departmentId}
         departmentName={department?.name}
+        allDepartments={[]}
       />
     );
   }
 
-  // Si no tiene los datos necesarios, redirigir
   redirect("/app/dashboard");
 }

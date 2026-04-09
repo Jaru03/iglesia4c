@@ -2,56 +2,58 @@
 
 import prisma from "@/utils/prisma";
 import { revalidatePath } from "next/cache";
+import { getSessionUser, canManageDepartment } from "@/lib/auth-helpers";
 
-const ROLES_ABOVE_LEADER = ["ADMIN", "RESPONSIBLE"];
+const ADMIN_RESPONSIBLE = ["ADMIN", "RESPONSIBLE"];
 
-async function updatePersonAsLeader(userId: number) {
-  // Only upgrade to LEADER if the user doesn't already have a higher-priority role
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (user && !ROLES_ABOVE_LEADER.includes(user.role) && user.role !== "LEADER") {
+async function updatePersonAsLeader(userId: number, departmentId: number) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { person: { select: { id: true } } },
+  });
+
+  if (user && !["ADMIN", "RESPONSIBLE"].includes(user.role) && user.role !== "LEADER") {
     await prisma.user.update({
       where: { id: userId },
       data: { role: "LEADER" },
     });
   }
 
-  // Also bump person membershipStatus to MEMBER
-  const person = await prisma.person.findFirst({
-    where: { user: { id: userId } },
-  });
-  if (person && person.membershipStatus !== "MEMBER") {
-    await prisma.person.update({
-      where: { id: person.id },
-      data: { membershipStatus: "MEMBER" },
+  if (user?.person?.id) {
+    await prisma.personDepartment.upsert({
+      where: { personId_departmentId: { personId: user.person.id, departmentId } },
+      update: { active: true, roleInDept: "LEADER" },
+      create: { personId: user.person.id, departmentId, active: true, roleInDept: "LEADER" },
     });
   }
 }
 
 async function removePersonAsLeader(userId: number) {
-  // Check if still a leader of any other department
   const stillLeader = await prisma.departmentMember.findFirst({
     where: { userId, roleInDept: "LEADER", active: true },
   });
 
   if (!stillLeader) {
-    // Revert User.role back to MEMBER (only if currently LEADER)
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (user?.role === "LEADER") {
       await prisma.user.update({
         where: { id: userId },
-        data: { role: "MEMBER" },
+        data: { role: "USER" },
       });
     }
-
   }
 }
 
 export async function crearDepartamento(formData: FormData) {
+  const user = await getSessionUser();
+  if (!user) return { error: "No autenticado" };
+  if (!ADMIN_RESPONSIBLE.includes(user.role)) return { error: "Sin permisos" };
+
   const name = formData.get("name")?.toString().trim();
   const description = formData.get("description")?.toString().trim();
   const churchId = parseInt(formData.get("churchId") as string);
   const leaderIdsRaw = formData.getAll("leaderIds") as string[];
-  
+
   const leaderIds = leaderIdsRaw
     .join(",")
     .split(",")
@@ -61,26 +63,24 @@ export async function crearDepartamento(formData: FormData) {
     return { error: "El nombre y la iglesia son obligatorios." };
   }
 
+  // RESPONSIBLE can only create depts in their own church
+  if (user.role === "RESPONSIBLE" && user.churchId !== churchId) {
+    return { error: "Sin permisos sobre esa iglesia" };
+  }
+
   try {
     const departamento = await prisma.department.create({
-      data: {
-        name,
-        description: description || null,
-        churchId,
-        active: true,
-      },
+      data: { name, description: description || null, churchId, active: true },
     });
 
     const validLeaderIds = leaderIds.filter((id) => id).map((id) => parseInt(id));
-    if (validLeaderIds.length > 0) {
-      for (const userId of validLeaderIds) {
-        await prisma.departmentMember.upsert({
-          where: { userId_departmentId: { userId, departmentId: departamento.id } },
-          update: { roleInDept: "LEADER", active: true },
-          create: { userId, departmentId: departamento.id, roleInDept: "LEADER", active: true },
-        });
-        await updatePersonAsLeader(userId);
-      }
+    for (const userId of validLeaderIds) {
+      await prisma.departmentMember.upsert({
+        where: { userId_departmentId: { userId, departmentId: departamento.id } },
+        update: { roleInDept: "LEADER", active: true },
+        create: { userId, departmentId: departamento.id, roleInDept: "LEADER", active: true },
+      });
+      await updatePersonAsLeader(userId, departamento.id);
     }
 
     const memberIdsRaw = formData.getAll("memberIds") as string[];
@@ -93,15 +93,7 @@ export async function crearDepartamento(formData: FormData) {
       });
     }
 
-    revalidatePath("/admin/departamentos");
-    revalidatePath("/admin");
-    revalidatePath("/responsable/departamentos");
-    revalidatePath("/responsable");
-    revalidatePath("/usuario");
     revalidatePath("/app/departamentos");
-    revalidatePath("/app/dashboard");
-    revalidatePath("/app/departamentos");
-    revalidatePath("/app/dashboard");
     revalidatePath("/app/dashboard");
     return { success: "Departamento creado correctamente." };
   } catch (error) {
@@ -111,18 +103,22 @@ export async function crearDepartamento(formData: FormData) {
 }
 
 export async function actualizarDepartamento(id: number, formData: FormData) {
+  const user = await getSessionUser();
+  if (!user) return { error: "No autenticado" };
+
+  const allowed = await canManageDepartment(user, id);
+  if (!allowed) return { error: "Sin permisos sobre ese departamento" };
+
   const name = formData.get("name")?.toString().trim();
   const description = formData.get("description")?.toString().trim();
   const leaderIdsRaw = formData.getAll("leaderIds") as string[];
-  
+
   const leaderIds = leaderIdsRaw
     .join(",")
     .split(",")
     .filter((id) => id.trim());
 
-  if (!name) {
-    return { error: "El nombre es obligatorio." };
-  }
+  if (!name) return { error: "El nombre es obligatorio." };
 
   try {
     const churchIdValue = formData.get("churchId");
@@ -136,10 +132,7 @@ export async function actualizarDepartamento(id: number, formData: FormData) {
     });
 
     const existingLeaders = await prisma.departmentMember.findMany({
-      where: {
-        departmentId: id,
-        roleInDept: "LEADER",
-      },
+      where: { departmentId: id, roleInDept: "LEADER" },
     });
 
     const newLeaderIds = leaderIds.filter((id) => id).map((id) => parseInt(id));
@@ -150,7 +143,6 @@ export async function actualizarDepartamento(id: number, formData: FormData) {
       await prisma.departmentMember.deleteMany({
         where: { id: { in: toDelete.map((l) => l.id) } },
       });
-
       for (const leader of toDelete) {
         await removePersonAsLeader(leader.userId);
       }
@@ -158,21 +150,18 @@ export async function actualizarDepartamento(id: number, formData: FormData) {
 
     const existingUserIds = new Set(existingLeaders.map((l) => l.userId));
     const toCreate = newLeaderIds.filter((userId) => !existingUserIds.has(userId));
-    if (toCreate.length > 0) {
-      for (const userId of toCreate) {
-        await prisma.departmentMember.upsert({
-          where: { userId_departmentId: { userId, departmentId: id } },
-          update: { roleInDept: "LEADER", active: true },
-          create: { userId, departmentId: id, roleInDept: "LEADER", active: true },
-        });
-      }
+    for (const userId of toCreate) {
+      await prisma.departmentMember.upsert({
+        where: { userId_departmentId: { userId, departmentId: id } },
+        update: { roleInDept: "LEADER", active: true },
+        create: { userId, departmentId: id, roleInDept: "LEADER", active: true },
+      });
     }
 
     for (const userId of newLeaderIds) {
-      await updatePersonAsLeader(userId);
+      await updatePersonAsLeader(userId, id);
     }
 
-    // Sync PersonDepartment members
     const memberIdsRaw = formData.getAll("memberIds") as string[];
     const memberIds = memberIdsRaw.filter((mid) => mid.trim()).map((mid) => parseInt(mid));
     const existingMembers = await prisma.personDepartment.findMany({
@@ -199,11 +188,6 @@ export async function actualizarDepartamento(id: number, formData: FormData) {
       }
     }
 
-    revalidatePath("/admin/departamentos");
-    revalidatePath("/admin");
-    revalidatePath("/responsable/departamentos");
-    revalidatePath("/responsable");
-    revalidatePath("/usuario");
     revalidatePath("/app/departamentos");
     revalidatePath("/app/dashboard");
     return { success: "Departamento actualizado correctamente." };
@@ -214,16 +198,29 @@ export async function actualizarDepartamento(id: number, formData: FormData) {
 }
 
 export async function eliminarDepartamento(formData: FormData) {
+  const user = await getSessionUser();
+  if (!user) return { error: "No autenticado" };
+  if (!ADMIN_RESPONSIBLE.includes(user.role)) return { error: "Sin permisos" };
+
   const id = parseInt(formData.get("id") as string);
-  if (!id) return;
+  if (!id) return { error: "ID inválido" };
+
+  const allowed = await canManageDepartment(user, id);
+  if (!allowed) return { error: "Sin permisos sobre ese departamento" };
 
   await prisma.department.delete({ where: { id } });
-  revalidatePath("/admin/departamentos");
   revalidatePath("/app/departamentos");
-  revalidatePath("/app/departamentos");
+  revalidatePath("/app/dashboard");
 }
 
 export async function toggleDepartamento(id: number) {
+  const user = await getSessionUser();
+  if (!user) return { error: "No autenticado" };
+  if (!ADMIN_RESPONSIBLE.includes(user.role)) return { error: "Sin permisos" };
+
+  const allowed = await canManageDepartment(user, id);
+  if (!allowed) return { error: "Sin permisos sobre ese departamento" };
+
   const dept = await prisma.department.findUnique({ where: { id } });
   if (!dept) return;
 
@@ -232,5 +229,5 @@ export async function toggleDepartamento(id: number) {
     data: { active: !dept.active },
   });
 
-  revalidatePath("/admin/departamentos");
+  revalidatePath("/app/departamentos");
 }

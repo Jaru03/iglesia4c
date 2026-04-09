@@ -1,11 +1,17 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import Link from "next/link";
 import { LucideIcon, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DeleteDialog } from "./DeleteDialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // ─── Avatar ────────────────────────────────────────────────────────────────
 
@@ -84,6 +90,10 @@ export interface ListItemProps {
   deleteTitle?: string;
   /** Nombre del ítem en el diálogo de confirmación. Por defecto usa `title`. */
   deleteItemName?: string;
+  /** Si se provee, el área izquierda es clickable y abre este contenido en un modal. */
+  modalContent?: ReactNode;
+  /** Título del modal. Por defecto usa `title`. */
+  modalTitle?: string;
 }
 
 // ─── Componente ─────────────────────────────────────────────────────────────
@@ -101,15 +111,16 @@ export function ListItem({
   onDelete,
   deleteTitle = "Eliminar elemento",
   deleteItemName,
+  modalContent,
+  modalTitle,
 }: ListItemProps) {
   const { bg, text: iconText } = avatarColors[avatar.color ?? "slate"];
   const shape = avatar.shape === "circle" ? "rounded-full" : "rounded-lg";
   const Icon = avatar.icon;
+  const [open, setOpen] = useState(false);
 
-  return (
-    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-      {/* ── Izquierda ── */}
-      <div className="flex items-start gap-4 flex-1 min-w-0">
+  const leftArea = (
+    <div className="flex items-start gap-4 flex-1 min-w-0">
         {/* Avatar */}
         {avatar.image ? (
           <div className={`w-12 h-12 ${shape} overflow-hidden flex-shrink-0`}>
@@ -157,6 +168,23 @@ export function ListItem({
           {extraContent && <div className="mt-2">{extraContent}</div>}
         </div>
       </div>
+  );
+
+  return (
+    <>
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+        {/* ── Izquierda ── */}
+        {modalContent ? (
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="flex items-start gap-4 flex-1 min-w-0 text-left hover:opacity-75 transition-opacity"
+          >
+            {leftArea}
+          </button>
+        ) : (
+          <div className="flex items-start gap-4 flex-1 min-w-0">{leftArea}</div>
+        )}
 
       {/* ── Derecha ── */}
       <div className="flex items-center gap-3 shrink-0 flex-wrap md:flex-nowrap">
@@ -201,5 +229,18 @@ export function ListItem({
         )}
       </div>
     </div>
+
+      {/* ── Modal ── */}
+      {modalContent && (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{modalTitle ?? title}</DialogTitle>
+            </DialogHeader>
+            {modalContent}
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
   );
 }

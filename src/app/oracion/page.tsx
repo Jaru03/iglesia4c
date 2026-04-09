@@ -3,6 +3,7 @@ import { SpinningTextLabel } from "@/components/SpinningTextLabel";
 import PrayForm from "@/app/oracion/components/PrayForm";
 import { CallToAction } from "@/components/CallToAction";
 import Link from "next/link";
+import { Title } from "@/components/typography/Title";
 
 const page = () => {
   return (
@@ -13,10 +14,11 @@ const page = () => {
         <SpinningTextLabel />
       </div>
       <div className="section-sm flex flex-col justify-center items-center container-page">
-        <div className="w-full max-w-lg mb-4">
-          <Link href="/" className="text-sm font-semibold text-slate-500 hover:text-slate-700">
-            ← Volver
-          </Link>
+        <div className="text-center mb-12">
+          <Title className="mb-3 md:mb-4 text-2xl md:text-3xl">Petición de Oración</Title>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto mt-4">
+            Escribe tu petición de oración para poder apoyarte
+          </p>
         </div>
         <PrayForm />
       </div>
@@ -33,7 +35,7 @@ const page = () => {
         quote={{ text: "Orad sin cesar. Dad gracias en todo, porque esta es la voluntad de Dios", reference: "- 1 Tesalonicenses 5:17-18" }}
       />
     </section>
-    
+
   );
 };
 

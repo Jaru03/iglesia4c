@@ -68,19 +68,13 @@ export async function completarRegistro(formData: FormData) {
 
   const hash = await bcrypt.hash(password, 10);
 
-  await prisma.$transaction([
-    prisma.user.create({
-      data: {
-        password: hash,
-        role: "USER",
-        personId: persona.id,
-      },
-    }),
-    prisma.person.update({
-      where: { id: persona.id },
-      data: { membershipStatus: "MEMBER" },
-    }),
-  ]);
+  await prisma.user.create({
+    data: {
+      password: hash,
+      role: "USER",
+      personId: persona.id,
+    },
+  });
 
   return { success: "Cuenta creada. Ya puedes iniciar sesión." };
 }

@@ -26,7 +26,7 @@ const DonationsPage = () => {
       <div className="py-16 px-6 bg-linear-to-b from-gray-50 to-white">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <Title>Formas de Donar</Title>
+            <Title className="mb-3 md:mb-4 text-2xl md:text-3xl">Formas de Donar</Title>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto mt-4">
               Selecciona el método de pago que más te convenga. Todas las donaciones son seguras y confidenciales.
             </p>

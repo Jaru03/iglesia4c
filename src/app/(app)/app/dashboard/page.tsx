@@ -11,6 +11,8 @@ import { LiderEstadisticasTab } from "@/components/dashboard/tabs/LiderEstadisti
 import { DepartamentosTab } from "@/components/dashboard/tabs/DepartamentosTab";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/dashboard/StatCard";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { ScrollPage } from "@/components/dashboard/ScrollPage";
 
 export const dynamic = "force-dynamic";
 
@@ -49,39 +51,28 @@ export default async function DashboardHome({
     ]);
 
     return (
-      <DashboardTabs
-        title="Panel de Control"
-        tabs={[
-          {
-            id: "estadisticas", label: "Estadísticas", icon: "TrendingUp" as const,
-            content: (
-              <AdminEstadisticasTab
-                totalPersonas={totalPersonas}
-                totalIglesias={totalIglesias}
-                totalDepartamentos={totalDepartamentos}
-                totalActividades={eventosProximos.length}
-                peticionesPendientes={peticionesPendientes}
-                ultimasPersonas={ultimasPersonas.map((p) => ({ ...p, membershipStatus: p.membershipStatus ?? "VISITOR" }))}
-                ultimasPeticiones={ultimasPeticiones.map((p) => ({ id: p.id, nombre: p.nombre ?? "", status: p.status }))}
-                eventosProximos={eventosProximos.map((e) => ({ ...e, hourStart: e.hourStart.toISOString() }))}
-                personasHref="/app/personas"
-                peticionesHref="/app/peticiones"
-                actividadesHref="/app/actividades"
-              />
-            ),
-          },
-        ]}
-      />
+      <ScrollPage>
+        <DashboardHeader title="Panel de Control" subtitle="Resumen general del sistema" />
+        <AdminEstadisticasTab
+          totalPersonas={totalPersonas}
+          totalIglesias={totalIglesias}
+          totalDepartamentos={totalDepartamentos}
+          totalActividades={eventosProximos.length}
+          peticionesPendientes={peticionesPendientes}
+          ultimasPersonas={ultimasPersonas.map((p) => ({ ...p, membershipStatus: p.membershipStatus ?? "VISITOR" }))}
+          ultimasPeticiones={ultimasPeticiones.map((p) => ({ id: p.id, nombre: p.nombre ?? "", status: p.status }))}
+          eventosProximos={eventosProximos.map((e) => ({ ...e, hourStart: e.hourStart.toISOString() }))}
+          personasHref="/app/personas"
+          peticionesHref="/app/peticiones"
+          actividadesHref="/app/actividades"
+        />
+      </ScrollPage>
     );
   }
 
   // ── RESPONSIBLE ────────────────────────────────────────────────────────────
   if (role === "RESPONSIBLE") {
     if (!churchId) redirect("/login");
-
-    const cultoDepartment = await prisma.department.findFirst({
-      where: { churchId, name: { contains: "Culto", mode: "insensitive" } },
-    });
 
     const userPerson = await prisma.person.findFirst({
       where: { user: { id: userId } }, select: { id: true },
@@ -92,10 +83,10 @@ export default async function DashboardHome({
       peticionesPendientes, personasRecientes, eventosProximos, departmentData,
       calendarActivities, cultoActivities,
     ] = await Promise.all([
-      prisma.person.count({ where: { churchId, active: true, membershipStatus: "MEMBER" } }),
+      prisma.person.count({ where: { churchId, active: true, membershipStatus: "ACTIVE" } }),
       prisma.person.count({ where: { churchId, active: true } }),
       prisma.department.count({ where: { churchId, active: true } }),
-      prisma.activity.count({ where: { department: { churchId } } }),
+      prisma.activity.count({ where: { isCulto: false, department: { churchId } } }),
       prisma.person.count({ where: { churchId, active: true, membershipStatus: "VISITOR" } }),
       prisma.petition.count({ where: { status: "PENDIENTE" } }),
       prisma.person.findMany({
@@ -103,7 +94,7 @@ export default async function DashboardHome({
         select: { id: true, name: true, lastname: true, email: true },
       }),
       prisma.activity.findMany({
-        where: { department: { churchId }, hourStart: { gte: hoy } },
+        where: { isCulto: false, department: { churchId }, hourStart: { gte: hoy } },
         orderBy: { hourStart: "asc" }, take: 5,
         select: { id: true, title: true, hourStart: true, place: true },
       }),
@@ -119,32 +110,39 @@ export default async function DashboardHome({
         },
       }),
       prisma.activity.findMany({
-        where: { department: { churchId }, showCalendar: true },
+        where: { isCulto: false, department: { churchId }, showCalendar: true },
         orderBy: { hourStart: "desc" }, take: 20,
-        select: { id: true, title: true, hourStart: true, place: true, img: true, department: { select: { name: true } } },
+        select: { id: true, title: true, hourStart: true, place: true, img: true, allowPreRegistration: true, department: { select: { name: true } } },
       }),
       prisma.activity.findMany({
-        where: {
-          department: { churchId },
-          showCalendar: false,
-          ...(cultoDepartment ? { departmentId: cultoDepartment.id } : { departmentId: -1 }),
-        },
-        orderBy: { hourStart: "desc" }, take: 20,
-        select: { id: true, title: true, hourStart: true, place: true, img: true, department: { select: { name: true } } },
+        where: { isCulto: true, churchId, hourStart: { gte: hoy } },
+        orderBy: { hourStart: "asc" }, take: 20,
+        select: { id: true, title: true, hourStart: true, place: true, img: true, allowPreRegistration: true },
       }),
     ]);
 
-    const userDepartmentIds = userPerson
-      ? await prisma.personDepartment.findMany({
-          where: { personId: userPerson.id },
-          select: { departmentId: true },
-        }).then((m) => m.map((x) => x.departmentId))
-      : [];
+    const [userDepartmentIds, respAttendances] = userPerson
+      ? await Promise.all([
+          prisma.personDepartment.findMany({
+            where: { personId: userPerson.id },
+            select: { departmentId: true },
+          }).then((m) => m.map((x) => x.departmentId)),
+          prisma.attendance.findMany({
+            where: { personId: userPerson.id },
+            select: { activityId: true, attended: true, preRegistered: true, autoMarked: true },
+          }),
+        ])
+      : [[] as number[], [] as { activityId: number; attended: boolean; preRegistered: boolean; autoMarked: boolean }[]];
+    const attendedSet = new Set(respAttendances.filter(a => a.attended).map(a => a.activityId));
+    const preRegisteredSet = new Set(respAttendances.filter(a => a.preRegistered && !a.attended).map(a => a.activityId));
+    const autoMarkedSet = new Set(respAttendances.filter(a => a.autoMarked).map(a => a.activityId));
 
     const toISO = (arr: { hourStart: Date; [k: string]: unknown }[]) =>
       arr.map((a) => ({ ...a, hourStart: a.hourStart.toISOString() }));
-    const toActivityItems = (arr: { id: number; title: string; hourStart: Date; place: string; img?: string | null; department: { name: string } }[]) =>
-      arr.map(({ department, ...a }) => ({ ...a, hourStart: a.hourStart.toISOString(), departmentName: department.name }));
+    const toActivityItems = (arr: { id: number; title: string; hourStart: Date; place: string; img?: string | null; allowPreRegistration?: boolean; department: { name: string } | null }[]) =>
+      arr.map(({ department, ...a }) => ({ ...a, hourStart: a.hourStart.toISOString(), departmentName: department?.name ?? "" }));
+    const toCultoItems = (arr: { id: number; title: string; hourStart: Date; place: string; img?: string | null; allowPreRegistration?: boolean }[]) =>
+      arr.map((a) => ({ ...a, hourStart: a.hourStart.toISOString(), departmentName: "" }));
 
     return (
       <DashboardTabs
@@ -172,8 +170,11 @@ export default async function DashboardHome({
             content: (
               <DepartamentosTab
                 calendarActivities={toActivityItems(calendarActivities) as ActivityItem[]}
-                cultoActivities={toActivityItems(cultoActivities) as ActivityItem[]}
+                cultoActivities={toCultoItems(cultoActivities) as ActivityItem[]}
                 userPersonId={userPerson?.id}
+                attendedSet={attendedSet}
+                preRegisteredSet={preRegisteredSet}
+                autoMarkedSet={autoMarkedSet}
                 departments={departmentData.map((d) => ({
                   id: d.id,
                   name: d.name,
@@ -216,9 +217,6 @@ export default async function DashboardHome({
     };
     const activeChruchId = activeMembership.department.churchId;
 
-    const cultoDepartment = await prisma.department.findFirst({
-      where: { churchId: activeChruchId, name: { contains: "Culto", mode: "insensitive" } },
-    });
     const userPerson = await prisma.person.findFirst({
       where: { user: { id: userId } }, select: { id: true },
     });
@@ -227,13 +225,14 @@ export default async function DashboardHome({
       totalMiembros, totalActividades, actividadesProximasCount, totalAsistencias,
       actividadesProximasList, miembrosRecientes, allActividades,
       departmentData, calendarActivities, cultoActivities, memberActivities,
+      userAttendances,
     ] = await Promise.all([
       prisma.personDepartment.count({ where: { departmentId: activeDeptId, active: true } }),
-      prisma.activity.count({ where: { departmentId: activeDeptId } }),
-      prisma.activity.count({ where: { departmentId: activeDeptId, hourStart: { gte: hoy } } }),
+      prisma.activity.count({ where: { isCulto: false, departmentId: activeDeptId } }),
+      prisma.activity.count({ where: { isCulto: false, departmentId: activeDeptId, hourStart: { gte: hoy } } }),
       prisma.attendance.count({ where: { activity: { departmentId: activeDeptId }, attended: true } }),
       prisma.activity.findMany({
-        where: { departmentId: activeDeptId, hourStart: { gte: hoy } },
+        where: { isCulto: false, departmentId: activeDeptId, hourStart: { gte: hoy } },
         orderBy: { hourStart: "asc" }, take: 5,
         select: { id: true, title: true, hourStart: true, place: true },
       }),
@@ -243,7 +242,7 @@ export default async function DashboardHome({
         select: { id: true, name: true, lastname: true, email: true },
       }),
       prisma.activity.findMany({
-        where: { departmentId: activeDeptId }, orderBy: { hourStart: "desc" }, take: 20,
+        where: { isCulto: false, departmentId: activeDeptId }, orderBy: { hourStart: "desc" }, take: 20,
         select: { id: true, title: true, hourStart: true, place: true, img: true },
       }),
       prisma.department.findMany({
@@ -258,44 +257,45 @@ export default async function DashboardHome({
         },
       }),
       prisma.activity.findMany({
-        where: { department: { churchId: activeChruchId }, showCalendar: true },
+        where: { isCulto: false, department: { churchId: activeChruchId }, showCalendar: true },
         orderBy: { hourStart: "desc" }, take: 20,
-        select: { id: true, title: true, hourStart: true, place: true, img: true, department: { select: { name: true } } },
+        select: { id: true, title: true, hourStart: true, place: true, img: true, allowPreRegistration: true, department: { select: { name: true } } },
       }),
       prisma.activity.findMany({
-        where: {
-          department: { churchId: activeChruchId },
-          showCalendar: false,
-          departmentId: cultoDepartment ? cultoDepartment.id : -1,
-        },
-        orderBy: { hourStart: "desc" }, take: 20,
-        select: { id: true, title: true, hourStart: true, place: true, img: true, department: { select: { name: true } } },
+        where: { isCulto: true, churchId: activeChruchId, hourStart: { gte: hoy } },
+        orderBy: { hourStart: "asc" }, take: 20,
+        select: { id: true, title: true, hourStart: true, place: true, img: true, allowPreRegistration: true },
       }),
       userPerson
         ? prisma.activity.findMany({
             where: {
+              isCulto: false,
               department: { churchId: activeChruchId },
-              departmentId: { not: activeDeptId },
+              departmentId: { notIn: leaderDepartmentIds },
               showCalendar: false,
             },
             orderBy: { hourStart: "desc" }, take: 20,
             select: { id: true, title: true, hourStart: true, place: true, img: true, department: { select: { name: true } } },
           })
         : Promise.resolve([]),
+      userPerson
+        ? prisma.attendance.findMany({
+            where: { personId: userPerson.id },
+            select: { activityId: true, attended: true, preRegistered: true, autoMarked: true },
+          })
+        : Promise.resolve([] as { activityId: number; attended: boolean; preRegistered: boolean; autoMarked: boolean }[]),
     ]);
 
-    const userAttendances = userPerson
-      ? await prisma.attendance.findMany({
-          where: { personId: userPerson.id, attended: true },
-          select: { activityId: true },
-        })
-      : [];
-    const attendedSet = new Set(userAttendances.map((a) => a.activityId));
+    const attendedSet = new Set(userAttendances.filter(a => a.attended).map((a) => a.activityId));
+    const preRegisteredSet = new Set(userAttendances.filter(a => a.preRegistered && !a.attended).map(a => a.activityId));
+    const autoMarkedSet = new Set(userAttendances.filter(a => a.autoMarked).map(a => a.activityId));
 
     const toISO = <T extends { hourStart: Date }>(arr: T[]) =>
       arr.map((a) => ({ ...a, hourStart: a.hourStart.toISOString() }));
-    const toActivityItems = (arr: { id: number; title: string; hourStart: Date; place: string; img?: string | null; department: { name: string } }[]) =>
-      arr.map(({ department, ...a }) => ({ ...a, hourStart: a.hourStart.toISOString(), departmentName: department.name }));
+    const toActivityItems = (arr: { id: number; title: string; hourStart: Date; place: string; img?: string | null; allowPreRegistration?: boolean; department: { name: string } | null }[]) =>
+      arr.map(({ department, ...a }) => ({ ...a, hourStart: a.hourStart.toISOString(), departmentName: department?.name ?? "" }));
+    const toCultoItems = (arr: { id: number; title: string; hourStart: Date; place: string; img?: string | null; allowPreRegistration?: boolean }[]) =>
+      arr.map((a) => ({ ...a, hourStart: a.hourStart.toISOString(), departmentName: "" }));
 
     const hasMultipleDepts = allDepts.length > 1;
 
@@ -325,10 +325,12 @@ export default async function DashboardHome({
             content: (
               <DepartamentosTab
                 calendarActivities={toActivityItems(calendarActivities) as ActivityItem[]}
-                cultoActivities={toActivityItems(cultoActivities) as ActivityItem[]}
+                cultoActivities={toCultoItems(cultoActivities) as ActivityItem[]}
                 memberActivities={toActivityItems(memberActivities) as ActivityItem[]}
                 userPersonId={userPerson?.id}
                 attendedSet={attendedSet}
+                preRegisteredSet={preRegisteredSet}
+                autoMarkedSet={autoMarkedSet}
                 deptNameForMember={department.name}
                 departments={departmentData.map((d) => ({
                   id: d.id,
@@ -369,15 +371,8 @@ export default async function DashboardHome({
 
   if (!person) redirect("/login");
 
-  const personChurchId = person.departments[0]?.department.churchId;
+  const personChurchId = person.departments[0]?.department.churchId ?? person.churchId ?? undefined;
   const personDepartmentIds = person.departments.map((pd) => pd.department.id);
-
-  const cultoDepartment = personChurchId
-    ? await prisma.department.findFirst({
-        where: { churchId: personChurchId, name: { contains: "Culto", mode: "insensitive" } },
-        select: { id: true },
-      })
-    : null;
 
   const [
     memberActivities,
@@ -389,6 +384,7 @@ export default async function DashboardHome({
     ? await Promise.all([
         prisma.activity.findMany({
           where: {
+            isCulto: false,
             department: { churchId: personChurchId },
             departmentId: { in: personDepartmentIds },
             showCalendar: false,
@@ -398,8 +394,8 @@ export default async function DashboardHome({
           select: { id: true, title: true, hourStart: true, place: true, img: true, department: { select: { name: true } } },
         }),
         prisma.attendance.findMany({
-          where: { personId: person.id, attended: true },
-          select: { activityId: true },
+          where: { personId: person.id },
+          select: { activityId: true, attended: true, preRegistered: true, autoMarked: true },
         }),
         prisma.department.findMany({
           where: { id: { in: personDepartmentIds }, active: true },
@@ -415,57 +411,55 @@ export default async function DashboardHome({
           },
         }),
         prisma.activity.findMany({
-          where: { department: { churchId: personChurchId }, showCalendar: true },
+          where: { isCulto: false, department: { churchId: personChurchId }, showCalendar: true },
           orderBy: { hourStart: "desc" },
           take: 20,
-          select: { id: true, title: true, hourStart: true, place: true, img: true, department: { select: { name: true } } },
+          select: { id: true, title: true, hourStart: true, place: true, img: true, allowPreRegistration: true, department: { select: { name: true } } },
         }),
         prisma.activity.findMany({
-          where: {
-            department: { churchId: personChurchId },
-            showCalendar: false,
-            ...(cultoDepartment ? { departmentId: cultoDepartment.id } : { departmentId: -1 }),
-          },
-          orderBy: { hourStart: "desc" },
+          where: { isCulto: true, churchId: personChurchId, hourStart: { gte: hoy } },
+          orderBy: { hourStart: "asc" },
           take: 20,
-          select: { id: true, title: true, hourStart: true, place: true, img: true, department: { select: { name: true } } },
+          select: { id: true, title: true, hourStart: true, place: true, img: true, allowPreRegistration: true },
         }),
       ])
     : [[], [], [], [], []];
 
-  const attendedSet = new Set(memberAttendances.map((a) => a.activityId));
+  const attendedSet = new Set(memberAttendances.filter(a => a.attended).map((a) => a.activityId));
+  const preRegisteredSet = new Set(memberAttendances.filter(a => a.preRegistered && !a.attended).map(a => a.activityId));
+  const autoMarkedSet = new Set(memberAttendances.filter(a => a.autoMarked).map(a => a.activityId));
 
   const toISO = <T extends { hourStart: Date }>(arr: T[]) =>
     arr.map((a) => ({ ...a, hourStart: a.hourStart.toISOString() }));
-  const toActivityItems = (arr: { id: number; title: string; hourStart: Date; place: string; img?: string | null; department: { name: string } }[]) =>
-    arr.map(({ department, ...a }) => ({ ...a, hourStart: a.hourStart.toISOString(), departmentName: department.name }));
+  const toActivityItems = (arr: { id: number; title: string; hourStart: Date; place: string; img?: string | null; allowPreRegistration?: boolean; department: { name: string } | null }[]) =>
+    arr.map(({ department, ...a }) => ({ ...a, hourStart: a.hourStart.toISOString(), departmentName: department?.name ?? "" }));
+  const toCultoItems = (arr: { id: number; title: string; hourStart: Date; place: string; img?: string | null; allowPreRegistration?: boolean }[]) =>
+    arr.map((a) => ({ ...a, hourStart: a.hourStart.toISOString(), departmentName: "" }));
 
   return (
-    <DashboardTabs
-      title={`Bienvenido, ${session.user.name || "Miembro"}`}
-      tabs={[
-        {
-          id: "departamentos", label: "Mis Departamentos", icon: "Building2" as const,
-          content: (
-            <DepartamentosTab
-              calendarActivities={toActivityItems(calendarActivities) as ActivityItem[]}
-              cultoActivities={toActivityItems(cultoActivities) as ActivityItem[]}
-              memberActivities={toActivityItems(memberActivities) as ActivityItem[]}
-              userPersonId={person.id}
-              attendedSet={attendedSet}
-              departments={departmentData.map((d) => ({
-                id: d.id,
-                name: d.name,
-                memberCount: d.members.length,
-                activities: d.activities.map((a) => ({ ...a, hourStart: a.hourStart.toISOString() })),
-              }))}
-              visibleDepartmentIds={personDepartmentIds}
-              departmentBadge="Miembro"
-              departmentDetailHrefBase="/app/departamentos"
-            />
-          ),
-        },
-      ]}
-    />
+    <ScrollPage>
+      <DashboardHeader
+        title={`Bienvenido, ${session.user.name || "Miembro"}`}
+        subtitle="Tu actividad y departamentos"
+      />
+      <DepartamentosTab
+        calendarActivities={toActivityItems(calendarActivities) as ActivityItem[]}
+        cultoActivities={toCultoItems(cultoActivities) as ActivityItem[]}
+        memberActivities={toActivityItems(memberActivities) as ActivityItem[]}
+        userPersonId={person.id}
+        attendedSet={attendedSet}
+        preRegisteredSet={preRegisteredSet}
+        autoMarkedSet={autoMarkedSet}
+        departments={departmentData.map((d) => ({
+          id: d.id,
+          name: d.name,
+          memberCount: d.members.length,
+          activities: d.activities.map((a) => ({ ...a, hourStart: a.hourStart.toISOString() })),
+        }))}
+        visibleDepartmentIds={personDepartmentIds}
+        departmentBadge="Miembro"
+        departmentDetailHrefBase="/app/departamentos"
+      />
+    </ScrollPage>
   );
 }

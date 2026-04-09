@@ -63,11 +63,12 @@ export default async function NuevaPersonaPage() {
 
   return (
     <div className="container mx-auto py-6 px-4">
-      <PersonaForm 
-        departments={departments} 
-        churches={churches} 
-        isEdit={false} 
+      <PersonaForm
+        departments={departments}
+        churches={churches}
+        isEdit={false}
         isAtencionPrimaria={isAdminOrResponsible ? false : isAtencionPrimaria}
+        defaultChurchId={isAdminOrResponsible ? null : userChurchId}
       />
     </div>
   );

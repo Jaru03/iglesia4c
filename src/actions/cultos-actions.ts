@@ -3,6 +3,7 @@
 import prisma from "@/utils/prisma";
 import { revalidatePath } from "next/cache";
 import { logAudit } from "./audit-actions";
+import { getSessionUser, canManageChurch } from "@/lib/auth-helpers";
 
 const DAY_MAP: Record<string, number> = {
   domingo: 0,
@@ -14,119 +15,95 @@ const DAY_MAP: Record<string, number> = {
   sabado: 6,
 };
 
-export async function generarCultosAutomaticos(churchId: number, weeksAhead: number = 4) {
+const DAY_NAMES: Record<string, string> = {
+  domingo: "Domingo",
+  lunes: "Lunes",
+  martes: "Martes",
+  miercoles: "Miércoles",
+  jueves: "Jueves",
+  viernes: "Viernes",
+  sabado: "Sábado",
+};
+
+export async function generarCultosAutomaticos(churchId: number): Promise<void> {
+  const user = await getSessionUser();
+  if (!user) return;
+  const allowed = await canManageChurch(user, churchId);
+  if (!allowed) return;
+
   const church = await prisma.church.findUnique({
     where: { id: churchId },
     include: { schedules: true },
   });
 
-  if (!church) {
-    return { error: "Iglesia no encontrada" };
-  }
+  if (!church || church.schedules.length === 0) return;
 
-  if (church.schedules.length === 0) {
-    return { error: "No hay horarios de culto configurados" };
-  }
+  const now = new Date();
+  const months = [
+    { year: now.getFullYear(), month: now.getMonth() },
+    { year: now.getMonth() === 11 ? now.getFullYear() + 1 : now.getFullYear(), month: (now.getMonth() + 1) % 12 },
+  ];
 
-  let cultoDepartment = await prisma.department.findFirst({
-    where: { churchId, name: { contains: "Culto", mode: "insensitive" } },
-  });
+  for (const { year, month } of months) {
+    const monthStart = new Date(year, month, 1);
+    const monthEnd = new Date(year, month + 1, 0, 23, 59, 59, 999);
 
-  if (!cultoDepartment) {
-    cultoDepartment = await prisma.department.create({
-      data: {
-        name: "Cultos",
-        description: "Departamento de cultos dominicales y especiales",
-        churchId,
-        active: true,
-      },
+    const existing = await prisma.activity.findFirst({
+      where: { isCulto: true, churchId, date: { gte: monthStart, lte: monthEnd } },
+      select: { id: true },
     });
-  }
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+    if (existing) continue; // month already has cultos — skip to preserve edits
 
-  const generatedActivities: { date: Date; schedule: typeof church.schedules[0] }[] = [];
+    const toCreate: { title: string; description: string; place: string; date: Date; hourStart: Date; hourEnd: Date }[] = [];
 
-  for (let week = 0; week < weeksAhead; week++) {
-    for (const schedule of church.schedules) {
-      const dayOfWeek = DAY_MAP[schedule.day.toLowerCase()];
-      if (dayOfWeek === undefined) continue;
+    for (let day = 1; day <= monthEnd.getDate(); day++) {
+      const date = new Date(year, month, day);
+      const dayOfWeek = date.getDay();
 
-      const targetDate = new Date(today);
-      targetDate.setDate(today.getDate() + (dayOfWeek - today.getDay() + 7 * week));
+      for (const schedule of church.schedules) {
+        const schedDow = DAY_MAP[schedule.day.toLowerCase()];
+        if (schedDow === undefined || schedDow !== dayOfWeek) continue;
 
-      const [hours, minutes] = schedule.time.split(":").map(Number);
-      targetDate.setHours(hours, minutes, 0, 0);
+        const [hours, minutes] = schedule.time.split(":").map(Number);
+        const hourStart = new Date(year, month, day, hours, minutes, 0, 0);
+        const hourEnd = new Date(hourStart);
+        hourEnd.setHours(hourEnd.getHours() + 2);
 
-      if (targetDate >= today) {
-        generatedActivities.push({ date: targetDate, schedule });
+        const dayName = DAY_NAMES[schedule.day.toLowerCase()] ?? schedule.day;
+        toCreate.push({
+          title: schedule.name?.trim() || `Culto del ${dayName}`,
+          description: `Culto automático`,
+          place: church.place,
+          date: hourStart,
+          hourStart,
+          hourEnd,
+        });
       }
     }
-  }
 
-  const existingActivities = await prisma.activity.findMany({
-    where: {
-      departmentId: cultoDepartment.id,
-      date: {
-        gte: today,
-      },
-    },
-    select: { date: true, hourStart: true },
-  });
+    if (toCreate.length > 0) {
+      await prisma.activity.createMany({
+        data: toCreate.map((a) => ({
+          ...a,
+          isCulto: true,
+          churchId,
+          departmentId: null,
+          showCalendar: false,
+          img: null,
+        })),
+      });
 
-  const existingKeys = new Set(
-    existingActivities.map((a) => `${a.date.toDateString()}-${a.hourStart.getHours()}:${a.hourStart.getMinutes()}`)
-  );
-
-  const newActivities: { title: string; date: Date; hourStart: Date; hourEnd: Date }[] = [];
-
-  for (const { date, schedule } of generatedActivities) {
-    const key = `${date.toDateString()}-${date.getHours()}:${date.getMinutes()}`;
-    if (!existingKeys.has(key)) {
-      const hourEnd = new Date(date);
-      hourEnd.setHours(hourEnd.getHours() + 2);
-
-      newActivities.push({
-        title: `Culto del ${schedule.day}`,
-        date,
-        hourStart: date,
-        hourEnd,
+      await logAudit({
+        module: "ACTIVIDADES",
+        action: "CREATE",
+        entity: "Activity",
+        entityId: String(churchId),
+        description: `Generados automáticamente ${toCreate.length} cultos para ${year}-${String(month + 1).padStart(2, "0")}`,
       });
     }
   }
 
-  if (newActivities.length === 0) {
-    return { success: "Los cultos ya están generados para las próximas semanas" };
-  }
-
-  await prisma.activity.createMany({
-    data: newActivities.map((activity) => ({
-      title: activity.title,
-      description: `Culto automático generado el ${today.toLocaleDateString("es-ES")}`,
-      place: church.place,
-      img: null,
-      date: activity.date,
-      hourStart: activity.hourStart,
-      hourEnd: activity.hourEnd,
-      showCalendar: false,
-      departmentId: cultoDepartment.id,
-    })),
-  });
-
-  await logAudit({
-    module: "ACTIVIDADES",
-    action: "CREATE",
-    entity: "Activity",
-    entityId: String(cultoDepartment.id),
-    description: `Generados automáticamente ${newActivities.length} cultos para las próximas ${weeksAhead} semanas`,
-  });
-
-  revalidatePath("/admin/actividades");
-  revalidatePath("/admin/calendario");
-  revalidatePath("/responsable/actividades");
-  revalidatePath("/responsable");
-  revalidatePath("/responsable/asistencias");
-
-  return { success: `Se generaron ${newActivities.length} cultos para las próximas ${weeksAhead} semanas` };
+  revalidatePath("/app/dashboard");
+  revalidatePath("/app/actividades");
 }

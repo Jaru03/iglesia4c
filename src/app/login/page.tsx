@@ -89,11 +89,11 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email o Teléfono</Label>
               <Input
                 id="email"
-                type="email"
-                placeholder="pastor@iglesia.com"
+                type="string"
+                placeholder="pastor@iglesia.com o 612345678"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

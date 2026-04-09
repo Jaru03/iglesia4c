@@ -47,6 +47,7 @@ export default async function NuevoDepartamentoPage() {
       select: { id: true, title: true },
     });
     const dbUsers = await prisma.user.findMany({
+      where: { person: { churchId } },
       include: { person: { select: { name: true, lastname: true } } },
     });
     users = dbUsers.map((u) => ({

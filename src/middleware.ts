@@ -1,7 +1,7 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
-type Role = "ADMIN" | "MEMBER" | "USER" | "RESPONSIBLE" | "LEADER" | "PASTOR" | "COUNCIL_MEMBER" | "CO_LEADER" | "SERVANT" | "VOLUNTEER";
+type Role = "ADMIN" | "USER" | "RESPONSIBLE" | "LEADER" | "OBRERO";
 
 export default withAuth(
   function middleware(req) {
@@ -10,9 +10,9 @@ export default withAuth(
 
     if (!role) return NextResponse.next();
 
-    // kiosko — ADMIN y MEMBER
+    // kiosko — solo ADMIN
     if (path.startsWith("/kiosko")) {
-      if (!["ADMIN", "MEMBER"].includes(role)) {
+      if (role !== "ADMIN") {
         return NextResponse.redirect(new URL("/login", req.url));
       }
     }
@@ -49,7 +49,6 @@ export default withAuth(
     }
 
     // personas — ADMIN, RESPONSIBLE, LEADER tienen acceso completo
-    // /app/personas/nuevo también es accesible para MEMBER (Atención Primaria, verificado en la página)
     if (path.startsWith("/app/personas") && path !== "/app/personas/nuevo") {
       if (!["ADMIN", "RESPONSIBLE", "LEADER"].includes(role)) {
         return NextResponse.redirect(new URL("/app/dashboard", req.url));

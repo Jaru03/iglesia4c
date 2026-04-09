@@ -16,16 +16,16 @@ export async function ResponsableMiembrosStats() {
   const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
 
   const [total, activos, inactivos] = await Promise.all([
-    prisma.person.count({ where: { churchId, active: true, membershipStatus: "MEMBER" } }),
-    prisma.person.count({ where: { churchId, active: true, membershipStatus: "MEMBER" } }),
-    prisma.person.count({ where: { churchId, active: false, membershipStatus: "MEMBER" } }),
+    prisma.person.count({ where: { churchId, active: true, membershipStatus: "ACTIVE" } }),
+    prisma.person.count({ where: { churchId, active: true, membershipStatus: "ACTIVE" } }),
+    prisma.person.count({ where: { churchId, active: false, membershipStatus: "ACTIVE" } }),
   ]);
 
   const nuevosEsteMes = await prisma.person.count({
     where: {
       churchId,
       active: true,
-      membershipStatus: "MEMBER",
+      membershipStatus: "ACTIVE",
       createdAt: { gte: inicioMes },
     },
   });
