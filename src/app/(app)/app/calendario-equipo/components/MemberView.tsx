@@ -13,6 +13,7 @@ import {
   Users,
   Loader2,
 } from "lucide-react";
+import { buildAssignmentCalendarUrl } from "@/lib/google-calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
@@ -318,31 +319,52 @@ export function MemberView({ availableDays, initialExceptions, myEntries }: Prop
           ) : (
             <div className="space-y-2">
               {myEntries.map((e) => (
-                <button
+                <div
                   key={e.id}
-                  type="button"
-                  onClick={() => openTeamDialog(e)}
-                  className="w-full text-left rounded-lg border bg-muted/30 px-3 py-2.5 space-y-1 hover:bg-muted/60 hover:border-primary/40 transition-colors group"
+                  className="rounded-lg border bg-muted/30 px-3 py-2.5 space-y-1.5"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-semibold capitalize">
-                      {format(new Date(e.date), "EEEE d 'de' MMMM", { locale: es })}
-                    </p>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="text-xs text-muted-foreground">{e.departmentName}</span>
-                      <Users className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+                  <button
+                    type="button"
+                    onClick={() => openTeamDialog(e)}
+                    className="w-full text-left space-y-1 group"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-semibold capitalize">
+                        {format(new Date(e.date), "EEEE d 'de' MMMM", { locale: es })}
+                      </p>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="text-xs text-muted-foreground">{e.departmentName}</span>
+                        <Users className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+                      </div>
                     </div>
-                  </div>
-                  {e.task && (
-                    <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3 shrink-0" />
-                      {e.task}
-                    </p>
-                  )}
-                  {e.notes && (
-                    <p className="text-xs text-muted-foreground/70">{e.notes}</p>
-                  )}
-                </button>
+                    {e.task && (
+                      <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Clock className="h-3 w-3 shrink-0" />
+                        {e.task}
+                      </p>
+                    )}
+                    {e.notes && (
+                      <p className="text-xs text-muted-foreground/70">{e.notes}</p>
+                    )}
+                  </button>
+                  <a
+                    href={buildAssignmentCalendarUrl({
+                      dateIso: e.date,
+                      task: e.task,
+                      departmentName: e.departmentName,
+                      notes: e.notes,
+                    })}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-[#4285F4]/40 bg-[#4285F4]/5 px-2.5 py-1 text-xs font-medium text-[#4285F4] hover:bg-[#4285F4]/15 transition-colors"
+                    onClick={(ev) => ev.stopPropagation()}
+                  >
+                    <svg className="h-3 w-3 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M19.5 3h-3V1.5h-1.5V3h-6V1.5H7.5V3h-3A1.5 1.5 0 003 4.5v15A1.5 1.5 0 004.5 21h15a1.5 1.5 0 001.5-1.5v-15A1.5 1.5 0 0019.5 3zm0 16.5h-15V9h15v10.5zM7.5 10.5H6V12h1.5v-1.5zm3 0H9V12h1.5v-1.5zm3 0H12V12h1.5v-1.5zm3 0H15V12h1.5v-1.5z"/>
+                    </svg>
+                    Guardar en Google Calendar
+                  </a>
+                </div>
               ))}
             </div>
           )}

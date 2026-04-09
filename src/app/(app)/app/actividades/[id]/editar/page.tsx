@@ -98,6 +98,7 @@ export default async function EditarActividadPage({
     departmentId: activity.departmentId,
     churchId: activityChurchId,
     showCalendar: activity.showCalendar,
+    allowPreRegistration: activity.allowPreRegistration,
   };
 
   const redirectTo = dept

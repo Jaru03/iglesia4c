@@ -3,11 +3,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/utils/prisma";
 import { canManageDepartment } from "@/lib/auth-helpers";
+import type { Session } from "next-auth";
 
 /** Resolve calendarId → departmentId, then verify LEADER/ADMIN has access */
 async function verifyCalendarAccess(
   calendarId: number,
-  user: NonNullable<Awaited<ReturnType<typeof getServerSession>>["user"]>
+  user: Session["user"]
 ): Promise<NextResponse | null> {
   const calendar = await prisma.teamCalendar.findUnique({
     where: { id: calendarId },

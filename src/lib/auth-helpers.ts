@@ -142,10 +142,11 @@ export async function canManageActivity(
   if (!activity) return false;
 
   if (user.role === "RESPONSIBLE") {
-    return activity.department.churchId === user.churchId;
+    return activity.department?.churchId === user.churchId;
   }
 
   if (user.role === "LEADER") {
+    if (!activity.departmentId) return false;
     const membership = await prisma.departmentMember.findFirst({
       where: {
         userId: Number(user.id),

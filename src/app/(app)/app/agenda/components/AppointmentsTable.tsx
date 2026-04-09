@@ -8,6 +8,7 @@ import { Calendar, Clock, MessageSquare, Check, X, CheckCheck, User } from "luci
 import toast from "react-hot-toast";
 import { ListItem } from "@/components/dashboard/ListItem";
 import { ResourceList } from "@/components/dashboard/ResourceList";
+import { buildAppointmentCalendarUrl } from "@/lib/google-calendar";
 
 export interface AppointmentRow {
   id: number;
@@ -80,7 +81,7 @@ export function AppointmentsTable({ appointments, isResponsable }: Props) {
               ...(appt.notes ? [{ icon: MessageSquare, text: appt.notes }] : []),
             ]}
             customActions={
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 {isResponsable && appt.status === "PENDING" && (
                   <Button
                     size="sm"
@@ -100,6 +101,29 @@ export function AppointmentsTable({ appointments, isResponsable }: Props) {
                   >
                     <CheckCheck className="h-3 w-3" />
                     Completar
+                  </Button>
+                )}
+                {appt.status === "CONFIRMED" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 gap-1 text-xs border-[#4285F4]/40 text-[#4285F4] hover:bg-[#4285F4]/10 hover:text-[#4285F4]"
+                    asChild
+                  >
+                    <a
+                      href={buildAppointmentCalendarUrl({
+                        dateStr: format(new Date(appt.date), "yyyy-MM-dd"),
+                        startTime: appt.startTime,
+                        endTime: appt.endTime,
+                        responsableName: appt.responsableName ?? `${person.name} ${person.lastname}`,
+                        notes: appt.notes,
+                      })}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Calendar className="h-3 w-3" />
+                      Google Calendar
+                    </a>
                   </Button>
                 )}
                 {["PENDING", "CONFIRMED"].includes(appt.status) && (

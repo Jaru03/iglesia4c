@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/utils/prisma";
+import { Prisma } from "../../../../generated/prisma/client/client";
 import { format } from "date-fns";
 
 function toUTCDate(dateStr: string) {
@@ -19,7 +20,7 @@ export async function GET(req: Request) {
   const month = Number(searchParams.get("month"));
   const year = Number(searchParams.get("year"));
 
-  const where: Parameters<typeof prisma.memberUnavailableDate.findMany>[0]["where"] = { userId };
+  const where: Prisma.MemberUnavailableDateWhereInput = { userId };
   if (month && year) {
     where.date = {
       gte: new Date(Date.UTC(year, month - 1, 1)),

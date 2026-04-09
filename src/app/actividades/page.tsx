@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Activity from "@/components/Activity"
 import CalendarActivities from "@/app/actividades/components/CalendarApp"
 import dayjs from "dayjs"

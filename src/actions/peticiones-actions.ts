@@ -27,15 +27,14 @@ export async function crearPeticion(data: {
   return peticion;
 }
 
-export async function cambiarEstadoPeticion(formData: FormData) {
+export async function cambiarEstadoPeticion(formData: FormData): Promise<void> {
   const user = await getSessionUser();
-  if (!user) return { error: "No autenticado" };
-  if (!["ADMIN", "RESPONSIBLE"].includes(user.role)) return { error: "Sin permisos" };
+  if (!user || !["ADMIN", "RESPONSIBLE"].includes(user.role)) return;
 
   const id = parseInt(formData.get("id") as string);
   const estado = formData.get("estado") as string;
 
-  if (!id || !estado) return { error: "Datos incompletos" };
+  if (!id || !estado) return;
 
   await prisma.petition.update({
     where: { id },

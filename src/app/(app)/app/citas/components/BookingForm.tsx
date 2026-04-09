@@ -25,6 +25,7 @@ import {
   Loader2,
   User,
 } from "lucide-react";
+import { buildAppointmentCalendarUrl } from "@/lib/google-calendar";
 
 interface Slot {
   start: string;
@@ -239,6 +240,29 @@ export function BookingForm({ responsable }: Props) {
             {selectedSlot?.start}–{selectedSlot?.end} · {responsable.name}
           </span>
         </div>
+        {selectedDate && selectedSlot && (
+          <a
+            href={buildAppointmentCalendarUrl({
+              dateStr: format(selectedDate, "yyyy-MM-dd"),
+              startTime: selectedSlot.start,
+              endTime: selectedSlot.end,
+              responsableName: responsable.name,
+            })}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#4285F4]/40 bg-[#4285F4]/5 px-4 py-2 text-sm font-medium text-[#4285F4] hover:bg-[#4285F4]/10 transition-colors"
+          >
+            <svg
+              className="h-4 w-4 shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M19.5 3h-3V1.5h-1.5V3h-6V1.5H7.5V3h-3A1.5 1.5 0 003 4.5v15A1.5 1.5 0 004.5 21h15a1.5 1.5 0 001.5-1.5v-15A1.5 1.5 0 0019.5 3zm0 16.5h-15V9h15v10.5zM7.5 10.5H6V12h1.5v-1.5zm3 0H9V12h1.5v-1.5zm3 0H12V12h1.5v-1.5zm3 0H15V12h1.5v-1.5z" fill="currentColor"/>
+            </svg>
+            Añadir a Google Calendar
+          </a>
+        )}
         <Link
           href="/app/citas"
           className="inline-flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
