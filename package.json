@@ -2,7 +2,7 @@
   "name": "iglesia4c",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@9.15.4",
+  "packageManager": "npm@10.9.2",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -28,6 +28,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@paypal/checkout-server-sdk": "^1.0.3",
     "@paypal/react-paypal-js": "^8.8.1",
+    "@preact/signals": "^2.9.0",
     "@prisma/adapter-pg": "7.4.1",
     "@prisma/client": "^7.4.1",
     "@prisma/client-runtime-utils": "^7.3.0",
