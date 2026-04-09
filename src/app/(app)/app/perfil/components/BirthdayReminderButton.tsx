@@ -20,9 +20,9 @@ export function BirthdayReminderButton() {
       }
 
       if (data.sent === 0) {
-        toast("No hay cumpleaños hoy 🎂", { icon: "📅" });
+        toast("No hay cumpleaños mañana 🎂", { icon: "📅" });
       } else {
-        toast.success(`Email enviado con ${data.sent} cumpleaño${data.sent === 1 ? "s" : "s"} de hoy`);
+        toast.success(`Email enviado: ${data.sent} cumpleaño${data.sent === 1 ? "s" : "s"} mañana`);
       }
     } catch {
       toast.error("Error de conexión");

@@ -19,8 +19,10 @@ export async function GET(req: Request) {
   }
 
   const now = new Date();
-  const month = now.getMonth() + 1;
-  const day = now.getDate();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(now.getDate() + 1);
+  const month = tomorrow.getMonth() + 1;
+  const day = tomorrow.getDate();
 
   const todas = await prisma.person.findMany({
     where: { active: true, birthDate: { not: null } },
@@ -33,7 +35,7 @@ export async function GET(req: Request) {
   });
 
   if (personas.length === 0) {
-    return NextResponse.json({ message: "No hay cumpleaños hoy", sent: 0 });
+    return NextResponse.json({ message: "No hay cumpleaños mañana", sent: 0 });
   }
 
   // Obtener todos los admins con email
@@ -50,11 +52,11 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "No hay admins con email" }, { status: 400 });
   }
 
-  const dateLabel = now.toLocaleDateString("es-ES", { day: "numeric", month: "long" });
+  const dateLabel = tomorrow.toLocaleDateString("es-ES", { day: "numeric", month: "long" });
 
   const listHtml = personas
     .map((p) => {
-      const age = now.getFullYear() - new Date(p.birthDate!).getFullYear();
+      const age = tomorrow.getFullYear() - new Date(p.birthDate!).getFullYear();
       const emailLink = p.email ? ` — <a href="mailto:${p.email}">${p.email}</a>` : "";
       return `<li><strong>${p.name} ${p.lastname}</strong> (${age} años)${emailLink}</li>`;
     })
@@ -63,16 +65,16 @@ export async function GET(req: Request) {
   await transporter.sendMail({
     from: process.env.EMAIL_FROM ?? "Iglesia <no-reply@iglesia.com>",
     to: adminEmails.join(", "),
-    subject: `🎂 Cumpleaños de hoy — ${dateLabel}`,
+    subject: `🎂 Cumpleaños de mañana — ${dateLabel}`,
     html: `
       <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto;">
-        <h2 style="margin-bottom: 4px;">Cumpleaños de hoy</h2>
+        <h2 style="margin-bottom: 4px;">Cumpleaños de mañana</h2>
         <p style="color: #6b7280; margin-top: 0;">${dateLabel}</p>
         <ul style="padding-left: 20px; line-height: 2;">
           ${listHtml}
         </ul>
         <p style="color: #9ca3af; font-size: 13px; margin-top: 24px;">
-          Enviado automáticamente cada día a las 8:00.
+          Enviado automáticamente cada día a las 10:00 (hora España).
         </p>
       </div>
     `,
