@@ -55,7 +55,7 @@ export async function POST() {
 
   await transporter.sendMail({
     from: process.env.EMAIL_FROM ?? "Iglesia <no-reply@iglesia.com>",
-    to: "josearu03@gmail.com",
+    to: process.env.ADMIN_EMAIL ?? "josearu03@gmail.com",
     subject: `🎂 Cumpleaños de mañana — ${dateLabel}`,
     html: `
       <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto;">

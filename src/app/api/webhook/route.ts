@@ -2,11 +2,9 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe"
 
-const stripe = new Stripe("sk_test_51Qk9xlFTDIaTWkhjSy9FZIgNwfbIlsQbQXXaE9qXV0TC0zp1rdlhCOiJkXvjsFUjPZWGwFNgzZHhUZuYza4g17gu00mcF4egAF");
-
-const endpointSecret = "whsec_RR2ewIBGAQfMnT3HqQZ7vjI2sp9O8x7X"
-
 export async function POST(request: Request) {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET as string;
 
     const body = await request.text()
 
@@ -15,7 +13,7 @@ export async function POST(request: Request) {
     const sig = (await headerList).get('stripe-signature')
 
     try {
-        stripe.webhooks.constructEvent(body, sig as string | Buffer<ArrayBufferLike> | string[], endpointSecret)
+        stripe.webhooks.constructEvent(body, sig as string | Buffer<ArrayBufferLike> | string[], endpointSecret as string)
     } catch (error: unknown) {
 
         if (error instanceof Error) {
