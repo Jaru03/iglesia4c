@@ -23,9 +23,12 @@ COPY --from=deps /app/generated ./generated
 COPY . .
 
 # Variables de entorno mínimas para que el build no falle
-# (los valores reales van en runtime vía docker run -e o docker-compose)
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+
+# NEXT_PUBLIC_* se incrustan en el bundle en build time
+ENV NEXT_PUBLIC_SUPABASE_URL=https://pjepbxbphppvmowmbcrf.supabase.co
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqZXBieGJwaHBwdm1vd21iY3JmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1OTYzNTcsImV4cCI6MjA4NTE3MjM1N30.iZTF9dRQTainAmsZ_1mqctovUra_GfU3euef7ChmS8U
 
 RUN pnpm build
 
