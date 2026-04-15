@@ -52,7 +52,7 @@ export default function MisionesSection() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const stickyRef  = useRef<HTMLDivElement>(null);
   const pillarsRef = useRef<HTMLDivElement>(null);
-  const quoteRef   = useRef<HTMLElement>(null);
+  const quoteRef   = useRef<HTMLQuoteElement>(null);
   const activeRef  = useRef(0);
 
   useEffect(() => {
