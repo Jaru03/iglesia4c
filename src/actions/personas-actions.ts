@@ -202,7 +202,6 @@ export async function crearPersona(formData: FormData) {
       },
     });
 
-    await updateMembershipStatus(newPerson.id);
     await syncObreroRole(newPerson.id, isObrero);
 
     revalidatePath("/app/personas");
