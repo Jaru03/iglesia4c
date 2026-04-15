@@ -32,10 +32,24 @@ const groupDepartmentsByName = (depts: { id: number; name: string }[]): DeptGrou
   return result;
 };
 
+function computeDateStart(range: string): Date | null {
+  const now = new Date();
+  switch (range) {
+    case "1d": return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    case "1w": { const d = new Date(now); d.setDate(d.getDate() - 7); return d; }
+    case "1m": { const d = new Date(now); d.setMonth(d.getMonth() - 1); return d; }
+    case "2m": { const d = new Date(now); d.setMonth(d.getMonth() - 2); return d; }
+    case "3m": { const d = new Date(now); d.setMonth(d.getMonth() - 3); return d; }
+    case "6m": { const d = new Date(now); d.setMonth(d.getMonth() - 6); return d; }
+    case "1y": { const d = new Date(now); d.setFullYear(d.getFullYear() - 1); return d; }
+    default: return null;
+  }
+}
+
 export default async function AsistenciasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ dept?: string; actividad?: string }>;
+  searchParams: Promise<{ dept?: string; actividad?: string; fechaRange?: string }>;
 }) {
   const session = await getServerSession(authOptions);
 
@@ -85,34 +99,44 @@ export default async function AsistenciasPage({
       select: { id: true },
     });
 
-    if (!person) {
-      redirect("/app/dashboard");
-    }
-
-    const attendances = await prisma.attendance.findMany({
-      where: { personId: person.id },
-      include: {
-        activity: {
-          select: {
-            id: true,
-            title: true,
-            place: true,
-            hourStart: true,
+    const attendances = person
+      ? await prisma.attendance.findMany({
+          where: { personId: person.id },
+          include: {
+            activity: {
+              select: {
+                id: true,
+                title: true,
+                place: true,
+                hourStart: true,
+              },
+            },
           },
-        },
-      },
-      orderBy: { activity: { hourStart: "desc" } },
-    });
+          orderBy: { activity: { hourStart: "desc" } },
+        })
+      : [];
 
     const { AsistenciasUserClient } = await import("./components/AsistenciasUserClient");
     return <AsistenciasUserClient attendances={attendances} />;
   }
 
   if (allDepts.length === 0) {
-    redirect("/app/dashboard");
+    const { AsistenciasClient } = await import("./components/AsistenciasClient");
+    return (
+      <AsistenciasClient
+        actividades={[]}
+        departmentName="Sin departamentos"
+        allDepts={[]}
+        activeDeptId={-1}
+        showAllOption={false}
+        role={role}
+        activeFechaRange="all"
+      />
+    );
   }
 
-  const { dept } = await searchParams;
+  const { dept, fechaRange: fechaRangeParam } = await searchParams;
+  const activeFechaRange = fechaRangeParam ?? "all";
   
   // Encontrar el dept seleccionado
   const selectedDept = allDepts.find((d) => d.name === dept) || 
@@ -164,8 +188,13 @@ export default async function AsistenciasPage({
     return {};
   })();
 
+  const dateStart = computeDateStart(activeFechaRange);
+  const finalWhere = dateStart
+    ? { ...whereClause, hourStart: { gte: dateStart } }
+    : whereClause;
+
   const actividadesRaw = await prisma.activity.findMany({
-    where: whereClause,
+    where: finalWhere,
     select: {
       id: true,
       title: true,
@@ -206,6 +235,7 @@ export default async function AsistenciasPage({
       activeDeptId={activeDeptId ?? allDepts[0].departmentIds[0]}
       showAllOption={showAllOption}
       role={role}
+      activeFechaRange={activeFechaRange}
     />
   );
 }

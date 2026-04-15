@@ -166,6 +166,9 @@ model User {
   memberAvailabilities  MemberAvailability[]    @relation("UserMemberAvailability")
   unavailableDates      MemberUnavailableDate[] @relation("UserUnavailableDates")
   calendarEntries       CalendarEntry[]         @relation("UserCalendarEntry")
+  absences              Absence[]               @relation("UserAbsences")
+  notifications         Notification[]          @relation("UserNotifications")
+  sentNotifications     Notification[]          @relation("SentNotifications")
 }
 
 //
@@ -409,4 +412,53 @@ model CalendarEntry {
 
   @@index([calendarId, date])
   @@index([userId, date])
+}
+
+//
+// ================= ABSENCE =================
+//
+
+enum AbsenceStatus {
+  PENDING
+  APPROVED
+  CANCELLED
+}
+
+model Absence {
+  id        Int           @id @default(autoincrement())
+  userId    Int
+  user      User          @relation("UserAbsences", fields: [userId], references: [id])
+  startDate DateTime
+  endDate   DateTime
+  reason    String
+  status    AbsenceStatus @default(PENDING)
+
+  notifications Notification[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, startDate])
+}
+
+//
+// ================= NOTIFICATION =================
+//
+
+model Notification {
+  id         Int      @id @default(autoincrement())
+  userId     Int      // recipient
+  user       User     @relation("UserNotifications", fields: [userId], references: [id])
+  fromUserId Int      // sender
+  fromUser   User     @relation("SentNotifications", fields: [fromUserId], references: [id])
+  type       String   // e.g. "ABSENCE"
+  message    String
+  read       Boolean  @default(false)
+  absenceId  Int?
+  absence    Absence? @relation(fields: [absenceId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+  @@index([userId, createdAt])
 }

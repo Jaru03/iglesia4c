@@ -20,6 +20,7 @@ export type NavItem = {
   icon: LucideIcon;
   exact?: boolean;
   roles: Role[];
+  badge?: number;
 };
 
 export type NavSection = {

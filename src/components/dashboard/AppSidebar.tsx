@@ -24,6 +24,8 @@ type AppSidebarProps = {
   mobileHeaderLabel: string;
   departmentName?: string;
   isAtencionPrimaria?: boolean;
+  hasDepartment?: boolean;
+  unreadNotifications?: number;
   children: React.ReactNode;
 };
 
@@ -89,12 +91,14 @@ export function AppSidebar({
   mobileHeaderLabel,
   departmentName,
   isAtencionPrimaria,
+  hasDepartment = true,
   children,
 }: AppSidebarProps) {
   const [open, setOpen] = useState(false);
 
   // Build nav items on the client — icons (React components) never cross the server/client boundary
-  const navItems = getNavForRole(role, isAtencionPrimaria);
+  const navItems = getNavForRole(role, isAtencionPrimaria)
+    .filter((item) => item.href !== "/app/mi-disponibilidad" || hasDepartment);
 
   return (
     <>

@@ -32,10 +32,24 @@ const groupDepartmentsByName = (depts: { id: number; name: string }[]): DeptGrou
   return result;
 };
 
+function computeDateStart(range: string): Date | null {
+  const now = new Date();
+  switch (range) {
+    case "1d": return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    case "1w": { const d = new Date(now); d.setDate(d.getDate() - 7); return d; }
+    case "1m": { const d = new Date(now); d.setMonth(d.getMonth() - 1); return d; }
+    case "2m": { const d = new Date(now); d.setMonth(d.getMonth() - 2); return d; }
+    case "3m": { const d = new Date(now); d.setMonth(d.getMonth() - 3); return d; }
+    case "6m": { const d = new Date(now); d.setMonth(d.getMonth() - 6); return d; }
+    case "1y": { const d = new Date(now); d.setFullYear(d.getFullYear() - 1); return d; }
+    default: return null;
+  }
+}
+
 export default async function ActividadesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ dept?: string }>;
+  searchParams: Promise<{ dept?: string; fechaRange?: string }>;
 }) {
   const session = await getServerSession(authOptions);
 
@@ -84,7 +98,8 @@ export default async function ActividadesPage({
     leaderChurchId = memberships[0]?.department.churchId ?? null;
   }
 
-  const { dept } = await searchParams;
+  const { dept, fechaRange: fechaRangeParam } = await searchParams;
+  const activeFechaRange = fechaRangeParam ?? "all";
 
   if (allDepts.length === 0) {
     const { ActividadesClient } = await import("./components/ActividadesClient");
@@ -150,9 +165,14 @@ export default async function ActividadesPage({
 
   const now = new Date();
 
+  const dateStart = computeDateStart(activeFechaRange);
+  const finalWhere = dateStart
+    ? { ...whereClause, hourStart: { gte: dateStart } }
+    : whereClause;
+
   const [actividadesRaw, calendarActividades] = await Promise.all([
     prisma.activity.findMany({
-      where: whereClause,
+      where: finalWhere,
       select: { id: true, title: true, place: true, img: true, hourStart: true, hourEnd: true },
     }),
     role === "LEADER" && leaderChurchId
@@ -182,6 +202,7 @@ export default async function ActividadesPage({
       activeDeptId={activeDeptId}
       showAllOption={showAllOption}
       role={role as "ADMIN" | "RESPONSIBLE" | "LEADER"}
+      activeFechaRange={activeFechaRange}
       calendarActividades={calendarActividades.map((a) => ({
         id: a.id,
         title: a.title,

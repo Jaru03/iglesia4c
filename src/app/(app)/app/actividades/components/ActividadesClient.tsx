@@ -55,6 +55,17 @@ interface DeptTab {
   isGrouped: boolean;
 }
 
+const DATE_RANGE_OPTIONS = [
+  { label: "Todo", value: "all" },
+  { label: "Hoy", value: "1d" },
+  { label: "1 semana", value: "1w" },
+  { label: "1 mes", value: "1m" },
+  { label: "2 meses", value: "2m" },
+  { label: "3 meses", value: "3m" },
+  { label: "6 meses", value: "6m" },
+  { label: "1 año", value: "1y" },
+];
+
 type Role = "ADMIN" | "RESPONSIBLE" | "LEADER";
 
 interface Props {
@@ -66,6 +77,7 @@ interface Props {
   showAllOption?: boolean;
   role: Role;
   calendarActividades?: CalendarActividad[];
+  activeFechaRange?: string;
 }
 
 // ─── Calendario de actividades ────────────────────────────────────────────────
@@ -275,6 +287,7 @@ export function ActividadesClient({
   showAllOption = false,
   role,
   calendarActividades = [],
+  activeFechaRange = "all",
 }: Props) {
   const router = useRouter();
   const isLeader = role === "LEADER";
@@ -300,8 +313,9 @@ export function ActividadesClient({
 
   // Count active filters
   const filtroCount = [
-    showDeptFilter && activeDeptId !== -1 ? activeDeptId : null,
-    isLeader && view === "calendar" ? true : null,
+    showDeptFilter && activeDeptId !== -1 ? 1 : null,
+    activeFechaRange !== "all" ? 1 : null,
+    isLeader && view === "calendar" ? 1 : null,
   ].filter(Boolean).length;
 
   const currentDeptValue = activeDeptId === -1 || activeDeptId === null ? "all" : activeDeptId.toString();
@@ -439,7 +453,7 @@ export function ActividadesClient({
                 <Select
                   value={currentDeptValue}
                   onValueChange={(v) => {
-                    router.push(`/app/actividades?dept=${v}`);
+                    router.push(`/app/actividades?dept=${v}&fechaRange=${activeFechaRange}`);
                     setFiltrosOpen(false);
                   }}
                 >
@@ -456,6 +470,25 @@ export function ActividadesClient({
                 </Select>
               </div>
             )}
+
+            {/* Período */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Período</Label>
+              <Select
+                value={activeFechaRange}
+                onValueChange={(v) => {
+                  router.push(`/app/actividades?dept=${currentDeptValue}&fechaRange=${v}`);
+                  setFiltrosOpen(false);
+                }}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {DATE_RANGE_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
             {/* Vista — solo LEADER */}
             {isLeader && (

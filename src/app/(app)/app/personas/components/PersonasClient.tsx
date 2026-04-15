@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Mail, Phone, FileText, Users, Calendar, Church, MessageSquare, CheckCircle, XCircle, SlidersHorizontal } from "lucide-react";
+import { Mail, Phone, FileText, Users, Calendar, Church, MessageSquare, CheckCircle, XCircle, SlidersHorizontal, CalendarRange, CalendarOff } from "lucide-react";
 import { PageLayout } from "@/components/dashboard/PageLayout";
 import { ResourceList } from "@/components/dashboard/ResourceList";
 import { ListItem } from "@/components/dashboard/ListItem";
 import { quitarPersonaDeDepartamento } from "@/actions/lider-actions";
 import { eliminarPersona } from "@/actions/personas-actions";
 import toast from "react-hot-toast";
-import { format } from "date-fns";
+import { format, isFuture, isToday } from "date-fns";
 import { es } from "date-fns/locale";
 import {
   Sheet,
@@ -27,6 +27,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 
 interface Person {
   id: number;
@@ -59,6 +60,14 @@ interface Miembro {
 
 type Role = "ADMIN" | "RESPONSIBLE" | "LEADER";
 
+type AbsenceData = {
+  id: number;
+  startDate: Date;
+  endDate: Date;
+  reason: string;
+  status: string;
+};
+
 interface Props {
   personasData: {
     type: "persons";
@@ -73,6 +82,38 @@ interface Props {
   churchId?: number;
   churchName?: string;
   allDepartments?: { id: number; name: string }[];
+  notificationsByUser?: Record<number, number>;
+  absencesByUserId?: Record<number, AbsenceData[]>;
+}
+
+const DATE_RANGE_OPTIONS = [
+  { label: "Todo el tiempo", value: "all" },
+  { label: "Hoy", value: "1d" },
+  { label: "1 semana", value: "1w" },
+  { label: "1 mes", value: "1m" },
+  { label: "2 meses", value: "2m" },
+  { label: "3 meses", value: "3m" },
+  { label: "6 meses", value: "6m" },
+  { label: "1 año", value: "1y" },
+  { label: "Rango personalizado", value: "custom" },
+];
+
+function toDateInput(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
+
+function computeDesde(period: string): string | null {
+  const now = new Date();
+  switch (period) {
+    case "1d": return toDateInput(new Date(now.getFullYear(), now.getMonth(), now.getDate()));
+    case "1w": { const d = new Date(now); d.setDate(d.getDate() - 7); return toDateInput(d); }
+    case "1m": { const d = new Date(now); d.setMonth(d.getMonth() - 1); return toDateInput(d); }
+    case "2m": { const d = new Date(now); d.setMonth(d.getMonth() - 2); return toDateInput(d); }
+    case "3m": { const d = new Date(now); d.setMonth(d.getMonth() - 3); return toDateInput(d); }
+    case "6m": { const d = new Date(now); d.setMonth(d.getMonth() - 6); return toDateInput(d); }
+    case "1y": { const d = new Date(now); d.setFullYear(d.getFullYear() - 1); return toDateInput(d); }
+    default: return null;
+  }
 }
 
 const statusLabel: Record<string, string> = {
@@ -97,6 +138,7 @@ type PersonaItem = {
   document: string | null;
   membershipStatus: string | null;
   isMember?: boolean;
+  userId?: number | null;
   userRole?: string | null;
   birthDate: Date | null;
   arrivedAt: Date | null;
@@ -109,6 +151,19 @@ type PersonaItem = {
   churchTitle?: string | null;
   hasUser?: boolean;
   departmentIds?: number[];
+  absences?: AbsenceData[];
+};
+
+const absenceStatusLabel: Record<string, string> = {
+  PENDING: "Pendiente",
+  APPROVED: "Aprobada",
+  CANCELLED: "Cancelada",
+};
+
+const absenceStatusClass: Record<string, string> = {
+  PENDING: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  APPROVED: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+  CANCELLED: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
 };
 
 function PersonaModal({ item }: { item: PersonaItem }) {
@@ -216,6 +271,39 @@ function PersonaModal({ item }: { item: PersonaItem }) {
           />
         </div>
       )}
+
+      {/* Ausencias */}
+      {item.absences && item.absences.length > 0 && (
+        <div className="space-y-2 border-t pt-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
+            <CalendarOff className="h-3.5 w-3.5" />
+            Ausencias ({item.absences.length})
+          </p>
+          <div className="space-y-2">
+            {item.absences.map((a) => {
+              const start = new Date(a.startDate);
+              const end = new Date(a.endDate);
+              const isActive = (isToday(start) || isFuture(start)) || (isToday(end) || isFuture(end));
+              return (
+                <div key={a.id} className="rounded-lg border p-3 space-y-1.5 text-sm">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-medium">
+                      {format(start, "d MMM yyyy", { locale: es })} — {format(end, "d MMM yyyy", { locale: es })}
+                    </span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${absenceStatusClass[a.status] ?? ""}`}>
+                      {absenceStatusLabel[a.status] ?? a.status}
+                    </span>
+                  </div>
+                  <p className="text-muted-foreground leading-snug">{a.reason}</p>
+                  {isActive && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">Ausencia activa o próxima</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -228,6 +316,8 @@ export function PersonasClient({
   churchId,
   churchName,
   allDepartments = [],
+  notificationsByUser = {},
+  absencesByUserId = {},
 }: Props) {
   const isLeader = role === "LEADER";
   const isAdmin = role === "ADMIN";
@@ -243,55 +333,72 @@ export function PersonasClient({
     filterDepartmentId: number | null;
     soloMiembros: boolean;
     soloEnWeb: boolean;
-  }>({ membershipStatus: null, churchId: null, userRole: null, filterDepartmentId: null, soloMiembros: false, soloEnWeb: false });
+    fechaPeriodo: string;
+    arrivedDesde: string | null;
+    arrivedHasta: string | null;
+  }>({
+    membershipStatus: null, churchId: null, userRole: null,
+    filterDepartmentId: null, soloMiembros: false, soloEnWeb: false,
+    fechaPeriodo: "all", arrivedDesde: null, arrivedHasta: null,
+  });
 
   const subtitle = departmentName || churchName || (isAdmin ? "Todas las personas" : "Personas");
 
   const allItems: PersonaItem[] = personasData.type === "members"
-    ? personasData.data.map((m) => ({
-        id: m.person.id,
-        name: m.person.name,
-        lastname: m.person.lastname,
-        email: m.person.email,
-        phone: m.person.phone,
-        document: m.person.document,
-        membershipStatus: m.person.membershipStatus,
-        isMember: m.person.isMember,
-        userRole: m.person.user?.role ?? null,
-        birthDate: m.person.birthDate,
-        arrivedAt: m.person.arrivedAt,
-        attendsChurch: m.person.attendsChurch,
-        howDidYouMeetUs: m.person.howDidYouMeetUs,
-        authorizedContact: m.person.authorizedContact,
-        prayerRequest: m.person.prayerRequest,
-        signature: m.person.signature,
-        churchId: m.person.churchId,
-        churchTitle: m.person.church?.title,
-        hasUser: !!m.person.user,
-        departmentIds: m.person.departments?.map((d) => d.departmentId) ?? [],
-      }))
-    : personasData.data.map((p) => ({
-        id: p.id,
-        name: p.name,
-        lastname: p.lastname,
-        email: p.email,
-        phone: p.phone,
-        document: p.document,
-        membershipStatus: p.membershipStatus,
-        isMember: p.isMember,
-        userRole: p.user?.role ?? null,
-        birthDate: p.birthDate,
-        arrivedAt: p.arrivedAt,
-        attendsChurch: p.attendsChurch,
-        howDidYouMeetUs: p.howDidYouMeetUs,
-        authorizedContact: p.authorizedContact,
-        prayerRequest: p.prayerRequest,
-        signature: p.signature,
-        churchId: p.churchId,
-        churchTitle: p.church?.title,
-        hasUser: !!p.user,
-        departmentIds: p.departments?.map((d) => d.departmentId) ?? [],
-      }));
+    ? personasData.data.map((m) => {
+        const uid = m.person.user?.id ?? null;
+        return {
+          id: m.person.id,
+          name: m.person.name,
+          lastname: m.person.lastname,
+          email: m.person.email,
+          phone: m.person.phone,
+          document: m.person.document,
+          membershipStatus: m.person.membershipStatus,
+          isMember: m.person.isMember,
+          userId: uid,
+          userRole: m.person.user?.role ?? null,
+          birthDate: m.person.birthDate,
+          arrivedAt: m.person.arrivedAt,
+          attendsChurch: m.person.attendsChurch,
+          howDidYouMeetUs: m.person.howDidYouMeetUs,
+          authorizedContact: m.person.authorizedContact,
+          prayerRequest: m.person.prayerRequest,
+          signature: m.person.signature,
+          churchId: m.person.churchId,
+          churchTitle: m.person.church?.title,
+          hasUser: !!m.person.user,
+          departmentIds: m.person.departments?.map((d) => d.departmentId) ?? [],
+          absences: uid ? (absencesByUserId[uid] ?? []) : [],
+        };
+      })
+    : personasData.data.map((p) => {
+        const uid = p.user?.id ?? null;
+        return {
+          id: p.id,
+          name: p.name,
+          lastname: p.lastname,
+          email: p.email,
+          phone: p.phone,
+          document: p.document,
+          membershipStatus: p.membershipStatus,
+          isMember: p.isMember,
+          userId: uid,
+          userRole: p.user?.role ?? null,
+          birthDate: p.birthDate,
+          arrivedAt: p.arrivedAt,
+          attendsChurch: p.attendsChurch,
+          howDidYouMeetUs: p.howDidYouMeetUs,
+          authorizedContact: p.authorizedContact,
+          prayerRequest: p.prayerRequest,
+          signature: p.signature,
+          churchId: p.churchId,
+          churchTitle: p.church?.title,
+          hasUser: !!p.user,
+          departmentIds: p.departments?.map((d) => d.departmentId) ?? [],
+          absences: uid ? (absencesByUserId[uid] ?? []) : [],
+        };
+      });
 
   const churches = useMemo(() => {
     if (!isAdmin) return [];
@@ -314,16 +421,29 @@ export function PersonasClient({
     if (filtros.filterDepartmentId) result = result.filter((i) => i.departmentIds?.includes(filtros.filterDepartmentId!));
     if (filtros.soloMiembros) result = result.filter((i) => i.isMember);
     if (filtros.soloEnWeb) result = result.filter((i) => i.hasUser);
+    if (filtros.arrivedDesde) {
+      const desde = new Date(filtros.arrivedDesde);
+      result = result.filter((i) => i.arrivedAt && new Date(i.arrivedAt) >= desde);
+    }
+    if (filtros.arrivedHasta) {
+      const hasta = new Date(filtros.arrivedHasta);
+      hasta.setHours(23, 59, 59, 999);
+      result = result.filter((i) => i.arrivedAt && new Date(i.arrivedAt) <= hasta);
+    }
     return result;
   }, [allItems, filtros]);
 
-  const totalMiembros = allItems.filter(i => i.membershipStatus === "ACTIVE").length;
-  const totalVisitantes = allItems.filter(i => i.membershipStatus === "VISITOR").length;
-  const totalLideres = allItems.filter(i => i.userRole === "LEADER").length;
+  const totalMiembros = items.filter(i => i.membershipStatus === "ACTIVE").length;
+  const totalVisitantes = items.filter(i => i.membershipStatus === "VISITOR").length;
+  const totalLideres = items.filter(i => i.userRole === "LEADER").length;
 
   const hasFab = isAdmin || isResponsable || (isLeader && !!departmentId);
   const fabBottomClass = hasFab ? "bottom-24" : "bottom-6";
-  const filtroCount = [filtros.membershipStatus, filtros.churchId, filtros.userRole, filtros.filterDepartmentId, filtros.soloMiembros, filtros.soloEnWeb].filter(Boolean).length;
+  const filtroCount = [
+    filtros.membershipStatus, filtros.churchId, filtros.userRole, filtros.filterDepartmentId,
+    filtros.soloMiembros || null, filtros.soloEnWeb || null,
+    filtros.arrivedDesde ?? filtros.arrivedHasta,
+  ].filter(Boolean).length;
   const hasActiveFiltro = filtroCount > 0;
 
   const handleDelete = async (item: PersonaItem) => {
@@ -350,7 +470,7 @@ export function PersonasClient({
         subtitle={subtitle}
         statsColumns={4}
         stats={[
-          { title: "Total personas", value: allItems.length, icon: Users, colorIndex: 0 },
+          { title: "Total", value: items.length, icon: Users, colorIndex: 0 },
           { title: "Miembros", value: totalMiembros, icon: Users, colorIndex: 1 },
           { title: "Visitantes", value: totalVisitantes, icon: Users, colorIndex: 2 },
           { title: "Líderes", value: totalLideres, icon: Users, colorIndex: 3 },
@@ -370,7 +490,12 @@ export function PersonasClient({
           emptyIconName="Users"
           renderItem={(item) => (
             <ListItem
-              avatar={{ icon: Users, color: "blue", shape: "circle" }}
+              avatar={{
+                icon: Users,
+                color: "blue",
+                shape: "circle",
+                badge: item.userId ? (notificationsByUser[item.userId] ?? 0) : 0,
+              }}
               title={`${item.name} ${item.lastname}`}
               meta={item.email ? [{ text: item.email }] : []}
               badges={[
@@ -441,6 +566,58 @@ export function PersonasClient({
                   <SelectItem value="INACTIVE">Inactivo</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Período de llegada */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium flex items-center gap-1.5">
+                <CalendarRange className="h-3.5 w-3.5" />
+                Período de llegada
+              </Label>
+              <Select
+                value={filtros.fechaPeriodo}
+                onValueChange={(v) => {
+                  const desde = computeDesde(v);
+                  setFiltros((f) => ({
+                    ...f,
+                    fechaPeriodo: v,
+                    arrivedDesde: v === "custom" ? f.arrivedDesde : desde,
+                    arrivedHasta: v === "custom" ? f.arrivedHasta : null,
+                  }));
+                }}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {DATE_RANGE_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {filtros.fechaPeriodo === "custom" && (
+                <div className="space-y-2 pt-1">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Desde</Label>
+                    <Input
+                      type="date"
+                      value={filtros.arrivedDesde ?? ""}
+                      onChange={(e) =>
+                        setFiltros((f) => ({ ...f, arrivedDesde: e.target.value || null }))
+                      }
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Hasta</Label>
+                    <Input
+                      type="date"
+                      value={filtros.arrivedHasta ?? ""}
+                      onChange={(e) =>
+                        setFiltros((f) => ({ ...f, arrivedHasta: e.target.value || null }))
+                      }
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Iglesia — solo ADMIN con múltiples iglesias */}
@@ -528,7 +705,7 @@ export function PersonasClient({
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => setFiltros({ membershipStatus: null, churchId: null, userRole: null, filterDepartmentId: null, soloMiembros: false, soloEnWeb: false })}
+                onClick={() => setFiltros({ membershipStatus: null, churchId: null, userRole: null, filterDepartmentId: null, soloMiembros: false, soloEnWeb: false, fechaPeriodo: "all", arrivedDesde: null, arrivedHasta: null })}
               >
                 Limpiar filtros
               </Button>

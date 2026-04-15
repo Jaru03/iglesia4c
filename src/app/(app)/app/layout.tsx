@@ -67,6 +67,16 @@ export default async function ProtectedLayout({
     }
   }
 
+  // "Mi disponibilidad" solo aparece si el usuario pertenece a algún departamento
+  let hasDepartment = role === "LEADER" || role === "RESPONSIBLE";
+  if (!hasDepartment && person) {
+    const [personDept, deptMember] = await Promise.all([
+      prisma.personDepartment.findFirst({ where: { personId: person.id, active: true }, select: { id: true } }),
+      prisma.departmentMember.findFirst({ where: { userId, active: true }, select: { id: true } }),
+    ]);
+    hasDepartment = !!(personDept ?? deptMember);
+  }
+
   return (
     <AppSidebar
       role={role}
@@ -75,6 +85,7 @@ export default async function ProtectedLayout({
       mobileHeaderLabel={mobileHeaderLabel}
       departmentName={departmentName ?? undefined}
       isAtencionPrimaria={isAtencionPrimaria}
+      hasDepartment={hasDepartment}
     >
       {children}
     </AppSidebar>

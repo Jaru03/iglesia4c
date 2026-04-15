@@ -40,6 +40,8 @@ interface AvatarConfig {
   color?: AvatarColor;
   /** "square" = rounded-lg (entidades), "circle" = rounded-full (personas/usuarios) */
   shape?: "square" | "circle";
+  /** Número de notificaciones/alertas a mostrar como badge sobre el avatar */
+  badge?: number;
 }
 
 // ─── Subcomponentes de datos ────────────────────────────────────────────────
@@ -122,21 +124,28 @@ export function ListItem({
   const leftArea = (
     <div className="flex items-start gap-4 flex-1 min-w-0">
         {/* Avatar */}
-        {avatar.image ? (
-          <div className={`w-12 h-12 ${shape} overflow-hidden flex-shrink-0`}>
-            <img
-              src={avatar.image}
-              alt={avatar.imageAlt ?? title}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ) : (
-          <div
-            className={`w-12 h-12 ${bg} ${shape} flex items-center justify-center flex-shrink-0`}
-          >
-            {Icon && <Icon className={`h-6 w-6 ${iconText}`} />}
-          </div>
-        )}
+        <div className="relative flex-shrink-0">
+          {avatar.image ? (
+            <div className={`w-12 h-12 ${shape} overflow-hidden`}>
+              <img
+                src={avatar.image}
+                alt={avatar.imageAlt ?? title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <div
+              className={`w-12 h-12 ${bg} ${shape} flex items-center justify-center`}
+            >
+              {Icon && <Icon className={`h-6 w-6 ${iconText}`} />}
+            </div>
+          )}
+          {!!avatar.badge && (
+            <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold leading-none ring-2 ring-background">
+              {avatar.badge > 99 ? "99+" : avatar.badge}
+            </span>
+          )}
+        </div>
 
         {/* Contenido */}
         <div className="flex-1 min-w-0">
