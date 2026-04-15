@@ -85,6 +85,7 @@ interface Persona {
   birthDate: Date | null;
   churchId: number | null;
   isMember?: boolean;
+  isObrero?: boolean;
   membershipStatus?: string;
   departments?: { departmentId: number }[];
 }
@@ -132,9 +133,8 @@ export default function PersonaForm({
   const [membershipStatus, setMembershipStatus] = useState<string>(
     persona?.membershipStatus ?? "VISITOR"
   );
-  const [isMember, setIsMember] = useState<boolean>(
-    persona?.isMember ?? false
-  );
+  const [isMember, setIsMember] = useState<boolean>(persona?.isMember ?? false);
+  const [isObrero, setIsObrero] = useState<boolean>(persona?.isObrero ?? false);
 
   // Campos de visitante (solo Atención Primaria)
   const [arrivedAt, setArrivedAt] = useState<Date | undefined>(new Date());
@@ -177,6 +177,7 @@ export default function PersonaForm({
 
     formData.set("membershipStatus", membershipStatus);
     formData.set("isMember", String(isMember));
+    formData.set("isObrero", String(isObrero));
 
     formData.delete("departmentIds");
     selectedDepts.forEach((id) => formData.append("departmentIds", id));
@@ -330,15 +331,27 @@ export default function PersonaForm({
                       </SelectContent>
                     </Select>
                   </Field>
-                  <div className="flex items-center gap-3 pb-1">
-                    <Checkbox
-                      id="isMember"
-                      checked={isMember}
-                      onCheckedChange={(v) => setIsMember(v === true)}
-                    />
-                    <Label htmlFor="isMember" className="cursor-pointer text-sm">
-                      Es miembro
-                    </Label>
+                  <div className="flex flex-col gap-2 pb-1">
+                    <div className="flex items-center gap-3">
+                      <Checkbox
+                        id="isMember"
+                        checked={isMember}
+                        onCheckedChange={(v) => setIsMember(v === true)}
+                      />
+                      <Label htmlFor="isMember" className="cursor-pointer text-sm">
+                        Es miembro
+                      </Label>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Checkbox
+                        id="isObrero"
+                        checked={isObrero}
+                        onCheckedChange={(v) => setIsObrero(v === true)}
+                      />
+                      <Label htmlFor="isObrero" className="cursor-pointer text-sm">
+                        Es obrero
+                      </Label>
+                    </div>
                   </div>
                 </div>
               </div>

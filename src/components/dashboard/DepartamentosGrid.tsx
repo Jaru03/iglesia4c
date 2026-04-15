@@ -76,7 +76,7 @@ export function DepartamentosGrid({
                         <div>
                           <p className="font-medium truncate">{activity.title}</p>
                           <p className="text-slate-400">
-                            {format(new Date(activity.hourStart), "d MMM, h:mm a", { locale: es })}
+                            {format(new Date(activity.hourStart), "d MMM", { locale: es })}, {String(new Date(activity.hourStart).getUTCHours()).padStart(2,"0")}:{String(new Date(activity.hourStart).getUTCMinutes()).padStart(2,"0")}
                           </p>
                         </div>
                       </div>

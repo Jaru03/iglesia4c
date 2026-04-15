@@ -128,7 +128,8 @@ model Person {
   prayerRequest      String?
   signature          String?          // URL pública en Supabase Storage (bucket: signatures)
 
-  isMember Boolean @default(false)
+  isMember  Boolean @default(false)
+  isObrero  Boolean @default(false)
 
   churchId Int?
   church   Church? @relation(fields: [churchId], references: [id])

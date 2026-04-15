@@ -22,7 +22,7 @@ export default async function CultosPage() {
   let resolvedChurchId: number | null = null;
 
   if (role === "ADMIN") {
-    resolvedChurchId = null; // verá el calendario de todos los cultos
+    resolvedChurchId = null;
   } else if (churchId) {
     resolvedChurchId = churchId;
   }

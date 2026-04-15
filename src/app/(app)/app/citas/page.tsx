@@ -24,7 +24,7 @@ export default async function CitasPage({
   const userId = Number(session.user.id);
   const { role } = session.user;
 
-  if (role === "RESPONSIBLE") redirect("/app/agenda");
+  if (role === "RESPONSIBLE" || role === "OBRERO") redirect("/app/agenda");
 
   // ── ADMIN: todas las citas ──
   if (role === "ADMIN") {

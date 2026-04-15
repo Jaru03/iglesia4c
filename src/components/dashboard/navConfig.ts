@@ -47,10 +47,10 @@ export const dashboardNav: NavItem[] = [
 
   // Responsable only
   { href: "/app/iglesia", label: "Mi Iglesia", icon: Church, roles: ["RESPONSIBLE"] },
-  { href: "/app/agenda", label: "Mi Agenda", icon: CalendarCheck, roles: ["RESPONSIBLE"] },
+  { href: "/app/agenda", label: "Mi Agenda", icon: CalendarCheck, roles: ["RESPONSIBLE", "OBRERO"] },
 
   // Todos los usuarios autenticados
-  { href: "/app/citas", label: "Citas", icon: CalendarCheck, roles: ["ADMIN", "LEADER", "OBRERO", "USER"] },
+  { href: "/app/citas", label: "Citas", icon: CalendarCheck, roles: ["ADMIN", "LEADER", "USER"] },
   { href: "/app/mi-disponibilidad", label: "Mi Disponibilidad", icon: CalendarCheck, roles: ["LEADER", "RESPONSIBLE", "USER", "OBRERO"] },
 
   // Atención Primaria only

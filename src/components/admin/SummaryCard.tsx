@@ -51,7 +51,7 @@ function renderActividades(data: ActividadItem[]) {
       <p className="font-medium text-slate-800 truncate">{a.title}</p>
       <p className="text-slate-500 text-xs">
         {a.place && <span className="mr-2">{a.place}</span>}
-        {format(new Date(a.hourStart), "d MMM, HH:mm", { locale: es })}
+        {format(new Date(a.hourStart), "d MMM", { locale: es })}, {String(new Date(a.hourStart).getUTCHours()).padStart(2,"0")}:{String(new Date(a.hourStart).getUTCMinutes()).padStart(2,"0")}
       </p>
     </div>
   ));

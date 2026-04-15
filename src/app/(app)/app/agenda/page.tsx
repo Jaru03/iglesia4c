@@ -17,7 +17,7 @@ export default async function AgendaPage({
 }) {
   const session = await getServerSession(authOptions);
   if (!session?.user) redirect("/login");
-  if (session.user.role !== "RESPONSIBLE") redirect("/app/dashboard");
+  if (!["RESPONSIBLE", "OBRERO"].includes(session.user.role)) redirect("/app/dashboard");
 
   const userId = Number(session.user.id);
   const { status } = await searchParams;

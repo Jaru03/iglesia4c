@@ -251,7 +251,7 @@ function ActivitiesCalendar({ activities }: { activities: CalendarActividad[] })
                         <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3 shrink-0" />
-                            {format(new Date(a.hourStart), "HH:mm")} – {format(new Date(a.hourEnd), "HH:mm")}
+                            {a.hourStart.slice(11,16)} – {a.hourEnd.slice(11,16)}
                           </span>
                           <span className="flex items-center gap-1">
                             <MapPin className="h-3 w-3 shrink-0" />

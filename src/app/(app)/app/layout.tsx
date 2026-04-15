@@ -42,6 +42,11 @@ export default async function ProtectedLayout({
       roleLabel = "Líder";
       mobileHeaderLabel = name || "Mi Panel";
       break;
+    case "OBRERO":
+      title = name || "Mi Panel";
+      roleLabel = "Obrero";
+      mobileHeaderLabel = name || "Mi Panel";
+      break;
     default:
       title = name || "Mi Panel";
       roleLabel = "Miembro";
