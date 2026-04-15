@@ -29,9 +29,29 @@ export default async function AgregarPersonaPage({
     include: { department: { select: { id: true, name: true } } },
   });
 
-  if (leaderMemberships.length === 0) redirect("/app/departamentos");
+  // Also check PersonDepartment (leader assigned via person record)
+  const userRecord = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { person: { select: { id: true } } },
+  });
+  let pdDepts: { id: number; name: string }[] = [];
+  if (userRecord?.person) {
+    const pdLeaders = await prisma.personDepartment.findMany({
+      where: { personId: userRecord.person.id, roleInDept: "LEADER" },
+      include: { department: { select: { id: true, name: true } } },
+    });
+    pdDepts = pdLeaders.map((l) => l.department);
+  }
 
-  const allDepts = leaderMemberships.map((m) => m.department);
+  const dmDepts = leaderMemberships.map((m) => m.department);
+  const seenIds = new Set<number>();
+  const allDepts = [...dmDepts, ...pdDepts].filter((d) => {
+    if (seenIds.has(d.id)) return false;
+    seenIds.add(d.id);
+    return true;
+  });
+
+  if (allDepts.length === 0) redirect("/app/departamentos");
   const paramDeptId = dept ? parseInt(dept) : NaN;
   const isValid = !isNaN(paramDeptId) && allDepts.some((d) => d.id === paramDeptId);
   const activeDeptId = isValid ? paramDeptId : allDepts[0].id;

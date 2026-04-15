@@ -30,18 +30,6 @@ export default async function EditarDepartamentoPage({
 
   const department = await prisma.department.findUnique({
     where: { id: departmentId },
-    include: {
-      members: {
-        where: { roleInDept: "LEADER", active: true },
-        include: {
-          user: {
-            include: {
-              person: { select: { name: true, lastname: true } },
-            },
-          },
-        },
-      },
-    },
   });
 
   if (!department) redirect("/app/departamentos");
@@ -55,7 +43,11 @@ export default async function EditarDepartamentoPage({
     if (!membership) redirect("/app/departamentos");
   }
 
-  const currentLeaderId = department.members.map((m) => m.userId).join(",");
+  const currentLeaderPersons = await prisma.personDepartment.findMany({
+    where: { departmentId, roleInDept: "LEADER" },
+    select: { personId: true },
+  });
+  const currentLeaderId = currentLeaderPersons.map((l) => l.personId).join(",");
   const currentChurchId = department.churchId;
 
   const currentMembers = await prisma.personDepartment.findMany({

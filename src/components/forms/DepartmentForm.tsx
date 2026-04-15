@@ -125,20 +125,16 @@ export default function DepartmentForm({
   const churchItems = churches.map((c) => c.title);
   const selectedChurch = churches.find((c) => String(c.id) === churchId);
 
-  const filteredUsers = isAdmin && churchId
-    ? users.filter((u) => u.churchId === parseInt(churchId))
-    : users;
   const filteredPersons = isAdmin && churchId
     ? persons.filter((p) => p.churchId === parseInt(churchId))
     : persons;
 
-  const userItems = filteredUsers.map((u) => `${u.name} ${u.lastname}`);
-  const selectedLeaderNames = selectedLeaders
-    .map((id) => users.find((u) => String(u.id) === id))
-    .filter(Boolean)
-    .map((u) => `${u!.name} ${u!.lastname}`);
-
+  // Leaders and members both use persons (leaders don't need a web account)
   const personItems = filteredPersons.map((p) => `${p.name} ${p.lastname}`);
+  const selectedLeaderNames = selectedLeaders
+    .map((id) => persons.find((p) => String(p.id) === id))
+    .filter(Boolean)
+    .map((p) => `${p!.name} ${p!.lastname}`);
   const selectedMemberNames = selectedMembers
     .map((id) => persons.find((p) => String(p.id) === id))
     .filter(Boolean)
@@ -159,8 +155,8 @@ export default function DepartmentForm({
       formData.set("churchId", String(churches[0].id));
     }
 
-    formData.delete("leaderIds");
-    selectedLeaders.forEach((id) => formData.append("leaderIds", id));
+    formData.delete("leaderPersonIds");
+    selectedLeaders.forEach((id) => formData.append("leaderPersonIds", id));
 
     formData.delete("memberIds");
     selectedMembers.forEach((id) => formData.append("memberIds", id));
@@ -303,7 +299,7 @@ export default function DepartmentForm({
             )}
 
             {/* Líder(es) */}
-            {canEditLeader && users.length > 0 && (
+            {canEditLeader && filteredPersons.length > 0 && (
               <div className="space-y-4">
                 <h3 className="text-sm font-medium text-foreground">Líder(es)</h3>
 
@@ -312,13 +308,13 @@ export default function DepartmentForm({
                   <Combobox
                     multiple
                     autoHighlight
-                    items={userItems}
+                    items={personItems}
                     value={selectedLeaderNames}
                     onValueChange={(values) => {
                       const ids = (values as string[])
                         .map((name) => {
-                          const user = users.find((u) => `${u.name} ${u.lastname}` === name);
-                          return user ? String(user.id) : null;
+                          const person = persons.find((p) => `${p.name} ${p.lastname}` === name);
+                          return person ? String(person.id) : null;
                         })
                         .filter(Boolean) as string[];
                       setSelectedLeaders(ids);
@@ -350,7 +346,7 @@ export default function DepartmentForm({
                           </ComboboxItem>
                         )}
                       </ComboboxList>
-                      <ComboboxEmpty>No se encontraron usuarios</ComboboxEmpty>
+                      <ComboboxEmpty>No se encontraron personas</ComboboxEmpty>
                     </ComboboxContent>
                   </Combobox>
                 </Field>

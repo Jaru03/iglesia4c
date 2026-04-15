@@ -110,14 +110,22 @@ export async function canManageDepartment(
 
   if (user.role === "LEADER") {
     const membership = await prisma.departmentMember.findFirst({
-      where: {
-        userId: Number(user.id),
-        departmentId,
-        roleInDept: "LEADER",
-        active: true,
-      },
+      where: { userId: Number(user.id), departmentId, roleInDept: "LEADER", active: true },
     });
-    return !!membership;
+    if (membership) return true;
+
+    // Also check PersonDepartment (leader assigned via person, not user)
+    const userRecord = await prisma.user.findUnique({
+      where: { id: Number(user.id) },
+      select: { person: { select: { id: true } } },
+    });
+    if (userRecord?.person) {
+      const pdLeader = await prisma.personDepartment.findFirst({
+        where: { personId: userRecord.person.id, departmentId, roleInDept: "LEADER" },
+      });
+      return !!pdLeader;
+    }
+    return false;
   }
 
   return false;

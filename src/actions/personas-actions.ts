@@ -116,10 +116,31 @@ export async function recalculateAllMembershipStatus() {
   return { success: "Membresías actualizadas correctamente." };
 }
 
+async function isAtencionPrimariaMember(userId: number): Promise<boolean> {
+  const person = await prisma.person.findFirst({
+    where: { user: { id: userId } },
+    select: { id: true, churchId: true },
+  });
+  if (!person?.churchId) return false;
+  const dept = await prisma.department.findFirst({
+    where: { churchId: person.churchId, name: { contains: "Atención Primaria", mode: "insensitive" } },
+  });
+  if (!dept) return false;
+  const membership = await prisma.personDepartment.findFirst({
+    where: { personId: person.id, departmentId: dept.id, active: true },
+  });
+  return !!membership;
+}
+
 export async function crearPersona(formData: FormData) {
   const user = await getSessionUser();
   if (!user) return { error: "No autenticado" };
-  if (!MANAGE_ROLES.includes(user.role)) return { error: "Sin permisos" };
+
+  const canCreate =
+    MANAGE_ROLES.includes(user.role) ||
+    (await isAtencionPrimariaMember(parseInt(user.id as string)));
+
+  if (!canCreate) return { error: "Sin permisos" };
 
   const name = formData.get("name")?.toString().trim();
   const lastname = formData.get("lastname")?.toString().trim();
