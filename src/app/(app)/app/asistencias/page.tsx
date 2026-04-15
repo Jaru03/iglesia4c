@@ -67,16 +67,17 @@ export default async function AsistenciasPage({
 
   if (role === "ADMIN") {
     const allDeptsRaw = await prisma.department.findMany({
+      where: { active: true },
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     });
-    
+
     allDepts = groupDepartmentsByName(allDeptsRaw);
     showAllOption = true;
   } else if (role === "RESPONSIBLE" && churchId) {
     churchIdFilter = churchId;
     const deptsRaw = await prisma.department.findMany({
-      where: { churchId },
+      where: { churchId, active: true },
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     });

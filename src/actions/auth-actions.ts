@@ -71,7 +71,7 @@ export async function completarRegistro(formData: FormData) {
   await prisma.user.create({
     data: {
       password: hash,
-      role: "USER",
+      role: persona.isObrero ? "OBRERO" : "USER",
       personId: persona.id,
     },
   });

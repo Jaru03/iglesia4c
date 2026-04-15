@@ -272,7 +272,6 @@ export async function actualizarPersona(id: number, formData: FormData) {
     revalidatePath("/app/personas");
     revalidatePath("/app/dashboard");
 
-    await updateMembershipStatus(id);
     if (isObrero !== undefined) await syncObreroRole(id, isObrero);
     return { success: "Persona actualizada correctamente." };
   } catch (error) {

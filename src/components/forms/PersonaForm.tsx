@@ -318,6 +318,7 @@ export default function PersonaForm({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                   <Field>
                     <FieldLabel>Estatus</FieldLabel>
+                    <input type="hidden" name="membershipStatus" value={membershipStatus} />
                     <Select value={membershipStatus} onValueChange={setMembershipStatus}>
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar rol..." />
