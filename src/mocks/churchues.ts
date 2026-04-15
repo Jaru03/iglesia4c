@@ -128,8 +128,8 @@ export const churches = [
       { dia: "Domingo", horario: "11:00" },
     ],
     pastors: [
-      { nombre: "Alberto Vidal", img: "/pastorParla.png" },
-      { nombre: "Dámaris Tovar", img: "/pastoraParla.png" },
+      { nombre: "Ricardo López", img: "/pastorPlazaCastilla.png" },
+      { nombre: "Febe Santacruz", img: "/pastoraPlazaCastilla.png" },
     ],
     socialLinks: [
       {
