@@ -58,7 +58,7 @@ export function ActivityCard({ activity, isCulto = false, children }: ActivityCa
           <div className="flex items-center gap-1">
             <Clock className="h-3 w-3 text-slate-400" />
             <span className="font-medium">
-              {format(new Date(activity.hourStart), "d MMM", { locale: es })}
+              {format(new Date(activity.hourStart.slice(0, 10) + "T12:00:00"), "d MMM", { locale: es })}
             </span>
             <span className="text-slate-400">
               {String(new Date(activity.hourStart).getUTCHours() % 12 || 12).padStart(2,"0")}:{String(new Date(activity.hourStart).getUTCMinutes()).padStart(2,"0")} {new Date(activity.hourStart).getUTCHours() >= 12 ? "p. m." : "a. m."}

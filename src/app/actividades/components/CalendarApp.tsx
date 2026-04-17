@@ -37,9 +37,9 @@ export default function CalendarApp({ events: rawEvents = [] }: { events?: Calen
   const calendarControls = useState(() => createCalendarControlsPlugin())[0]
   const eventModal = useState(() => createEventModalPlugin())[0]
 
-  // DB stores times as UTC but the values ARE the wall-clock times the user entered (no tz applied on save).
-  // Pass them as UTC ZonedDateTimes so the calendar (also set to UTC) shows them as-is.
-  const toUtcZdt = (iso: string) => Temporal.Instant.from(iso).add({ hours: 2 }).toZonedDateTimeISO('UTC')
+  // DB stores times as UTC; the UTC value IS the wall-clock time the user entered.
+  // Pass them as UTC ZonedDateTimes so the calendar (timezone: UTC) shows them as-is.
+  const toUtcZdt = (iso: string) => Temporal.Instant.from(iso).toZonedDateTimeISO('UTC')
 
   const events = useMemo(() => {
     return rawEvents.map((event) => ({
