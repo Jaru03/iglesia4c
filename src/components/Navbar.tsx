@@ -107,9 +107,9 @@ const Navbar = () => {
                 );
               })}
             </ul>
-            <div className="flex items-center gap-2">
+            {/* <div className="flex items-center gap-2">
               <ThemeToggle />
-            </div>
+            </div> */}
           </div>
 
           <div className="relative lg:hidden">
