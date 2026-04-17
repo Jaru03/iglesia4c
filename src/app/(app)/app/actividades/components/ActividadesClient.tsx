@@ -362,6 +362,7 @@ export function ActividadesClient({
                     text: new Date(actividad.hourStart).toLocaleString("es-ES", {
                       dateStyle: "medium",
                       timeStyle: "short",
+                      timeZone: "UTC",
                     }),
                   },
                 ]}
@@ -386,10 +387,12 @@ export function ActividadesClient({
                           {new Date(actividad.hourStart).toLocaleString("es-ES", {
                             dateStyle: "long",
                             timeStyle: "short",
+                            timeZone: "UTC",
                           })}
                           {" – "}
                           {new Date(actividad.hourEnd).toLocaleString("es-ES", {
                             timeStyle: "short",
+                            timeZone: "UTC",
                           })}
                         </span>
                       </div>
