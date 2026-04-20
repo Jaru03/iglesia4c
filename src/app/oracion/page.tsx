@@ -1,9 +1,25 @@
+import type { Metadata } from "next";
 import { HeroTitle } from "@/components/typography/HeroTitle";
 import { SpinningTextLabel } from "@/components/SpinningTextLabel";
 import PrayForm from "@/app/oracion/components/PrayForm";
 import { CallToAction } from "@/components/CallToAction";
 import Link from "next/link";
 import { Title } from "@/components/typography/Title";
+
+export const metadata: Metadata = {
+  title: "Petición de Oración | Casa de Dios Madrid",
+  description:
+    "Envía tu petición de oración a la iglesia Casa de Dios en Madrid. Nuestra comunidad cristiana ora por ti con amor y dedicación.",
+  alternates: { canonical: "/oracion" },
+  openGraph: {
+    title: "Petición de Oración | Casa de Dios Madrid",
+    description:
+      "Envía tu petición de oración a nuestra comunidad cristiana en Madrid.",
+    url: "/oracion",
+    type: "website",
+    images: ["/oracion-banner.jpg"],
+  },
+}
 
 const page = () => {
   return (
