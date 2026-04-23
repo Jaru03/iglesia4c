@@ -34,7 +34,7 @@ const page = async () => {
       select: { id: true, title: true, hourStart: true, hourEnd: true, place: true, description: true },
     }),
     prisma.activity.findMany({
-      where: { isCulto: false, hourStart: { gte: now } },
+      where: { isCulto: false, showCalendar: true, hourStart: { gte: now } },
       orderBy: { hourStart: "asc" },
       take: 10,
       select: { id: true, title: true, description: true, hourStart: true, img: true, place: true },
