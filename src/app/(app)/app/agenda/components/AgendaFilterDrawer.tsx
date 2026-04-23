@@ -52,7 +52,7 @@ export function AgendaFilterDrawer({ selectedStatus }: Props) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-24 right-6 z-50 flex items-center justify-center size-14 rounded-full bg-secondary text-secondary-foreground shadow-lg hover:bg-secondary/80 active:scale-95 transition-all"
+        className="flex items-center justify-center size-14 rounded-full bg-secondary text-secondary-foreground shadow-lg hover:bg-secondary/80 active:scale-95 transition-all"
         aria-label="Filtros"
       >
         <SlidersHorizontal className="h-5 w-5" />

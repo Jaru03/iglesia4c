@@ -22,7 +22,7 @@ export function AvailabilityDrawer({ initial }: Props) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-50 flex items-center justify-center size-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 active:scale-95 transition-all"
+        className="flex items-center justify-center size-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 active:scale-95 transition-all"
         aria-label="Gestionar calendario"
       >
         <CalendarDays className="h-5 w-5" />

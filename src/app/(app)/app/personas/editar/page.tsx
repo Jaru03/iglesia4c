@@ -44,7 +44,7 @@ export default async function EditarPersonaPage({
   const departments = await prisma.department.findMany({
     where: { active: true },
     orderBy: { name: "asc" },
-    select: { id: true, name: true },
+    select: { id: true, name: true, churchId: true },
   });
 
   const churches = await prisma.church.findMany({

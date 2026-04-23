@@ -143,7 +143,7 @@ const ChurchLocation = ({ info }: Props) => {
             <div className="flex items-start gap-3">
               <Users className="w-5 h-5 text-primary-3 shrink-0 mt-1" />
               <div className="flex-1">
-                <span className="font-semibold text-primary-3">Responsables:</span>
+                <span className="font-semibold text-primary-3">{info.leaderLabel}:</span>
                 <div className="flex gap-3 mt-2">
                   {info?.pastors.map((pastor) =>
                     pastor.img !== "" ? (

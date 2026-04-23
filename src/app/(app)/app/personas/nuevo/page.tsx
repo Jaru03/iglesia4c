@@ -50,7 +50,7 @@ export default async function NuevaPersonaPage() {
   const departments = await prisma.department.findMany({
     where: { active: true, ...(churchIdFilter ? { churchId: churchIdFilter } : {}) },
     orderBy: { name: "asc" },
-    select: { id: true, name: true },
+    select: { id: true, name: true, churchId: true },
   });
 
   const churches = role === "ADMIN"

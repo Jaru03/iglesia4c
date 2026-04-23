@@ -93,6 +93,7 @@ interface Persona {
 interface Department {
   id: number;
   name: string;
+  churchId?: number | null;
 }
 
 interface Church {
@@ -146,10 +147,14 @@ export default function PersonaForm({
 
   const selectedChurch = churches.find((c) => String(c.id) === churchId);
 
+  const filteredDepts = churches.length > 0 && churchId
+    ? departments.filter((d) => d.churchId === parseInt(churchId))
+    : departments;
+
   const churchItems = churches.map((c) => c.title);
-  const deptItems = departments.map((d) => d.name);
+  const deptItems = filteredDepts.map((d) => d.name);
   const selectedDeptNames = selectedDepts
-    .map((id) => departments.find((d) => String(d.id) === id)?.name)
+    .map((id) => filteredDepts.find((d) => String(d.id) === id)?.name)
     .filter(Boolean) as string[];
 
   const handleSubmit = async (formData: FormData) => {
@@ -403,6 +408,7 @@ export default function PersonaForm({
                         onValueChange={(value) => {
                           const church = churches.find((c) => c.title === value);
                           setChurchId(church ? String(church.id) : "");
+                          setSelectedDepts([]);
                         }}
                         items={churchItems}
                       >
@@ -421,6 +427,7 @@ export default function PersonaForm({
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setChurchId("");
+                                setSelectedDepts([]);
                               }}
                               className="mr-1 size-4 rounded-full hover:bg-muted inline-flex items-center justify-center"
                             >
@@ -456,7 +463,7 @@ export default function PersonaForm({
                         onValueChange={(values) => {
                           const ids = (values as string[])
                             .map((name) => {
-                              const dept = departments.find((d) => d.name === name);
+                              const dept = filteredDepts.find((d) => d.name === name);
                               return dept ? String(dept.id) : null;
                             })
                             .filter(Boolean) as string[];

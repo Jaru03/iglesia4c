@@ -2,6 +2,7 @@ export const churches = [
   {
     index: 1,
     title: "Casa de Dios Plaza de Castilla",
+    leaderLabel: "Pastores Principales",
     description:
       "Como iglesia principal, Casa de Dios Plaza Castilla es el centro de nuestra comunidad, donde predicamos el evangelio y discipulamos para transformar vidas y nuestra ciudad, reflejando el amor de Cristo en todo lo que hacemos.",
     place: "C. de la Vinca, 12, Tetuán, 28029 Madrid",
@@ -46,6 +47,7 @@ export const churches = [
   {
     index: 2,
     title: "Casa de Dios Estrecho",
+    leaderLabel: "Pastores",
     description:
       "En Casa de Dios Estrecho, ayudamos a las personas a experimentar un encuentro personal con Cristo y a vivir según los principios del Reino de Dios, equipándolos para ser agentes de cambio en sus comunidades.",
     place: "C. de San Enrique, 12, Tetuán, 28020 Madrid",
@@ -82,6 +84,7 @@ export const churches = [
   {
     index: 3,
     title: "Casa de Dios Pinto",
+    leaderLabel: "Responsables",
     description:
       "Casa de Dios Pinto es una iglesia de esperanza, donde las familias crecen en su fe y reciben el poder transformador de Dios, siendo alentados a llevar el evangelio en su entorno.",
     place: "C. Real, 27, 28320 Pinto, Madrid",
@@ -119,6 +122,7 @@ export const churches = [
   {
     index: 4,
     title: "Casa de Dios Parla",
+    leaderLabel: "Pastores",
     description:
       "En Casa de Dios Parla, buscamos crear una conexión auténtica con Dios y con los demás, edificando una comunidad sólida que refleje el amor y los valores del Reino de Dios.",
     coords: [40.23919338746912, -3.7522647329249037],
@@ -155,6 +159,7 @@ export const churches = [
   {
     index: 5,
     title: "Casa de Dios Lucero",
+    leaderLabel: "Pastores",
     description:
       "Casa de Dios Lucero ayuda a cada persona a descubrir su propósito en Cristo, siendo una comunidad unida en fe y reflejando Su luz y esperanza.",
     coords: [40.403994136287885, -3.7445785327447094],
@@ -189,6 +194,7 @@ export const churches = [
   {
     index: 6,
     title: "Casa de Dios Tarancon",
+    leaderLabel: "Pastores",
     description:
       "En Casa de Dios Tarancón, motivamos a cada miembro a crecer espiritualmente y vivir conforme a los principios de Dios, impactando nuestra comunidad con el evangelio.",
     coords: [40.00712028047084, -3.0085879041043215],
@@ -212,6 +218,7 @@ export const churches = [
   {
     index: 7,
     title: "Casa de Dios Getafe",
+    leaderLabel: "Pastores",
     description:
       "Casa de Dios Getafe es una iglesia dinámica donde todos encuentran un lugar para crecer, predicar la Palabra de Dios y ser líderes que impactan su entorno con el amor de Cristo.",
     coords: [40.305307322360676, -3.7262497239667187],

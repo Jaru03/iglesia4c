@@ -6,6 +6,7 @@ export interface InfoChurch {
     coords: [number, number],
     horario: Horario[],
     pastors: Pastor[],
+    leaderLabel: string,
     socialLinks: SocialLinks[]
   }
   
