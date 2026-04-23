@@ -456,6 +456,7 @@ export default function PersonaForm({
                     <Field>
                       <FieldLabel>Departamentos</FieldLabel>
                       <Combobox
+                        key={churchId || "all"}
                         multiple
                         autoHighlight
                         items={deptItems}
