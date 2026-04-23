@@ -10,23 +10,30 @@ export default async function CrearPersonaPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user) redirect("/login");
 
-  const { role } = session.user;
+  const { role, churchId: sessionChurchId } = session.user;
 
   if (role !== "ADMIN" && role !== "RESPONSIBLE") {
     redirect("/app/dashboard");
   }
 
+  const isAdmin = role === "ADMIN";
+
   const departments = await prisma.department.findMany({
-    where: { active: true },
+    where: {
+      active: true,
+      ...(!isAdmin && sessionChurchId ? { churchId: sessionChurchId } : {}),
+    },
     orderBy: { name: "asc" },
-    select: { id: true, name: true },
+    select: { id: true, name: true, churchId: true },
   });
 
-  const churches = await prisma.church.findMany({
-    where: { active: true },
-    orderBy: { title: "asc" },
-    select: { id: true, title: true },
-  });
+  const churches = isAdmin
+    ? await prisma.church.findMany({
+        where: { active: true },
+        orderBy: { title: "asc" },
+        select: { id: true, title: true },
+      })
+    : [];
 
   return (
     <div className="container mx-auto py-6 px-4">
