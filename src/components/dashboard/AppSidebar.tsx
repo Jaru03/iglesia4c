@@ -74,7 +74,7 @@ function NavContent({
         <Button
           variant="ghost"
           className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-900/20"
-          onClick={() => signOut({ callbackUrl: "/login" })}
+          onClick={() => signOut({ callbackUrl: "/" })}
         >
           <LogOut className="h-4 w-4 mr-3" />
           Cerrar Sesión
@@ -117,7 +117,7 @@ export function AppSidebar({
                 {roleLabel}
               </Badge>
             </SheetHeader>
-            <div className="flex flex-col h-[calc(100vh-120px)]">
+            <div className="flex flex-col h-[calc(100dvh-120px)] overflow-hidden">
               <NavContent
                 navItems={navItems}
                 onNavigate={() => setOpen(false)}
