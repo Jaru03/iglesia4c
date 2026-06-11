@@ -8,20 +8,36 @@ import { Subtitle } from '@/components/typography/Subtitle'
 import { useEffect, useState, useRef } from 'react'
 import Autoplay from 'embla-carousel-autoplay'
 
-interface Slider {
-  id: number // Cambié 'key' a 'id' para evitar conflictos con palabras reservadas de React
+interface Slide {
+  id: string | number
   title: string
-  image: string
+  src: string
 }
 
-const LastActivities = () => {
-  const slider: Slider[] = [
-    { id: 1, title: "Culto del Domingo", image: "/cultoDomingo-2.jpg" },
-    { id: 2, title: "Culto del Domingo", image: "/cultoDomingo-1.jpg" },
-    { id: 3, title: "Culto del Domingo", image: "/cultoDomingo-3.jpg" },
-    { id: 4, title: "Santa Cena", image: "/cultoSantaCena-1.jpg" },
-    { id: 5, title: "Santa Cena", image: "/cultoSantaCena-2.jpg" },
-  ]
+export interface LastActivityPhoto {
+  id: string
+  url: string
+  title: string
+}
+
+// Imágenes por defecto que se muestran cuando aún no se han subido fotos al carrusel.
+const FALLBACK_PHOTOS: Slide[] = [
+  { id: "fb-1", title: "Culto del Domingo", src: "/cultoDomingo-2.jpg" },
+  { id: "fb-2", title: "Culto del Domingo", src: "/cultoDomingo-1.jpg" },
+  { id: "fb-3", title: "Culto del Domingo", src: "/cultoDomingo-3.jpg" },
+  { id: "fb-4", title: "Santa Cena", src: "/cultoSantaCena-1.jpg" },
+  { id: "fb-5", title: "Santa Cena", src: "/cultoSantaCena-2.jpg" },
+]
+
+interface Props {
+  photos?: LastActivityPhoto[]
+}
+
+const LastActivities = ({ photos = [] }: Props) => {
+  const slider: Slide[] =
+    photos.length > 0
+      ? photos.map((p) => ({ id: p.id, title: p.title, src: p.url }))
+      : FALLBACK_PHOTOS
 
   const [api, setApi] = useState<CarouselApi>()
   const [current, setCurrent] = useState(0)
@@ -87,7 +103,7 @@ const LastActivities = () => {
                       'sizes' ayuda al navegador a descargar la imagen del tamaño correcto (móvil vs escritorio).
                     */}
                     <Image
-                      src={item.image}
+                      src={item.src}
                       alt={item.title}
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"

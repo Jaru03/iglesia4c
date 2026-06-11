@@ -5,6 +5,7 @@ import {
   Church,
   ClipboardCheck,
   Home,
+  Images,
   Megaphone,
   MessageSquare,
   User,
@@ -33,6 +34,7 @@ export const dashboardNav: NavItem[] = [
 
   // Admin only
   { href: "/app/iglesias", label: "Iglesias", icon: Church, roles: ["ADMIN"] },
+  { href: "/app/ultimas-actividades", label: "Últimas Actividades", icon: Images, roles: ["ADMIN"] },
 
   // Admin, Responsable & Leader
   { href: "/app/departamentos", label: "Departamentos", icon: Megaphone, roles: ["ADMIN", "RESPONSIBLE", "LEADER"] },

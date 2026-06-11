@@ -3,6 +3,9 @@ import Hero from "@/app/(home)/components/Hero";
 import LastActivities from "@/app/(home)/components/LastActivities";
 import RecentPreach from "@/app/(home)/components/RecentPreach";
 import UpcomingActivities from "@/app/(home)/components/UpcomingActivities";
+import { listLastActivityPhotos } from "@/lib/lastActivities";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Casa de Dios Madrid | Iglesia Cristiana Evangélica en Madrid",
@@ -19,7 +22,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const photos = await listLastActivityPhotos();
+
   return (
     <main>
       <Hero />
@@ -28,7 +33,7 @@ export default function HomePage() {
 
       <UpcomingActivities />
 
-      <LastActivities />
+      <LastActivities photos={photos} />
     </main>
   );
 }
