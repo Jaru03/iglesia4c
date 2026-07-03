@@ -14,6 +14,14 @@
 
 set -euo pipefail
 
+# Si las variables no vienen del entorno (Dokploy), se leen del .env local.
+ENV_FILE="$(dirname "$0")/.env"
+get_env() { grep -E "^$1=" "$ENV_FILE" 2>/dev/null | tail -n1 | cut -d= -f2- || true; }
+if [ -f "$ENV_FILE" ]; then
+  : "${APP_URL:=$(get_env APP_URL)}"
+  : "${CRON_SECRET:=$(get_env CRON_SECRET)}"
+fi
+
 : "${APP_URL:?Falta la variable APP_URL}"
 : "${CRON_SECRET:?Falta la variable CRON_SECRET}"
 
