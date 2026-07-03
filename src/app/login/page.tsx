@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { BrandLoader } from "@/components/ui/brand-loader";
 import Link from "next/link";
 import { Church } from "lucide-react";
 
@@ -30,19 +31,11 @@ export default function LoginPage() {
   }, [status, session, router]);
 
   if (status === "loading") {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900">
-        <p className="text-white">Cargando...</p>
-      </div>
-    );
+    return <BrandLoader label="Cargando..." />;
   }
 
   if (status === "authenticated") {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900">
-        <p className="text-white">Redirigiendo...</p>
-      </div>
-    );
+    return <BrandLoader label="Redirigiendo..." />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
