@@ -5,6 +5,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useRouter } from "next/navigation";
 import { actualizarPerfil } from "@/actions/perfil-actions";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -201,10 +202,9 @@ export default function PerfilForm({
                   <FieldLabel htmlFor="currentPassword">
                     Contraseña actual
                   </FieldLabel>
-                  <Input
+                  <PasswordInput
                     id="currentPassword"
                     name="currentPassword"
-                    type="password"
                     placeholder="Ingresa la contraseña actual"
                   />
                 </Field>
@@ -214,10 +214,9 @@ export default function PerfilForm({
                     <FieldLabel htmlFor="newPassword">
                       Nueva contraseña
                     </FieldLabel>
-                    <Input
+                    <PasswordInput
                       id="newPassword"
                       name="newPassword"
-                      type="password"
                       placeholder="Mínimo 6 caracteres"
                     />
                   </Field>
@@ -226,10 +225,9 @@ export default function PerfilForm({
                     <FieldLabel htmlFor="confirmPassword">
                       Confirmar contraseña
                     </FieldLabel>
-                    <Input
+                    <PasswordInput
                       id="confirmPassword"
                       name="confirmPassword"
-                      type="password"
                       placeholder="Repite la nueva contraseña"
                     />
                   </Field>

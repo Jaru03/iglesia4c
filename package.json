@@ -26,6 +26,7 @@
     "@emailjs/browser": "^4.4.1",
     "@getbrevo/brevo": "^1.0.1",
     "@hookform/resolvers": "^5.2.2",
+    "@next/third-parties": "^16.2.10",
     "@paypal/checkout-server-sdk": "^1.0.3",
     "@paypal/react-paypal-js": "^8.8.1",
     "@preact/signals": "^2.9.0",

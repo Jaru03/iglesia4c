@@ -9,6 +9,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { Providers } from "@/components/Providers";
 import { OrganizationJsonLd } from "@/components/seo/OrganizationJsonLd";
+import { GoogleTagManager } from "@next/third-parties/google";
 
 const SITE_URL = "https://casadedios.es";
 
@@ -113,8 +114,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
+
   return (
     <html lang="es-ES" suppressHydrationWarning>
+      {gtmId && <GoogleTagManager gtmId={gtmId} />}
       <body className={inter.className}>
         <OrganizationJsonLd />
 
