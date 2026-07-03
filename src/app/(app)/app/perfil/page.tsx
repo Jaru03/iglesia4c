@@ -21,7 +21,6 @@ import {
   Pencil,
 } from "lucide-react";
 import Link from "next/link";
-import { BirthdayReminderButton } from "./components/BirthdayReminderButton";
 import { AbsenceDialog } from "./components/AbsenceDialog";
 
 export const dynamic = "force-dynamic";
@@ -164,7 +163,6 @@ export default async function PerfilPage() {
                     <p className="text-sm text-muted-foreground truncate">{email}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    {role === "ADMIN" && <BirthdayReminderButton />}
                     <AbsenceDialog />
                     <Button asChild variant="outline" size="sm" className="gap-2">
                       <Link href="/app/perfil/editar">

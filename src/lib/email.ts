@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 
-const transporter = nodemailer.createTransport({
+/** Transporte SMTP compartido (Gmail por defecto). Fuente única de configuración. */
+export const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST ?? "smtp.gmail.com",
   port: Number(process.env.EMAIL_PORT ?? 587),
   secure: false,
@@ -10,7 +11,10 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const FROM = process.env.EMAIL_FROM ?? "Iglesia <no-reply@iglesia.com>";
+/** Remitente por defecto para todos los emails de la app. */
+export const EMAIL_FROM = process.env.EMAIL_FROM ?? "Iglesia <no-reply@iglesia.com>";
+
+const FROM = EMAIL_FROM;
 
 export interface AppointmentEmailData {
   toName: string;

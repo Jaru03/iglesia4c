@@ -17,6 +17,7 @@
     "db:reset": "prisma migrate reset --force --url postgresql://postgres:postgres@localhost:5433/iglesia4c",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
+    "cron:birthdays": "bash cron-birthdays.sh",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"

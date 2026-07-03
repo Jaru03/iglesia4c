@@ -1,16 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/utils/prisma";
-import nodemailer from "nodemailer";
-
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST ?? "smtp.gmail.com",
-  port: Number(process.env.EMAIL_PORT ?? 587),
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER ?? "placeholder@email.com",
-    pass: process.env.EMAIL_PASS ?? "placeholder-password",
-  },
-});
+import { transporter, EMAIL_FROM } from "@/lib/email";
 
 // Devuelve los 7 días de la semana a partir del lunes dado
 function getWeekDays(monday: Date): Date[] {
@@ -158,7 +148,7 @@ export async function GET(req: Request) {
   `;
 
   await transporter.sendMail({
-    from: process.env.EMAIL_FROM ?? "Iglesia <no-reply@iglesia.com>",
+    from: EMAIL_FROM,
     to: adminEmails.join(", "),
     subject: `🎂 Cumpleaños de la semana — ${mondayLabel} al ${sundayLabel}`,
     html,
