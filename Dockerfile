@@ -40,6 +40,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# bash: Dokploy ejecuta los comandos programados con `bash -c`
+# curl: para disparar el endpoint del cron desde la tarea programada
+RUN apk add --no-cache bash curl
+
 # Usuario sin privilegios
 RUN addgroup --system --gid 1001 nodejs \
  && adduser  --system --uid 1001 nextjs
