@@ -65,11 +65,7 @@ export async function GET(req: Request) {
     }
   });
 
-  if (byDay.size === 0) {
-    return NextResponse.json({ message: "No hay cumpleaños esta semana", sent: 0 });
-  }
-
-  // Admins con email
+  // Admins con email (destinatarios)
   const admins = await prisma.user.findMany({
     where: { role: "ADMIN" },
     include: { person: { select: { email: true } } },
@@ -80,10 +76,41 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "No hay admins con email" }, { status: 400 });
   }
 
+  const mondayLabel = `${monday.getUTCDate()} de ${MONTH_NAMES[monday.getUTCMonth()]}`;
+  const sundayLabel = `${weekDays[6].getUTCDate()} de ${MONTH_NAMES[weekDays[6].getUTCMonth()]}`;
+  const subject = `🎂 Cumpleaños de la semana — ${mondayLabel} al ${sundayLabel}`;
+
+  // Sin cumpleaños esta semana: se envía igualmente un aviso a los admins
+  if (byDay.size === 0) {
+    const emptyHtml = `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 580px; margin: 0 auto; background: #f9fafb; padding: 32px 16px;">
+        <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 16px; padding: 28px 32px; margin-bottom: 28px; text-align: center;">
+          <div style="font-size: 40px; margin-bottom: 8px;">🎂</div>
+          <h1 style="margin: 0; color: #fff; font-size: 22px; font-weight: 700;">Cumpleaños de la semana</h1>
+          <p style="margin: 6px 0 0; color: rgba(255,255,255,0.8); font-size: 14px;">${mondayLabel} — ${sundayLabel}</p>
+        </div>
+        <div style="background: #fff; border-radius: 12px; padding: 24px 20px; text-align: center; border: 1px solid #e5e7eb;">
+          <div style="font-size: 28px; margin-bottom: 8px;">📅</div>
+          <p style="margin: 0; color: #374151; font-size: 15px;">No hay ningún cumpleaños esta semana.</p>
+        </div>
+        <p style="text-align: center; color: #9ca3af; font-size: 12px; margin-top: 32px;">
+          Enviado automáticamente · Comunidad Cristiana Casa de Dios
+        </p>
+      </div>
+    `;
+
+    await transporter.sendMail({
+      from: EMAIL_FROM,
+      to: adminEmails.join(", "),
+      subject,
+      html: emptyHtml,
+    });
+
+    return NextResponse.json({ sent: 0, to: adminEmails, week: `${mondayLabel} – ${sundayLabel}`, message: "No hay cumpleaños esta semana" });
+  }
+
   // ── HTML del email ──────────────────────────────────────────────────────────
-  const mondayLabel    = `${monday.getUTCDate()} de ${MONTH_NAMES[monday.getUTCMonth()]}`;
-  const sundayLabel    = `${weekDays[6].getUTCDate()} de ${MONTH_NAMES[weekDays[6].getUTCMonth()]}`;
-  const totalCumples   = Array.from(byDay.values()).reduce((acc, arr) => acc + arr.length, 0);
+  const totalCumples = Array.from(byDay.values()).reduce((acc, arr) => acc + arr.length, 0);
 
   const dayBlocksHtml = Array.from(byDay.entries())
     .sort(([a], [b]) => a - b)
@@ -150,7 +177,7 @@ export async function GET(req: Request) {
   await transporter.sendMail({
     from: EMAIL_FROM,
     to: adminEmails.join(", "),
-    subject: `🎂 Cumpleaños de la semana — ${mondayLabel} al ${sundayLabel}`,
+    subject,
     html,
   });
 
