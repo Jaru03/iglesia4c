@@ -7,6 +7,7 @@ import { ResourceList } from "@/components/dashboard/ResourceList";
 import { ListItem } from "@/components/dashboard/ListItem";
 import { quitarPersonaDeDepartamento } from "@/actions/lider-actions";
 import { eliminarPersona } from "@/actions/personas-actions";
+import { marcarAusenciasLeidas } from "@/actions/perfil-actions";
 import toast from "react-hot-toast";
 import { format, isFuture, isToday } from "date-fns";
 import { es } from "date-fns/locale";
@@ -325,6 +326,18 @@ export function PersonasClient({
   const canEdit = isAdmin || isResponsable;
   const canDelete = isAdmin || isResponsable;
 
+  // Usuarios cuyas notificaciones de ausencia ya se marcaron como leídas en esta
+  // sesión: oculta el badge inmediatamente sin esperar al refresco del servidor.
+  const [leidos, setLeidos] = useState<Set<number>>(new Set());
+
+  const handleAbrirPersona = (userId?: number | null) => {
+    if (!userId) return;
+    const pendientes = notificationsByUser[userId] ?? 0;
+    if (pendientes === 0 || leidos.has(userId)) return;
+    setLeidos((prev) => new Set(prev).add(userId));
+    void marcarAusenciasLeidas(userId);
+  };
+
   const [filtrosOpen, setFiltrosOpen] = useState(false);
   const [filtros, setFiltros] = useState<{
     membershipStatus: string | null;
@@ -494,7 +507,9 @@ export function PersonasClient({
                 icon: Users,
                 color: "blue",
                 shape: "circle",
-                badge: item.userId ? (notificationsByUser[item.userId] ?? 0) : 0,
+                badge: item.userId && !leidos.has(item.userId)
+                  ? (notificationsByUser[item.userId] ?? 0)
+                  : 0,
               }}
               title={`${item.name} ${item.lastname}`}
               meta={item.email ? [{ text: item.email }] : []}
@@ -508,6 +523,7 @@ export function PersonasClient({
               ]}
               modalContent={<PersonaModal item={item} />}
               modalTitle={`${item.name} ${item.lastname}`}
+              onModalOpen={() => handleAbrirPersona(item.userId)}
               {...(canDelete && {
                 onDelete: () => handleDelete(item),
                 deleteTitle: isLeader ? "Quitar del departamento" : "Eliminar persona",

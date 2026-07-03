@@ -110,6 +110,25 @@ export async function crearAusencia(data: {
   }
 }
 
+export async function marcarAusenciasLeidas(fromUserId: number) {
+  const user = await getSessionUser();
+  if (!user) return { error: "No autenticado" };
+
+  const userId = parseInt(user.id);
+
+  try {
+    await prisma.notification.updateMany({
+      where: { userId, fromUserId, type: "ABSENCE", read: false },
+      data: { read: true },
+    });
+    revalidatePath("/app/personas");
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    return { error: "Error al marcar las notificaciones como leídas." };
+  }
+}
+
 export async function actualizarPerfil(personId: number, formData: FormData) {
   const user = await getSessionUser();
   if (!user) return { error: "No autenticado" };

@@ -96,6 +96,8 @@ export interface ListItemProps {
   modalContent?: ReactNode;
   /** Título del modal. Por defecto usa `title`. */
   modalTitle?: string;
+  /** Se llama al abrir el modal (ej: marcar notificaciones como leídas). */
+  onModalOpen?: () => void;
 }
 
 // ─── Componente ─────────────────────────────────────────────────────────────
@@ -115,6 +117,7 @@ export function ListItem({
   deleteItemName,
   modalContent,
   modalTitle,
+  onModalOpen,
 }: ListItemProps) {
   const { bg, text: iconText } = avatarColors[avatar.color ?? "slate"];
   const shape = avatar.shape === "circle" ? "rounded-full" : "rounded-lg";
@@ -186,7 +189,10 @@ export function ListItem({
         {modalContent ? (
           <button
             type="button"
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              setOpen(true);
+              onModalOpen?.();
+            }}
             className="flex items-start gap-4 flex-1 min-w-0 text-left hover:opacity-75 transition-opacity"
           >
             {leftArea}

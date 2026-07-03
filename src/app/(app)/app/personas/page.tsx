@@ -34,9 +34,16 @@ const personSelect = {
 } as const;
 
 async function getNotificationsByUser(userId: number): Promise<Record<number, number>> {
+  // Sólo se cuentan las notificaciones no leídas cuya ausencia asociada aún no
+  // ha terminado: si el período de la ausencia ya pasó, la notificación
+  // desaparece aunque el usuario nunca la haya abierto.
   const grouped = await prisma.notification.groupBy({
     by: ["fromUserId"],
-    where: { userId, read: false },
+    where: {
+      userId,
+      read: false,
+      absence: { endDate: { gte: new Date() } },
+    },
     _count: { id: true },
   });
   return Object.fromEntries(grouped.map((g) => [g.fromUserId, g._count.id]));
