@@ -31,11 +31,11 @@ export async function GET(req: Request) {
   }
 
   const now = new Date();
+  // Lunes de la PRÓXIMA semana: el recordatorio se envía antes de que ocurran los
+  // cumpleaños (ej. ejecutándolo el domingo, avisa de la semana que empieza al día siguiente).
   const monday = getMondayUTC(now);
+  monday.setUTCDate(monday.getUTCDate() + 7);
   const weekDays = getWeekDays(monday);
-  const nextMonday = weekDays[7 - 1]; // domingo — o usamos monday+7 para el label
-  const nextMondayLabel = new Date(monday);
-  nextMondayLabel.setUTCDate(monday.getUTCDate() + 7);
 
   // Traer todas las personas activas con fecha de nacimiento
   const todas = await prisma.person.findMany({
@@ -59,7 +59,7 @@ export async function GET(req: Request) {
         name: p.name,
         lastname: p.lastname,
         email: p.email,
-        age: nextMondayLabel.getUTCFullYear() - new Date(p.birthDate!).getUTCFullYear(),
+        age: monday.getUTCFullYear() - new Date(p.birthDate!).getUTCFullYear(),
         church: p.church?.title ?? null,
       })));
     }
@@ -169,7 +169,7 @@ export async function GET(req: Request) {
 
       <!-- Footer -->
       <p style="text-align: center; color: #9ca3af; font-size: 12px; margin-top: 32px;">
-        Enviado automáticamente cada lunes a las 8:00 h · Comunidad Cristiana Casa de Dios
+        Recordatorio semanal de cumpleaños · Comunidad Cristiana Casa de Dios
       </p>
     </div>
   `;
