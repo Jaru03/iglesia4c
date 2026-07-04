@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import { authenticatePerson } from "@/lib/auth-helpers";
+import { authenticatePerson, canCreatePersons } from "@/lib/auth-helpers";
 
 const TOKEN_TTL = "30d";
 
@@ -35,7 +35,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
   }
 
-  const token = jwt.sign(user, secret, { expiresIn: TOKEN_TTL });
+  const fullUser = {
+    ...user,
+    canCreatePersons: await canCreatePersons(Number(user.id), user.role),
+  };
 
-  return NextResponse.json({ token, user });
+  const token = jwt.sign(fullUser, secret, { expiresIn: TOKEN_TTL });
+
+  return NextResponse.json({ token, user: fullUser });
 }

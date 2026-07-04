@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/prisma";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import type { Session } from "next-auth";
 
 // ─── Credentials login (shared by NextAuth web login + mobile login) ──────
@@ -90,6 +91,35 @@ export async function authenticatePerson(
   }
 }
 
+const PERSON_MANAGE_ROLES = ["ADMIN", "RESPONSIBLE", "LEADER"];
+
+async function isAtencionPrimariaMember(userId: number): Promise<boolean> {
+  const person = await prisma.person.findFirst({
+    where: { user: { id: userId } },
+    select: { id: true, churchId: true },
+  });
+  if (!person?.churchId) return false;
+  const dept = await prisma.department.findFirst({
+    where: { churchId: person.churchId, name: { contains: "Atención Primaria", mode: "insensitive" } },
+  });
+  if (!dept) return false;
+  const membership = await prisma.personDepartment.findFirst({
+    where: { personId: person.id, departmentId: dept.id, active: true },
+  });
+  return !!membership;
+}
+
+/**
+ * ADMIN/RESPONSIBLE/LEADER can always create Person records; anyone else
+ * needs to be an active member of their church's "Atención Primaria"
+ * department (visitor intake). Shared by the crearPersona server action and
+ * the mobile POST /api/personas route.
+ */
+export async function canCreatePersons(userId: number, role: string): Promise<boolean> {
+  if (PERSON_MANAGE_ROLES.includes(role)) return true;
+  return isAtencionPrimariaMember(userId);
+}
+
 // ─── Page helpers (redirect on fail) ───────────────────────────────────────
 
 export async function requireRole(allowedRoles: string[]): Promise<Session["user"]> {
@@ -167,6 +197,42 @@ export async function requireApiAuth(allowedRoles?: string[]): Promise<ApiAuthRe
     };
   }
   return { ok: true, user: session.user };
+}
+
+export type MobileAuthenticatedUser = AuthenticatedPerson & { canCreatePersons: boolean };
+
+type MobileApiAuthResult =
+  | { ok: true; user: MobileAuthenticatedUser }
+  | { ok: false; response: NextResponse };
+
+/**
+ * Like requireApiAuth, but for non-browser clients (e.g. the Expo app) that
+ * send the JWT from POST /api/auth/mobile-login as `Authorization: Bearer <token>`
+ * instead of a NextAuth session cookie.
+ *
+ * @example
+ * const auth = requireMobileAuth(req, ["ADMIN"]);
+ * if (!auth.ok) return auth.response;
+ */
+export function requireMobileAuth(req: Request, allowedRoles?: string[]): MobileApiAuthResult {
+  const authHeader = req.headers.get("authorization");
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  if (!token) {
+    return { ok: false, response: NextResponse.json({ error: "No autenticado" }, { status: 401 }) };
+  }
+
+  try {
+    const user = jwt.verify(token, process.env.NEXTAUTH_SECRET!) as MobileAuthenticatedUser;
+    if (allowedRoles && !allowedRoles.includes(user.role)) {
+      return { ok: false, response: NextResponse.json({ error: "Sin permisos" }, { status: 403 }) };
+    }
+    return { ok: true, user };
+  } catch {
+    return {
+      ok: false,
+      response: NextResponse.json({ error: "Token inválido o expirado" }, { status: 401 }),
+    };
+  }
 }
 
 // ─── Resource-level authorization ─────────────────────────────────────────

@@ -2,7 +2,7 @@
 
 import prisma from "@/utils/prisma";
 import { revalidatePath } from "next/cache";
-import { getSessionUser, canManagePerson } from "@/lib/auth-helpers";
+import { getSessionUser, canManagePerson, canCreatePersons } from "@/lib/auth-helpers";
 
 const MANAGE_ROLES = ["ADMIN", "RESPONSIBLE", "LEADER"];
 const ADMIN_RESPONSIBLE = ["ADMIN", "RESPONSIBLE"];
@@ -116,29 +116,11 @@ export async function recalculateAllMembershipStatus() {
   return { success: "Membresías actualizadas correctamente." };
 }
 
-async function isAtencionPrimariaMember(userId: number): Promise<boolean> {
-  const person = await prisma.person.findFirst({
-    where: { user: { id: userId } },
-    select: { id: true, churchId: true },
-  });
-  if (!person?.churchId) return false;
-  const dept = await prisma.department.findFirst({
-    where: { churchId: person.churchId, name: { contains: "Atención Primaria", mode: "insensitive" } },
-  });
-  if (!dept) return false;
-  const membership = await prisma.personDepartment.findFirst({
-    where: { personId: person.id, departmentId: dept.id, active: true },
-  });
-  return !!membership;
-}
-
 export async function crearPersona(formData: FormData) {
   const user = await getSessionUser();
   if (!user) return { error: "No autenticado" };
 
-  const canCreate =
-    MANAGE_ROLES.includes(user.role) ||
-    (await isAtencionPrimariaMember(parseInt(user.id as string)));
+  const canCreate = await canCreatePersons(parseInt(user.id as string), user.role);
 
   if (!canCreate) return { error: "Sin permisos" };
 
