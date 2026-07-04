@@ -3,7 +3,92 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/prisma";
+import bcrypt from "bcryptjs";
 import type { Session } from "next-auth";
+
+// ─── Credentials login (shared by NextAuth web login + mobile login) ──────
+
+export type AuthenticatedPerson = {
+  id: string;
+  email: string | null;
+  role: string;
+  name: string;
+  churchId: number | null;
+  churchTitle: string | null;
+  departmentId: number | null;
+  departmentName: string | null;
+};
+
+/**
+ * Looks up a Person by email, phone or document (DNI) and verifies the
+ * password of their linked User account. Returns null on any mismatch or
+ * error so callers (NextAuth's authorize(), the mobile login route) can
+ * treat every failure as "invalid credentials" without leaking which part
+ * failed.
+ */
+export async function authenticatePerson(
+  identifier: string,
+  password: string
+): Promise<AuthenticatedPerson | null> {
+  const input = identifier?.trim();
+  if (!input || !password) return null;
+
+  try {
+    const person = await prisma.person.findFirst({
+      where: {
+        OR: [{ email: input.toLowerCase() }, { phone: input }, { document: input }],
+      },
+      include: { user: true },
+    });
+
+    if (!person?.user) return null;
+
+    const isValidPassword = await bcrypt.compare(password, person.user.password);
+    if (!isValidPassword) return null;
+
+    const user = person.user;
+
+    let churchId: number | null = null;
+    let churchTitle: string | null = null;
+    let departmentId: number | null = null;
+    let departmentName: string | null = null;
+
+    if (user.role === "RESPONSIBLE" || user.role === "ADMIN") {
+      const whereClause: any = { userId: user.id };
+      if (user.role === "RESPONSIBLE") whereClause.role = "RESPONSIBLE";
+
+      const churchLeader = await prisma.churchLeader.findFirst({
+        where: whereClause,
+        include: { church: { select: { title: true } } },
+      });
+      churchId = churchLeader?.churchId ?? null;
+      churchTitle = churchLeader?.church?.title ?? null;
+    }
+
+    if (user.role === "LEADER") {
+      const deptMembership = await prisma.departmentMember.findFirst({
+        where: { userId: user.id, roleInDept: "LEADER", active: true },
+        include: { department: { select: { id: true, name: true } } },
+      });
+      departmentId = deptMembership?.departmentId ?? null;
+      departmentName = deptMembership?.department?.name ?? null;
+    }
+
+    return {
+      id: user.id.toString(),
+      email: person.email,
+      role: user.role,
+      name: `${person.name} ${person.lastname}`,
+      churchId,
+      churchTitle,
+      departmentId,
+      departmentName,
+    };
+  } catch (error) {
+    console.error("[AUTH] Error al autenticar:", error);
+    return null;
+  }
+}
 
 // ─── Page helpers (redirect on fail) ───────────────────────────────────────
 
