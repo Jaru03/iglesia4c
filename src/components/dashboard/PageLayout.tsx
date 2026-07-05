@@ -30,6 +30,8 @@ interface PageLayoutProps {
   statsColumns?: 2 | 3 | 4 | 5;
   listTitle: string;
   filter?: ReactNode;
+  /** Contenido opcional (ej: otra Card) entre las stats y la lista principal */
+  beforeList?: ReactNode;
   children: ReactNode;
   fab?: { href: string; label: string };
 }
@@ -48,26 +50,31 @@ export function PageLayout({
   statsColumns = 3,
   listTitle,
   filter,
+  beforeList,
   children,
   fab,
 }: PageLayoutProps) {
   return (
     <>
-      <div className="max-w-7xl mx-auto p-4 pb-6 space-y-4 h-[100vh] overflow-auto">
-        <DashboardHeader title={title} subtitle={subtitle} action={headerAction} />
-        {tabs}
+      <div className="h-[100vh] overflow-auto">
+        <div className="max-w-7xl mx-auto p-4 pb-6 space-y-4">
+          <DashboardHeader title={title} subtitle={subtitle} action={headerAction} />
+          {tabs}
 
-        {stats && stats.length > 0 && (
-          <div className={`grid ${colsMap[statsColumns]} gap-3`}>
-            {stats.map((s, i) => (
-              <StatCard key={i} title={s.title} value={s.value} colorIndex={s.colorIndex} icon={s.icon} />
-            ))}
-          </div>
-        )}
+          {stats && stats.length > 0 && (
+            <div className={`grid ${colsMap[statsColumns]} gap-3`}>
+              {stats.map((s, i) => (
+                <StatCard key={i} title={s.title} value={s.value} colorIndex={s.colorIndex} icon={s.icon} />
+              ))}
+            </div>
+          )}
 
-        <ListCard title={listTitle} filter={filter}>
-          {children}
-        </ListCard>
+          {beforeList}
+
+          <ListCard title={listTitle} filter={filter}>
+            {children}
+          </ListCard>
+        </div>
       </div>
 
       {fab && <FloatingActionButton href={fab.href} label={fab.label} />}

@@ -51,6 +51,7 @@ export default async function MiembrosPage() {
       active: true,
       birthDate: true,
       arrivedAt: true,
+      createdAt: true,
       attendsChurch: true,
       howDidYouMeetUs: true,
       authorizedContact: true,

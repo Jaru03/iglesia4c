@@ -49,7 +49,7 @@ function computeDateStart(range: string): Date | null {
 export default async function AsistenciasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ dept?: string; actividad?: string; fechaRange?: string }>;
+  searchParams: Promise<{ dept?: string; actividad?: string; fechaRange?: string; estado?: string }>;
 }) {
   const session = await getServerSession(authOptions);
 
@@ -132,12 +132,16 @@ export default async function AsistenciasPage({
         showAllOption={false}
         role={role}
         activeFechaRange="all"
+        activeEstado="proximas"
       />
     );
   }
 
-  const { dept, fechaRange: fechaRangeParam } = await searchParams;
+  const { dept, fechaRange: fechaRangeParam, estado: estadoParam } = await searchParams;
   const activeFechaRange = fechaRangeParam ?? "all";
+  // Por defecto se muestran las actividades por venir; las pasadas son una opción
+  // más del filtro.
+  const activeEstado = estadoParam === "pasadas" ? "pasadas" : "proximas";
   
   // Encontrar el dept seleccionado
   const selectedDept = allDepts.find((d) => d.name === dept) || 
@@ -189,10 +193,15 @@ export default async function AsistenciasPage({
     return {};
   })();
 
+  const nowDate = new Date();
   const dateStart = computeDateStart(activeFechaRange);
-  const finalWhere = dateStart
-    ? { ...whereClause, hourStart: { gte: dateStart } }
-    : whereClause;
+  // El estado determina el corte temporal: las próximas parten de ahora en
+  // adelante; las pasadas quedan acotadas por el período seleccionado.
+  const hourStartFilter: { gte?: Date; lt?: Date } =
+    activeEstado === "pasadas"
+      ? { lt: nowDate, ...(dateStart ? { gte: dateStart } : {}) }
+      : { gte: nowDate };
+  const finalWhere = { ...whereClause, hourStart: hourStartFilter };
 
   const actividadesRaw = await prisma.activity.findMany({
     where: finalWhere,
@@ -206,10 +215,10 @@ export default async function AsistenciasPage({
     },
   });
 
-  const nowDate = new Date();
-  const futureAct = actividadesRaw.filter((a) => a.hourStart >= nowDate).sort((a, b) => a.hourStart.getTime() - b.hourStart.getTime());
-  const pastAct = actividadesRaw.filter((a) => a.hourStart < nowDate).sort((a, b) => b.hourStart.getTime() - a.hourStart.getTime());
-  const actividades = [...futureAct, ...pastAct];
+  const actividades =
+    activeEstado === "pasadas"
+      ? actividadesRaw.sort((a, b) => b.hourStart.getTime() - a.hourStart.getTime())
+      : actividadesRaw.sort((a, b) => a.hourStart.getTime() - b.hourStart.getTime());
 
   const preRegCounts = await prisma.attendance.groupBy({
     by: ["activityId"],
@@ -237,6 +246,7 @@ export default async function AsistenciasPage({
       showAllOption={showAllOption}
       role={role}
       activeFechaRange={activeFechaRange}
+      activeEstado={activeEstado}
     />
   );
 }

@@ -16,6 +16,7 @@ const personSelect = {
   membershipStatus: true,
   active: true,
   arrivedAt: true,
+  createdAt: true,
   birthDate: true,
   attendsChurch: true,
   howDidYouMeetUs: true,

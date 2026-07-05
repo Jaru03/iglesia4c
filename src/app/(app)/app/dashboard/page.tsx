@@ -1,16 +1,15 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { Activity } from "lucide-react";
 import prisma from "@/utils/prisma";
 import type { ActivityItem } from "@/components/dashboard/tabs/DepartamentosTab";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { AdminEstadisticasTab } from "@/components/dashboard/tabs/AdminEstadisticasTab";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import { ResponsableEstadisticasTab } from "@/components/dashboard/tabs/ResponsableEstadisticasTab";
 import { LiderEstadisticasTab } from "@/components/dashboard/tabs/LiderEstadisticasTab";
 import { DepartamentosTab } from "@/components/dashboard/tabs/DepartamentosTab";
-import { Card, CardContent } from "@/components/ui/card";
-import { StatCard } from "@/components/dashboard/StatCard";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { ScrollPage } from "@/components/dashboard/ScrollPage";
 
@@ -29,41 +28,60 @@ export default async function DashboardHome({
   const { dept } = await searchParams;
   const hoy = new Date();
 
+  // Ventana semanal (lunes 00:00) para los resúmenes semanales de ADMIN y RESPONSIBLE.
+  const diffToMonday = (hoy.getDay() + 6) % 7;
+  const inicioSemana = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() - diffToMonday);
+  const inicioSemanaPasada = new Date(inicioSemana);
+  inicioSemanaPasada.setDate(inicioSemanaPasada.getDate() - 7);
+  const finSemana = new Date(inicioSemana);
+  finSemana.setDate(finSemana.getDate() + 6);
+  const finSemanaPasada = new Date(inicioSemana);
+  finSemanaPasada.setDate(finSemanaPasada.getDate() - 1);
+  const semanaEsta = { createdAt: { gte: inicioSemana } };
+  const semanaPasada = { createdAt: { gte: inicioSemanaPasada, lt: inicioSemana } };
+  const rangoEsta = `${format(inicioSemana, "d MMM", { locale: es })} – ${format(finSemana, "d MMM", { locale: es })}`;
+  const rangoPasada = `${format(inicioSemanaPasada, "d MMM", { locale: es })} – ${format(finSemanaPasada, "d MMM", { locale: es })}`;
+
   // ── ADMIN ──────────────────────────────────────────────────────────────────
   if (role === "ADMIN") {
     const [
-      totalPersonas, totalIglesias, totalDepartamentos,
-      peticionesPendientes, ultimasPersonas, ultimasPeticiones, eventosProximos,
+      personasEsta, personasPasada,
+      actividadesEsta, actividadesPasada,
+      peticionesEsta, peticionesPasada,
+      citasEsta, citasPasada,
+      personasNuevas, actividadesNuevas,
     ] = await Promise.all([
-      prisma.person.count({ where: { active: true } }),
-      prisma.church.count({ where: { active: true } }),
-      prisma.department.count(),
-      prisma.petition.count({ where: { status: "PENDIENTE" } }),
+      prisma.person.count({ where: semanaEsta }),
+      prisma.person.count({ where: semanaPasada }),
+      prisma.activity.count({ where: semanaEsta }),
+      prisma.activity.count({ where: semanaPasada }),
+      prisma.petition.count({ where: semanaEsta }),
+      prisma.petition.count({ where: semanaPasada }),
+      prisma.appointment.count({ where: semanaEsta }),
+      prisma.appointment.count({ where: semanaPasada }),
       prisma.person.findMany({
-        orderBy: { createdAt: "desc" }, take: 5,
-        select: { id: true, name: true, lastname: true, membershipStatus: true, email: true },
+        where: semanaEsta, orderBy: { createdAt: "desc" }, take: 5,
+        select: { id: true, name: true, lastname: true, email: true },
       }),
-      prisma.petition.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
       prisma.activity.findMany({
-        where: { hourStart: { gte: hoy } }, orderBy: { hourStart: "asc" }, take: 5,
+        where: semanaEsta, orderBy: { createdAt: "desc" }, take: 5,
         select: { id: true, title: true, hourStart: true, place: true },
       }),
     ]);
 
     return (
       <ScrollPage>
-        <DashboardHeader title="Panel de Control" subtitle="Resumen general del sistema" />
+        <DashboardHeader title="Panel de Control" subtitle="Resumen de la semana" />
         <AdminEstadisticasTab
-          totalPersonas={totalPersonas}
-          totalIglesias={totalIglesias}
-          totalDepartamentos={totalDepartamentos}
-          totalActividades={eventosProximos.length}
-          peticionesPendientes={peticionesPendientes}
-          ultimasPersonas={ultimasPersonas.map((p) => ({ ...p, membershipStatus: p.membershipStatus ?? "VISITOR" }))}
-          ultimasPeticiones={ultimasPeticiones.map((p) => ({ id: p.id, nombre: p.nombre ?? "", status: p.status }))}
-          eventosProximos={eventosProximos.map((e) => ({ ...e, hourStart: e.hourStart.toISOString() }))}
+          rangoEsta={rangoEsta}
+          rangoPasada={rangoPasada}
+          personas={{ esta: personasEsta, pasada: personasPasada }}
+          actividades={{ esta: actividadesEsta, pasada: actividadesPasada }}
+          peticiones={{ esta: peticionesEsta, pasada: peticionesPasada }}
+          citas={{ esta: citasEsta, pasada: citasPasada }}
+          personasNuevas={personasNuevas}
+          actividadesNuevas={actividadesNuevas.map((a) => ({ ...a, hourStart: a.hourStart.toISOString() }))}
           personasHref="/app/personas"
-          peticionesHref="/app/peticiones"
           actividadesHref="/app/actividades"
         />
       </ScrollPage>
@@ -79,23 +97,27 @@ export default async function DashboardHome({
     });
 
     const [
-      totalMiembros, totalPersonas, totalDepartamentos, totalActividades, totalVisitas,
-      peticionesPendientes, personasRecientes, eventosProximos, departmentData,
-      calendarActivities, cultoActivities,
+      personasEsta, personasPasada,
+      actividadesEsta, actividadesPasada,
+      peticionesEsta, peticionesPasada,
+      citasEsta, citasPasada,
+      personasNuevas, actividadesNuevas,
+      departmentData, calendarActivities, cultoActivities,
     ] = await Promise.all([
-      prisma.person.count({ where: { churchId, active: true, membershipStatus: "ACTIVE" } }),
-      prisma.person.count({ where: { churchId, active: true } }),
-      prisma.department.count({ where: { churchId, active: true } }),
-      prisma.activity.count({ where: { isCulto: false, department: { churchId } } }),
-      prisma.person.count({ where: { churchId, active: true, membershipStatus: "VISITOR" } }),
-      prisma.petition.count({ where: { status: "PENDIENTE" } }),
+      prisma.person.count({ where: { churchId, ...semanaEsta } }),
+      prisma.person.count({ where: { churchId, ...semanaPasada } }),
+      prisma.activity.count({ where: { department: { churchId }, ...semanaEsta } }),
+      prisma.activity.count({ where: { department: { churchId }, ...semanaPasada } }),
+      prisma.petition.count({ where: semanaEsta }),
+      prisma.petition.count({ where: semanaPasada }),
+      prisma.appointment.count({ where: { churchId, ...semanaEsta } }),
+      prisma.appointment.count({ where: { churchId, ...semanaPasada } }),
       prisma.person.findMany({
-        where: { churchId, active: true }, orderBy: { createdAt: "desc" }, take: 3,
+        where: { churchId, ...semanaEsta }, orderBy: { createdAt: "desc" }, take: 5,
         select: { id: true, name: true, lastname: true, email: true },
       }),
       prisma.activity.findMany({
-        where: { isCulto: false, department: { churchId }, hourStart: { gte: hoy } },
-        orderBy: { hourStart: "asc" }, take: 5,
+        where: { department: { churchId }, ...semanaEsta }, orderBy: { createdAt: "desc" }, take: 5,
         select: { id: true, title: true, hourStart: true, place: true },
       }),
       prisma.department.findMany({
@@ -152,14 +174,14 @@ export default async function DashboardHome({
             id: "estadisticas", label: "Estadísticas", icon: "TrendingUp" as const,
             content: (
               <ResponsableEstadisticasTab
-                totalMiembros={totalMiembros}
-                totalPersonas={totalPersonas}
-                totalDepartamentos={totalDepartamentos}
-                totalActividades={totalActividades}
-                totalVisitas={totalVisitas}
-                peticionesPendientes={peticionesPendientes}
-                personasRecientes={personasRecientes}
-                eventosProximos={eventosProximos.map((e) => ({ ...e, hourStart: e.hourStart.toISOString() }))}
+                rangoEsta={rangoEsta}
+                rangoPasada={rangoPasada}
+                personas={{ esta: personasEsta, pasada: personasPasada }}
+                actividades={{ esta: actividadesEsta, pasada: actividadesPasada }}
+                peticiones={{ esta: peticionesEsta, pasada: peticionesPasada }}
+                citas={{ esta: citasEsta, pasada: citasPasada }}
+                personasNuevas={personasNuevas}
+                actividadesNuevas={actividadesNuevas.map((a) => ({ ...a, hourStart: a.hourStart.toISOString() }))}
                 personasHref="/app/personas"
                 actividadesHref="/app/actividades"
               />

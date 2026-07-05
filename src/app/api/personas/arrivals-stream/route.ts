@@ -22,7 +22,7 @@ function endOfDay(date: Date) {
 
 /**
  * Live feed of today's visitor check-ins (name + lastname only), for the
- * Expo app's "invitados" screen. Implemented as Server-Sent Events with
+ * Expo app's "visitantes" screen. Implemented as Server-Sent Events with
  * short-interval polling on top of the existing Person table -- no schema
  * changes, no direct client access to the database.
  *

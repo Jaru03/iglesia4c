@@ -11,6 +11,7 @@ import { marcarAusenciasLeidas } from "@/actions/perfil-actions";
 import toast from "react-hot-toast";
 import { format, isFuture, isToday } from "date-fns";
 import { es } from "date-fns/locale";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Sheet,
   SheetContent,
@@ -42,6 +43,7 @@ interface Person {
   isMember?: boolean;
   birthDate: Date | null;
   arrivedAt: Date | null;
+  createdAt: Date | string | null;
   attendsChurch: boolean | null;
   howDidYouMeetUs: string | null;
   authorizedContact: boolean;
@@ -143,6 +145,7 @@ type PersonaItem = {
   userRole?: string | null;
   birthDate: Date | null;
   arrivedAt: Date | null;
+  createdAt: Date | string | null;
   attendsChurch: boolean | null;
   howDidYouMeetUs: string | null;
   authorizedContact: boolean;
@@ -373,6 +376,7 @@ export function PersonasClient({
           userRole: m.person.user?.role ?? null,
           birthDate: m.person.birthDate,
           arrivedAt: m.person.arrivedAt,
+          createdAt: m.person.createdAt,
           attendsChurch: m.person.attendsChurch,
           howDidYouMeetUs: m.person.howDidYouMeetUs,
           authorizedContact: m.person.authorizedContact,
@@ -400,6 +404,7 @@ export function PersonasClient({
           userRole: p.user?.role ?? null,
           birthDate: p.birthDate,
           arrivedAt: p.arrivedAt,
+          createdAt: p.createdAt,
           attendsChurch: p.attendsChurch,
           howDidYouMeetUs: p.howDidYouMeetUs,
           authorizedContact: p.authorizedContact,
@@ -446,6 +451,26 @@ export function PersonasClient({
     return result;
   }, [allItems, filtros]);
 
+  // Visitas de la semana: los visitantes añadidos esta semana y la anterior.
+  // Secretaría no empieza a atenderlos hasta el martes, así que se mantiene
+  // visible la semana previa para no perder a nadie durante ese hueco. La
+  // ventana arranca el lunes de la semana pasada y llega hasta hoy.
+  const visitasSemana = useMemo(() => {
+    if (personasData.type !== "persons") return [] as PersonaItem[];
+    const ahora = new Date();
+    const diaSemana = ahora.getDay(); // 0=domingo … 6=sábado
+    const diasDesdeLunes = (diaSemana + 6) % 7;
+    const inicioSemanaActual = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() - diasDesdeLunes);
+    const inicioVentana = new Date(inicioSemanaActual);
+    inicioVentana.setDate(inicioVentana.getDate() - 7);
+    return allItems
+      .filter((i) => {
+        if (i.membershipStatus !== "VISITOR" || !i.createdAt) return false;
+        return new Date(i.createdAt) >= inicioVentana;
+      })
+      .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
+  }, [allItems, personasData.type]);
+
   const totalMiembros = items.filter(i => i.membershipStatus === "ACTIVE").length;
   const totalVisitantes = items.filter(i => i.membershipStatus === "VISITOR").length;
   const totalLideres = items.filter(i => i.userRole === "LEADER").length;
@@ -476,6 +501,63 @@ export function PersonasClient({
     }
   };
 
+  const renderPersona = (item: PersonaItem) => (
+    <ListItem
+      avatar={{
+        icon: Users,
+        color: "blue",
+        shape: "circle",
+        badge: item.userId && !leidos.has(item.userId)
+          ? (notificationsByUser[item.userId] ?? 0)
+          : 0,
+      }}
+      title={`${item.name} ${item.lastname}`}
+      meta={item.email ? [{ text: item.email }] : []}
+      badges={[
+        ...(item.membershipStatus
+          ? [{ label: statusLabel[item.membershipStatus] ?? item.membershipStatus, variant: "outline" as const }]
+          : []),
+        ...(item.userRole && roleLabel[item.userRole]
+          ? [{ label: roleLabel[item.userRole], variant: "secondary" as const }]
+          : []),
+      ]}
+      modalContent={<PersonaModal item={item} />}
+      modalTitle={`${item.name} ${item.lastname}`}
+      onModalOpen={() => handleAbrirPersona(item.userId)}
+      {...(canDelete && {
+        onDelete: () => handleDelete(item),
+        deleteTitle: isLeader ? "Quitar del departamento" : "Eliminar persona",
+        deleteItemName: `${item.name} ${item.lastname}`,
+      })}
+      {...(canEdit && {
+        editHref: `/app/personas/editar?id=${item.id}`,
+      })}
+    />
+  );
+
+  const visitasSection = visitasSemana.length > 0 ? (
+    <Card className="shadow-md border-slate-200">
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-2.5">
+          <CardTitle>Visitas de la semana</CardTitle>
+          <span className="inline-flex items-center justify-center h-6 min-w-6 px-2 rounded-full bg-primary/10 text-primary text-xs font-bold">
+            {visitasSemana.length}
+          </span>
+        </div>
+        <p className="text-sm text-muted-foreground">Visitantes añadidos esta semana y la anterior</p>
+      </CardHeader>
+      <CardContent>
+        <div className="divide-y divide-slate-100">
+          {visitasSemana.map((item) => (
+            <div key={item.id} className="py-4 first:pt-0 last:pb-0">
+              {renderPersona(item)}
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  ) : null;
+
   return (
     <>
       <PageLayout
@@ -489,6 +571,7 @@ export function PersonasClient({
           { title: "Líderes", value: totalLideres, icon: Users, colorIndex: 3 },
         ]}
         listTitle={isLeader ? "Miembros del departamento" : "Personas"}
+        beforeList={visitasSection}
         fab={
           (isAdmin || isResponsable)
             ? { href: "/app/personas/crear", label: "Nueva persona" }
@@ -501,39 +584,7 @@ export function PersonasClient({
           items={items}
           emptyMessage={isLeader ? "No hay personas en este departamento." : "No hay personas."}
           emptyIconName="Users"
-          renderItem={(item) => (
-            <ListItem
-              avatar={{
-                icon: Users,
-                color: "blue",
-                shape: "circle",
-                badge: item.userId && !leidos.has(item.userId)
-                  ? (notificationsByUser[item.userId] ?? 0)
-                  : 0,
-              }}
-              title={`${item.name} ${item.lastname}`}
-              meta={item.email ? [{ text: item.email }] : []}
-              badges={[
-                ...(item.membershipStatus
-                  ? [{ label: statusLabel[item.membershipStatus] ?? item.membershipStatus, variant: "outline" as const }]
-                  : []),
-                ...(item.userRole && roleLabel[item.userRole]
-                  ? [{ label: roleLabel[item.userRole], variant: "secondary" as const }]
-                  : []),
-              ]}
-              modalContent={<PersonaModal item={item} />}
-              modalTitle={`${item.name} ${item.lastname}`}
-              onModalOpen={() => handleAbrirPersona(item.userId)}
-              {...(canDelete && {
-                onDelete: () => handleDelete(item),
-                deleteTitle: isLeader ? "Quitar del departamento" : "Eliminar persona",
-                deleteItemName: `${item.name} ${item.lastname}`,
-              })}
-              {...(canEdit && {
-                editHref: `/app/personas/editar?id=${item.id}`,
-              })}
-            />
-          )}
+          renderItem={renderPersona}
         />
       </PageLayout>
 

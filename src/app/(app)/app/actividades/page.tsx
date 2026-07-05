@@ -49,7 +49,7 @@ function computeDateStart(range: string): Date | null {
 export default async function ActividadesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ dept?: string; fechaRange?: string }>;
+  searchParams: Promise<{ dept?: string; fechaRange?: string; estado?: string }>;
 }) {
   const session = await getServerSession(authOptions);
 
@@ -98,8 +98,11 @@ export default async function ActividadesPage({
     leaderChurchId = memberships[0]?.department.churchId ?? null;
   }
 
-  const { dept, fechaRange: fechaRangeParam } = await searchParams;
+  const { dept, fechaRange: fechaRangeParam, estado: estadoParam } = await searchParams;
   const activeFechaRange = fechaRangeParam ?? "all";
+  // Por defecto se muestran las actividades por venir; las pasadas son una opción
+  // más del filtro.
+  const activeEstado = estadoParam === "pasadas" ? "pasadas" : "proximas";
 
   if (allDepts.length === 0) {
     const { ActividadesClient } = await import("./components/ActividadesClient");
@@ -112,6 +115,7 @@ export default async function ActividadesPage({
         activeDeptId={null}
         showAllOption={false}
         role={role as "ADMIN" | "RESPONSIBLE" | "LEADER"}
+        activeEstado={activeEstado}
       />
     );
   }
@@ -166,9 +170,13 @@ export default async function ActividadesPage({
   const now = new Date();
 
   const dateStart = computeDateStart(activeFechaRange);
-  const finalWhere = dateStart
-    ? { ...whereClause, hourStart: { gte: dateStart } }
-    : whereClause;
+  // El estado determina el corte temporal: las próximas parten de ahora en
+  // adelante; las pasadas quedan acotadas por el período seleccionado.
+  const hourStartFilter: { gte?: Date; lt?: Date } =
+    activeEstado === "pasadas"
+      ? { lt: now, ...(dateStart ? { gte: dateStart } : {}) }
+      : { gte: now };
+  const finalWhere = { ...whereClause, hourStart: hourStartFilter };
 
   const [actividadesRaw, calendarActividades] = await Promise.all([
     prisma.activity.findMany({
@@ -188,9 +196,10 @@ export default async function ActividadesPage({
       : Promise.resolve([]),
   ]);
 
-  const future = actividadesRaw.filter((a) => a.hourStart >= now).sort((a, b) => a.hourStart.getTime() - b.hourStart.getTime());
-  const past = actividadesRaw.filter((a) => a.hourStart < now).sort((a, b) => b.hourStart.getTime() - a.hourStart.getTime());
-  const actividades = [...future, ...past];
+  const actividades =
+    activeEstado === "pasadas"
+      ? actividadesRaw.sort((a, b) => b.hourStart.getTime() - a.hourStart.getTime())
+      : actividadesRaw.sort((a, b) => a.hourStart.getTime() - b.hourStart.getTime());
 
   const { ActividadesClient } = await import("./components/ActividadesClient");
   return (
@@ -203,6 +212,7 @@ export default async function ActividadesPage({
       showAllOption={showAllOption}
       role={role as "ADMIN" | "RESPONSIBLE" | "LEADER"}
       activeFechaRange={activeFechaRange}
+      activeEstado={activeEstado}
       calendarActividades={calendarActividades.map((a) => ({
         id: a.id,
         title: a.title,
