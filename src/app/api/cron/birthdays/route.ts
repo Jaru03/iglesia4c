@@ -21,6 +21,9 @@ function getMondayUTC(from: Date): Date {
   return d;
 }
 
+// Destinatarios fijos, además de los admins
+const EXTRA_RECIPIENTS = ["miliygiezi@gmail.com"];
+
 const DAY_NAMES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 const MONTH_NAMES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 
@@ -76,6 +79,8 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "No hay admins con email" }, { status: 400 });
   }
 
+  const recipients = Array.from(new Set([...adminEmails, ...EXTRA_RECIPIENTS]));
+
   const mondayLabel = `${monday.getUTCDate()} de ${MONTH_NAMES[monday.getUTCMonth()]}`;
   const sundayLabel = `${weekDays[6].getUTCDate()} de ${MONTH_NAMES[weekDays[6].getUTCMonth()]}`;
   const subject = `🎂 Cumpleaños de la semana — ${mondayLabel} al ${sundayLabel}`;
@@ -101,12 +106,12 @@ export async function GET(req: Request) {
 
     await transporter.sendMail({
       from: EMAIL_FROM,
-      to: adminEmails.join(", "),
+      to: recipients.join(", "),
       subject,
       html: emptyHtml,
     });
 
-    return NextResponse.json({ sent: 0, to: adminEmails, week: `${mondayLabel} – ${sundayLabel}`, message: "No hay cumpleaños esta semana" });
+    return NextResponse.json({ sent: 0, to: recipients, week: `${mondayLabel} – ${sundayLabel}`, message: "No hay cumpleaños esta semana" });
   }
 
   // ── HTML del email ──────────────────────────────────────────────────────────
@@ -176,10 +181,10 @@ export async function GET(req: Request) {
 
   await transporter.sendMail({
     from: EMAIL_FROM,
-    to: adminEmails.join(", "),
+    to: recipients.join(", "),
     subject,
     html,
   });
 
-  return NextResponse.json({ sent: totalCumples, to: adminEmails, week: `${mondayLabel} – ${sundayLabel}` });
+  return NextResponse.json({ sent: totalCumples, to: recipients, week: `${mondayLabel} – ${sundayLabel}` });
 }
