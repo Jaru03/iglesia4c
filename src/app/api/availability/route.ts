@@ -7,7 +7,7 @@ import prisma from "@/utils/prisma";
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
-  if (session.user.role !== "RESPONSIBLE") return NextResponse.json({ error: "Sin permiso" }, { status: 403 });
+  if (!["RESPONSIBLE", "OBRERO"].includes(session.user.role)) return NextResponse.json({ error: "Sin permiso" }, { status: 403 });
 
   const userId = Number(session.user.id);
   const availability = await prisma.availability.findMany({
@@ -22,7 +22,7 @@ export async function GET() {
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
-  if (session.user.role !== "RESPONSIBLE") return NextResponse.json({ error: "Sin permiso" }, { status: 403 });
+  if (!["RESPONSIBLE", "OBRERO"].includes(session.user.role)) return NextResponse.json({ error: "Sin permiso" }, { status: 403 });
 
   const userId = Number(session.user.id);
   const body = await req.json();
@@ -65,7 +65,7 @@ export async function POST(req: Request) {
 export async function DELETE(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
-  if (session.user.role !== "RESPONSIBLE") return NextResponse.json({ error: "Sin permiso" }, { status: 403 });
+  if (!["RESPONSIBLE", "OBRERO"].includes(session.user.role)) return NextResponse.json({ error: "Sin permiso" }, { status: 403 });
 
   const userId = Number(session.user.id);
   const { searchParams } = new URL(req.url);

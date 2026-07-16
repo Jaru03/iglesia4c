@@ -5,6 +5,7 @@ import prisma from "@/utils/prisma";
 import { AppointmentsTable } from "./components/AppointmentsTable";
 import { AgendaFilterDrawer } from "./components/AgendaFilterDrawer";
 import { AvailabilityDrawer } from "./components/AvailabilityDrawer";
+import { ObrerosAvailabilityDrawer } from "./components/ObrerosAvailabilityDrawer";
 import { CalendarDays, Clock, CheckCircle, AlertCircle, CalendarX } from "lucide-react";
 import { PageLayout } from "@/components/dashboard/PageLayout";
 
@@ -17,11 +18,33 @@ export default async function AgendaPage({
 }) {
   const session = await getServerSession(authOptions);
   if (!session?.user) redirect("/login");
-  if (session.user.role !== "RESPONSIBLE") redirect("/app/dashboard");
+  if (!["RESPONSIBLE", "OBRERO"].includes(session.user.role)) redirect("/app/dashboard");
 
   const userId = Number(session.user.id);
+  const role = session.user.role;
   const { status } = await searchParams;
   const selectedStatus = status ?? null;
+
+  // Obreros visibles solo para RESPONSIBLE: los de las iglesias que lidera
+  let obreros: { id: number; name: string }[] = [];
+  if (role === "RESPONSIBLE") {
+    const responsableChurches = await prisma.churchLeader.findMany({
+      where: { userId, role: "RESPONSIBLE" },
+      select: { churchId: true },
+    });
+    const churchIds = responsableChurches.map((c) => c.churchId);
+    if (churchIds.length > 0) {
+      const obrerosRows = await prisma.user.findMany({
+        where: { role: "OBRERO", person: { churchId: { in: churchIds } } },
+        include: { person: { select: { name: true, lastname: true } } },
+        orderBy: { person: { name: "asc" } },
+      });
+      obreros = obrerosRows.map((o) => ({
+        id: o.id,
+        name: `${o.person.name} ${o.person.lastname}`,
+      }));
+    }
+  }
 
   const [availability, appointments] = await Promise.all([
     prisma.availability.findMany({ where: { userId }, orderBy: { dayOfWeek: "asc" } }),
@@ -102,8 +125,11 @@ export default async function AgendaPage({
         )}
       </PageLayout>
 
-      <AgendaFilterDrawer selectedStatus={selectedStatus} />
-      <AvailabilityDrawer initial={availabilityData} />
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col-reverse items-center gap-4">
+        <AvailabilityDrawer initial={availabilityData} />
+        <AgendaFilterDrawer selectedStatus={selectedStatus} />
+        {role === "RESPONSIBLE" && <ObrerosAvailabilityDrawer obreros={obreros} />}
+      </div>
     </>
   );
 }

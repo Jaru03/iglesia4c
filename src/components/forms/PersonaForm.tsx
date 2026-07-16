@@ -85,6 +85,7 @@ interface Persona {
   birthDate: Date | null;
   churchId: number | null;
   isMember?: boolean;
+  isObrero?: boolean;
   membershipStatus?: string;
   departments?: { departmentId: number }[];
 }
@@ -92,6 +93,7 @@ interface Persona {
 interface Department {
   id: number;
   name: string;
+  churchId?: number | null;
 }
 
 interface Church {
@@ -132,9 +134,8 @@ export default function PersonaForm({
   const [membershipStatus, setMembershipStatus] = useState<string>(
     persona?.membershipStatus ?? "VISITOR"
   );
-  const [isMember, setIsMember] = useState<boolean>(
-    persona?.isMember ?? false
-  );
+  const [isMember, setIsMember] = useState<boolean>(persona?.isMember ?? false);
+  const [isObrero, setIsObrero] = useState<boolean>(persona?.isObrero ?? false);
 
   // Campos de visitante (solo Atención Primaria)
   const [arrivedAt, setArrivedAt] = useState<Date | undefined>(new Date());
@@ -146,10 +147,14 @@ export default function PersonaForm({
 
   const selectedChurch = churches.find((c) => String(c.id) === churchId);
 
+  const filteredDepts = churches.length > 0 && churchId
+    ? departments.filter((d) => d.churchId === parseInt(churchId))
+    : departments;
+
   const churchItems = churches.map((c) => c.title);
-  const deptItems = departments.map((d) => d.name);
+  const deptItems = filteredDepts.map((d) => d.name);
   const selectedDeptNames = selectedDepts
-    .map((id) => departments.find((d) => String(d.id) === id)?.name)
+    .map((id) => filteredDepts.find((d) => String(d.id) === id)?.name)
     .filter(Boolean) as string[];
 
   const handleSubmit = async (formData: FormData) => {
@@ -177,6 +182,7 @@ export default function PersonaForm({
 
     formData.set("membershipStatus", membershipStatus);
     formData.set("isMember", String(isMember));
+    formData.set("isObrero", String(isObrero));
 
     formData.delete("departmentIds");
     selectedDepts.forEach((id) => formData.append("departmentIds", id));
@@ -317,6 +323,7 @@ export default function PersonaForm({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                   <Field>
                     <FieldLabel>Estatus</FieldLabel>
+                    <input type="hidden" name="membershipStatus" value={membershipStatus} />
                     <Select value={membershipStatus} onValueChange={setMembershipStatus}>
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar rol..." />
@@ -330,15 +337,27 @@ export default function PersonaForm({
                       </SelectContent>
                     </Select>
                   </Field>
-                  <div className="flex items-center gap-3 pb-1">
-                    <Checkbox
-                      id="isMember"
-                      checked={isMember}
-                      onCheckedChange={(v) => setIsMember(v === true)}
-                    />
-                    <Label htmlFor="isMember" className="cursor-pointer text-sm">
-                      Es miembro
-                    </Label>
+                  <div className="flex flex-col gap-2 pb-1">
+                    <div className="flex items-center gap-3">
+                      <Checkbox
+                        id="isMember"
+                        checked={isMember}
+                        onCheckedChange={(v) => setIsMember(v === true)}
+                      />
+                      <Label htmlFor="isMember" className="cursor-pointer text-sm">
+                        Es miembro
+                      </Label>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Checkbox
+                        id="isObrero"
+                        checked={isObrero}
+                        onCheckedChange={(v) => setIsObrero(v === true)}
+                      />
+                      <Label htmlFor="isObrero" className="cursor-pointer text-sm">
+                        Es obrero
+                      </Label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -389,6 +408,7 @@ export default function PersonaForm({
                         onValueChange={(value) => {
                           const church = churches.find((c) => c.title === value);
                           setChurchId(church ? String(church.id) : "");
+                          setSelectedDepts([]);
                         }}
                         items={churchItems}
                       >
@@ -407,6 +427,7 @@ export default function PersonaForm({
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setChurchId("");
+                                setSelectedDepts([]);
                               }}
                               className="mr-1 size-4 rounded-full hover:bg-muted inline-flex items-center justify-center"
                             >
@@ -435,6 +456,7 @@ export default function PersonaForm({
                     <Field>
                       <FieldLabel>Departamentos</FieldLabel>
                       <Combobox
+                        key={churchId || "all"}
                         multiple
                         autoHighlight
                         items={deptItems}
@@ -442,7 +464,7 @@ export default function PersonaForm({
                         onValueChange={(values) => {
                           const ids = (values as string[])
                             .map((name) => {
-                              const dept = departments.find((d) => d.name === name);
+                              const dept = filteredDepts.find((d) => d.name === name);
                               return dept ? String(dept.id) : null;
                             })
                             .filter(Boolean) as string[];

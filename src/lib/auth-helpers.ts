@@ -3,7 +3,122 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/prisma";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import type { Session } from "next-auth";
+
+// ─── Credentials login (shared by NextAuth web login + mobile login) ──────
+
+export type AuthenticatedPerson = {
+  id: string;
+  email: string | null;
+  role: string;
+  name: string;
+  churchId: number | null;
+  churchTitle: string | null;
+  departmentId: number | null;
+  departmentName: string | null;
+};
+
+/**
+ * Looks up a Person by email, phone or document (DNI) and verifies the
+ * password of their linked User account. Returns null on any mismatch or
+ * error so callers (NextAuth's authorize(), the mobile login route) can
+ * treat every failure as "invalid credentials" without leaking which part
+ * failed.
+ */
+export async function authenticatePerson(
+  identifier: string,
+  password: string
+): Promise<AuthenticatedPerson | null> {
+  const input = identifier?.trim();
+  if (!input || !password) return null;
+
+  try {
+    const person = await prisma.person.findFirst({
+      where: {
+        OR: [{ email: input.toLowerCase() }, { phone: input }, { document: input }],
+      },
+      include: { user: true },
+    });
+
+    if (!person?.user) return null;
+
+    const isValidPassword = await bcrypt.compare(password, person.user.password);
+    if (!isValidPassword) return null;
+
+    const user = person.user;
+
+    let churchId: number | null = null;
+    let churchTitle: string | null = null;
+    let departmentId: number | null = null;
+    let departmentName: string | null = null;
+
+    if (user.role === "RESPONSIBLE" || user.role === "ADMIN") {
+      const whereClause: any = { userId: user.id };
+      if (user.role === "RESPONSIBLE") whereClause.role = "RESPONSIBLE";
+
+      const churchLeader = await prisma.churchLeader.findFirst({
+        where: whereClause,
+        include: { church: { select: { title: true } } },
+      });
+      churchId = churchLeader?.churchId ?? null;
+      churchTitle = churchLeader?.church?.title ?? null;
+    }
+
+    if (user.role === "LEADER") {
+      const deptMembership = await prisma.departmentMember.findFirst({
+        where: { userId: user.id, roleInDept: "LEADER", active: true },
+        include: { department: { select: { id: true, name: true } } },
+      });
+      departmentId = deptMembership?.departmentId ?? null;
+      departmentName = deptMembership?.department?.name ?? null;
+    }
+
+    return {
+      id: user.id.toString(),
+      email: person.email,
+      role: user.role,
+      name: `${person.name} ${person.lastname}`,
+      churchId,
+      churchTitle,
+      departmentId,
+      departmentName,
+    };
+  } catch (error) {
+    console.error("[AUTH] Error al autenticar:", error);
+    return null;
+  }
+}
+
+const PERSON_MANAGE_ROLES = ["ADMIN", "RESPONSIBLE", "LEADER"];
+
+async function isAtencionPrimariaMember(userId: number): Promise<boolean> {
+  const person = await prisma.person.findFirst({
+    where: { user: { id: userId } },
+    select: { id: true, churchId: true },
+  });
+  if (!person?.churchId) return false;
+  const dept = await prisma.department.findFirst({
+    where: { churchId: person.churchId, name: { contains: "Atención Primaria", mode: "insensitive" } },
+  });
+  if (!dept) return false;
+  const membership = await prisma.personDepartment.findFirst({
+    where: { personId: person.id, departmentId: dept.id, active: true },
+  });
+  return !!membership;
+}
+
+/**
+ * ADMIN/RESPONSIBLE/LEADER can always create Person records; anyone else
+ * needs to be an active member of their church's "Atención Primaria"
+ * department (visitor intake). Shared by the crearPersona server action and
+ * the mobile POST /api/personas route.
+ */
+export async function canCreatePersons(userId: number, role: string): Promise<boolean> {
+  if (PERSON_MANAGE_ROLES.includes(role)) return true;
+  return isAtencionPrimariaMember(userId);
+}
 
 // ─── Page helpers (redirect on fail) ───────────────────────────────────────
 
@@ -84,6 +199,42 @@ export async function requireApiAuth(allowedRoles?: string[]): Promise<ApiAuthRe
   return { ok: true, user: session.user };
 }
 
+export type MobileAuthenticatedUser = AuthenticatedPerson & { canCreatePersons: boolean };
+
+type MobileApiAuthResult =
+  | { ok: true; user: MobileAuthenticatedUser }
+  | { ok: false; response: NextResponse };
+
+/**
+ * Like requireApiAuth, but for non-browser clients (e.g. the Expo app) that
+ * send the JWT from POST /api/auth/mobile-login as `Authorization: Bearer <token>`
+ * instead of a NextAuth session cookie.
+ *
+ * @example
+ * const auth = requireMobileAuth(req, ["ADMIN"]);
+ * if (!auth.ok) return auth.response;
+ */
+export function requireMobileAuth(req: Request, allowedRoles?: string[]): MobileApiAuthResult {
+  const authHeader = req.headers.get("authorization");
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  if (!token) {
+    return { ok: false, response: NextResponse.json({ error: "No autenticado" }, { status: 401 }) };
+  }
+
+  try {
+    const user = jwt.verify(token, process.env.NEXTAUTH_SECRET!) as MobileAuthenticatedUser;
+    if (allowedRoles && !allowedRoles.includes(user.role)) {
+      return { ok: false, response: NextResponse.json({ error: "Sin permisos" }, { status: 403 }) };
+    }
+    return { ok: true, user };
+  } catch {
+    return {
+      ok: false,
+      response: NextResponse.json({ error: "Token inválido o expirado" }, { status: 401 }),
+    };
+  }
+}
+
 // ─── Resource-level authorization ─────────────────────────────────────────
 
 /**
@@ -110,14 +261,22 @@ export async function canManageDepartment(
 
   if (user.role === "LEADER") {
     const membership = await prisma.departmentMember.findFirst({
-      where: {
-        userId: Number(user.id),
-        departmentId,
-        roleInDept: "LEADER",
-        active: true,
-      },
+      where: { userId: Number(user.id), departmentId, roleInDept: "LEADER", active: true },
     });
-    return !!membership;
+    if (membership) return true;
+
+    // Also check PersonDepartment (leader assigned via person, not user)
+    const userRecord = await prisma.user.findUnique({
+      where: { id: Number(user.id) },
+      select: { person: { select: { id: true } } },
+    });
+    if (userRecord?.person) {
+      const pdLeader = await prisma.personDepartment.findFirst({
+        where: { personId: userRecord.person.id, departmentId, roleInDept: "LEADER" },
+      });
+      return !!pdLeader;
+    }
+    return false;
   }
 
   return false;

@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next"
 import Activity from "@/components/Activity"
 import CalendarActivities from "@/app/actividades/components/CalendarApp"
 import dayjs from "dayjs"
@@ -7,6 +8,21 @@ import { CallToAction } from "@/components/CallToAction"
 import { HeroTitle } from "@/components/typography/HeroTitle"
 import { Subtitle } from "@/components/typography/Subtitle"
 import prisma from "@/utils/prisma"
+
+export const metadata: Metadata = {
+  title: "Actividades y Cultos | Casa de Dios Madrid",
+  description:
+    "Horarios de cultos, conferencias, retiros y actividades de la iglesia Casa de Dios en Madrid. Consulta el calendario y únete a nuestra comunidad cristiana.",
+  alternates: { canonical: "/actividades" },
+  openGraph: {
+    title: "Actividades y Cultos | Casa de Dios Madrid",
+    description:
+      "Calendario de cultos, conferencias y actividades de la iglesia cristiana Casa de Dios en Madrid.",
+    url: "/actividades",
+    type: "website",
+    images: ["/actividades-banner.jpg"],
+  },
+}
 
 const page = async () => {
   const now = new Date()
@@ -18,7 +34,7 @@ const page = async () => {
       select: { id: true, title: true, hourStart: true, hourEnd: true, place: true, description: true },
     }),
     prisma.activity.findMany({
-      where: { isCulto: false, hourStart: { gte: now } },
+      where: { isCulto: false, showCalendar: true, hourStart: { gte: now } },
       orderBy: { hourStart: "asc" },
       take: 10,
       select: { id: true, title: true, description: true, hourStart: true, img: true, place: true },

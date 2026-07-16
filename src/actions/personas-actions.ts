@@ -2,7 +2,7 @@
 
 import prisma from "@/utils/prisma";
 import { revalidatePath } from "next/cache";
-import { getSessionUser, canManagePerson } from "@/lib/auth-helpers";
+import { getSessionUser, canManagePerson, canCreatePersons } from "@/lib/auth-helpers";
 
 const MANAGE_ROLES = ["ADMIN", "RESPONSIBLE", "LEADER"];
 const ADMIN_RESPONSIBLE = ["ADMIN", "RESPONSIBLE"];
@@ -34,6 +34,24 @@ async function updateMembershipStatus(personId: number) {
       where: { id: personId },
       data: { membershipStatus: newStatus },
     });
+  }
+}
+
+// Roles que no deben ser degradados al asignar/quitar obrero
+const PROTECTED_ROLES = ["ADMIN", "RESPONSIBLE", "LEADER"];
+
+async function syncObreroRole(personId: number, isObrero: boolean) {
+  const person = await prisma.person.findUnique({
+    where: { id: personId },
+    select: { user: { select: { id: true, role: true } } },
+  });
+  const userRecord = person?.user;
+  if (!userRecord) return; // sin cuenta, nada que hacer
+
+  if (isObrero && !PROTECTED_ROLES.includes(userRecord.role)) {
+    await prisma.user.update({ where: { id: userRecord.id }, data: { role: "OBRERO" } });
+  } else if (!isObrero && userRecord.role === "OBRERO") {
+    await prisma.user.update({ where: { id: userRecord.id }, data: { role: "USER" } });
   }
 }
 
@@ -101,7 +119,10 @@ export async function recalculateAllMembershipStatus() {
 export async function crearPersona(formData: FormData) {
   const user = await getSessionUser();
   if (!user) return { error: "No autenticado" };
-  if (!MANAGE_ROLES.includes(user.role)) return { error: "Sin permisos" };
+
+  const canCreate = await canCreatePersons(parseInt(user.id as string), user.role);
+
+  if (!canCreate) return { error: "Sin permisos" };
 
   const name = formData.get("name")?.toString().trim();
   const lastname = formData.get("lastname")?.toString().trim();
@@ -118,6 +139,7 @@ export async function crearPersona(formData: FormData) {
     ? membershipStatusRaw
     : "VISITOR") as "VISITOR" | "ACTIVE" | "INACTIVE";
   const isMember = formData.get("isMember") === "true";
+  const isObrero = formData.get("isObrero") === "true";
 
   const arrivedAtStr = formData.get("arrivedAt")?.toString().trim();
   const attendsChurchStr = formData.get("attendsChurch")?.toString();
@@ -147,6 +169,7 @@ export async function crearPersona(formData: FormData) {
         active: true,
         membershipStatus,
         isMember,
+        isObrero,
         arrivedAt: arrivedAtStr ? new Date(arrivedAtStr) : null,
         attendsChurch: attendsChurchStr === "true" ? true : attendsChurchStr === "false" ? false : null,
         howDidYouMeetUs: howDidYouMeetUs || null,
@@ -161,7 +184,7 @@ export async function crearPersona(formData: FormData) {
       },
     });
 
-    await updateMembershipStatus(newPerson.id);
+    await syncObreroRole(newPerson.id, isObrero);
 
     revalidatePath("/app/personas");
     revalidatePath("/app/dashboard");
@@ -195,6 +218,8 @@ export async function actualizarPersona(id: number, formData: FormData) {
     : undefined) as "VISITOR" | "ACTIVE" | "INACTIVE" | undefined;
   const isMemberRaw = formData.get("isMember");
   const isMember = isMemberRaw !== null ? isMemberRaw === "true" : undefined;
+  const isObreroRaw = formData.get("isObrero");
+  const isObrero = isObreroRaw !== null ? isObreroRaw === "true" : undefined;
 
   if (!name) return { error: "El nombre es obligatorio." };
   if (!lastname) return { error: "Los apellidos son obligatorios." };
@@ -213,6 +238,7 @@ export async function actualizarPersona(id: number, formData: FormData) {
           church: churchId ? { connect: { id: churchId } } : { disconnect: true },
           ...(membershipStatus !== undefined && { membershipStatus }),
           ...(isMember !== undefined && { isMember }),
+          ...(isObrero !== undefined && { isObrero }),
         },
       }),
       prisma.personDepartment.deleteMany({ where: { personId: id } }),
@@ -228,7 +254,7 @@ export async function actualizarPersona(id: number, formData: FormData) {
     revalidatePath("/app/personas");
     revalidatePath("/app/dashboard");
 
-    await updateMembershipStatus(id);
+    if (isObrero !== undefined) await syncObreroRole(id, isObrero);
     return { success: "Persona actualizada correctamente." };
   } catch (error) {
     console.error(error);

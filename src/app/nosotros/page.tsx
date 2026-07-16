@@ -1,6 +1,21 @@
+import type { Metadata } from "next"
 import { CallToAction } from "@/components/CallToAction"
 import HowItStarted from "./components/HowItStarted"
 import Departaments from "./components/Departaments"
+
+export const metadata: Metadata = {
+  title: "Nosotros | Quiénes somos - Casa de Dios Madrid",
+  description:
+    "Conoce la historia, visión y departamentos de la Comunidad Cristiana Casa de Dios: una iglesia cristiana evangélica en Madrid comprometida con transformar vidas a través del evangelio.",
+  alternates: { canonical: "/nosotros" },
+  openGraph: {
+    title: "Nosotros | Casa de Dios Madrid",
+    description:
+      "Historia, visión y ministerios de Casa de Dios, iglesia cristiana en Madrid.",
+    url: "/nosotros",
+    type: "website",
+  },
+}
 
 const page = () => {
     return (

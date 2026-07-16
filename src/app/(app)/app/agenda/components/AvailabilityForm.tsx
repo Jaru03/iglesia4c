@@ -62,6 +62,7 @@ interface Props {
   /** Override the base URL for availability API calls. Defaults to /api/availability */
   apiBase?: string;
   defaultOpen?: boolean;
+  readOnly?: boolean;
 }
 
 // ─── Mini-calendario de previsualización ─────────────────────────────────────
@@ -147,7 +148,7 @@ function AvailabilityCalendar({ enabledDays }: { enabledDays: number[] }) {
 
 // ─── Formulario principal ─────────────────────────────────────────────────────
 
-export function AvailabilityForm({ initial, apiBase = "/api/availability", defaultOpen = false }: Props) {
+export function AvailabilityForm({ initial, apiBase = "/api/availability", defaultOpen = false, readOnly = false }: Props) {
   const [open, setOpen] = useState(defaultOpen);
 
   const initialConfig = Object.fromEntries(
@@ -300,6 +301,7 @@ export function AvailabilityForm({ initial, apiBase = "/api/availability", defau
                           id={`day-${value}`}
                           checked={enabled}
                           onCheckedChange={(v) => setDayField(value, "enabled", !!v)}
+                          disabled={readOnly}
                         />
                         <Label
                           htmlFor={`day-${value}`}
@@ -329,6 +331,7 @@ export function AvailabilityForm({ initial, apiBase = "/api/availability", defau
                                 onChange={(v) => setRange(value, rangeIdx, "startTime", v ?? "")}
                                 minuteStep={15}
                                 className="h-8 w-28 text-sm"
+                                disabled={readOnly}
                               />
                               <span className="text-muted-foreground text-xs">a</span>
                               <TimePicker
@@ -336,9 +339,10 @@ export function AvailabilityForm({ initial, apiBase = "/api/availability", defau
                                 onChange={(v) => setRange(value, rangeIdx, "endTime", v ?? "")}
                                 minuteStep={15}
                                 className="h-8 w-28 text-sm"
+                                disabled={readOnly}
                               />
                               {/* Botón quitar segunda franja */}
-                              {rangeIdx === 1 && (
+                              {rangeIdx === 1 && !readOnly && (
                                 <button
                                   type="button"
                                   onClick={() => removeSecondRange(value)}
@@ -351,7 +355,7 @@ export function AvailabilityForm({ initial, apiBase = "/api/availability", defau
                           ))}
 
                           {/* Botón agregar segunda franja */}
-                          {!hasTwoRanges && (
+                          {!hasTwoRanges && !readOnly && (
                             <button
                               type="button"
                               onClick={() => addSecondRange(value)}
@@ -368,6 +372,7 @@ export function AvailabilityForm({ initial, apiBase = "/api/availability", defau
                             <Select
                               value={String(slotDuration)}
                               onValueChange={(v) => setDayField(value, "slotDuration", Number(v))}
+                              disabled={readOnly}
                             >
                               <SelectTrigger className="h-8 w-28 text-sm">
                                 <SelectValue />
@@ -392,12 +397,14 @@ export function AvailabilityForm({ initial, apiBase = "/api/availability", defau
               <AvailabilityCalendar enabledDays={enabledDayValues} />
             </div>
 
-            <div className="flex justify-end">
-              <Button onClick={handleSave} disabled={saving} className="gap-2">
-                <Save className="h-4 w-4" />
-                {saving ? "Guardando..." : "Guardar disponibilidad"}
-              </Button>
-            </div>
+            {!readOnly && (
+              <div className="flex justify-end">
+                <Button onClick={handleSave} disabled={saving} className="gap-2">
+                  <Save className="h-4 w-4" />
+                  {saving ? "Guardando..." : "Guardar disponibilidad"}
+                </Button>
+              </div>
+            )}
           </div>
         </CardContent>
       )}

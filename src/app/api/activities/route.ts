@@ -6,7 +6,7 @@ import { requireApiAuth } from "@/lib/auth-helpers";
 export async function GET() {
   try {
     const activities = await prisma.activity.findMany({
-      where: { isCulto: false, hourStart: { gte: new Date() } },
+      where: { isCulto: false, showCalendar: true, hourStart: { gte: new Date() } },
       orderBy: { hourStart: "asc" },
       take: 3,
     });

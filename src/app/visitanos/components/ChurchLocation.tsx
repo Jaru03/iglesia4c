@@ -143,25 +143,30 @@ const ChurchLocation = ({ info }: Props) => {
             <div className="flex items-start gap-3">
               <Users className="w-5 h-5 text-primary-3 shrink-0 mt-1" />
               <div className="flex-1">
-                <span className="font-semibold text-primary-3">Responsables:</span>
+                <span className="font-semibold text-primary-3">{info.leaderLabel}:</span>
                 <div className="flex gap-3 mt-2">
                   {info?.pastors.map((pastor) =>
                     pastor.img !== "" ? (
                       <Tooltip key={pastor.nombre}>
                         <TooltipTrigger asChild>
-                          <Avatar className="w-14 h-14 cursor-pointer ring-2 ring-primary-3/20 hover:ring-primary-3 transition-all">
-                            <AvatarImage
-                              src={pastor.img}
-                              alt={pastor.nombre}
-                              className="object-cover"
-                            />
-                            <AvatarFallback>
-                              {pastor.nombre
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </AvatarFallback>
-                          </Avatar>
+                          <div className="flex flex-col items-center gap-1 cursor-pointer">
+                            <Avatar className="w-14 h-14 ring-2 ring-primary-3/20 hover:ring-primary-3 transition-all">
+                              <AvatarImage
+                                src={pastor.img}
+                                alt={pastor.nombre}
+                                className="object-cover"
+                              />
+                              <AvatarFallback>
+                                {pastor.nombre
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="text-xs text-gray-600 text-center max-w-[64px] leading-tight md:hidden">
+                              {pastor.nombre.split(" ")[0]}
+                            </span>
+                          </div>
                         </TooltipTrigger>
                         <TooltipContent side="top" sideOffset={4}>
                           <p className="text-sm font-medium">{pastor.nombre}</p>

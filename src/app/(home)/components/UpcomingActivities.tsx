@@ -68,7 +68,7 @@ const UpcomingActivities = () => {
                 description={activity.description || "Te esperamos."}
                 place={activity.place}
                 // Usamos dayjs para formatear la hora (ej: 18:30)
-                hour={dayjs(activity.hourStart).format('HH:mm')} 
+                hour={`${String(new Date(activity.hourStart).getUTCHours()).padStart(2, '0')}:${String(new Date(activity.hourStart).getUTCMinutes()).padStart(2, '0')}`}
                 image={activity.img || "/images/placeholder-evento.jpg"}
                 title={activity.title}
               />

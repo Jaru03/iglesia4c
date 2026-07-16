@@ -13,6 +13,8 @@ interface ImageUploadProps {
   maxSizeMb?: number
   className?: string
   defaultImage?: string
+  /** Clase de altura del área de subida/vista previa (por defecto h-40) */
+  heightClassName?: string
 }
 
 function ImageUpload({
@@ -22,6 +24,7 @@ function ImageUpload({
   maxSizeMb = 5,
   className,
   defaultImage,
+  heightClassName = "h-40",
 }: ImageUploadProps) {
   const [preview, setPreview] = React.useState<string | null>(defaultImage || null)
   const [isDragging, setIsDragging] = React.useState(false)
@@ -87,7 +90,7 @@ function ImageUpload({
           <img
             src={preview}
             alt="Vista previa"
-            className="h-40 w-full object-cover"
+            className={cn("w-full object-cover", heightClassName)}
           />
           <Button
             type="button"
@@ -111,7 +114,8 @@ function ImageUpload({
           onDragLeave={() => setIsDragging(false)}
           onDrop={handleDrop}
           className={cn(
-            "flex h-40 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed transition-colors",
+            "flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed transition-colors",
+            heightClassName,
             isDragging
               ? "border-primary bg-primary/5"
               : "border-border hover:border-muted-foreground/40 hover:bg-accent/50",

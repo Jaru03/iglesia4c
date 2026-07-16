@@ -5,6 +5,7 @@ import {
   Church,
   ClipboardCheck,
   Home,
+  Images,
   Megaphone,
   MessageSquare,
   User,
@@ -20,6 +21,7 @@ export type NavItem = {
   icon: LucideIcon;
   exact?: boolean;
   roles: Role[];
+  badge?: number;
 };
 
 export type NavSection = {
@@ -32,6 +34,7 @@ export const dashboardNav: NavItem[] = [
 
   // Admin only
   { href: "/app/iglesias", label: "Iglesias", icon: Church, roles: ["ADMIN"] },
+  { href: "/app/ultimas-actividades", label: "Últimas Actividades", icon: Images, roles: ["ADMIN"] },
 
   // Admin, Responsable & Leader
   { href: "/app/departamentos", label: "Departamentos", icon: Megaphone, roles: ["ADMIN", "RESPONSIBLE", "LEADER"] },
@@ -46,10 +49,10 @@ export const dashboardNav: NavItem[] = [
 
   // Responsable only
   { href: "/app/iglesia", label: "Mi Iglesia", icon: Church, roles: ["RESPONSIBLE"] },
-  { href: "/app/agenda", label: "Mi Agenda", icon: CalendarCheck, roles: ["RESPONSIBLE"] },
+  { href: "/app/agenda", label: "Mi Agenda", icon: CalendarCheck, roles: ["RESPONSIBLE", "OBRERO"] },
 
   // Todos los usuarios autenticados
-  { href: "/app/citas", label: "Citas", icon: CalendarCheck, roles: ["ADMIN", "LEADER", "OBRERO", "USER"] },
+  { href: "/app/citas", label: "Citas", icon: CalendarCheck, roles: ["ADMIN", "LEADER", "USER"] },
   { href: "/app/mi-disponibilidad", label: "Mi Disponibilidad", icon: CalendarCheck, roles: ["LEADER", "RESPONSIBLE", "USER", "OBRERO"] },
 
   // Atención Primaria only

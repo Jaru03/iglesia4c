@@ -24,33 +24,51 @@ export default async function NuevaCitaPage() {
 
   const churchId = userWithChurch?.person.churchId;
 
-  const responsables = churchId
-    ? await prisma.churchLeader.findMany({
-        where: { churchId, role: "RESPONSIBLE" },
-        include: {
-          user: {
-            include: {
-              person: { select: { name: true, lastname: true } },
-              availability: true,
+  const [responsablesRows, obrerosRows] = churchId
+    ? await Promise.all([
+        prisma.churchLeader.findMany({
+          where: { churchId, role: "RESPONSIBLE" },
+          include: {
+            user: {
+              include: {
+                person: { select: { name: true, lastname: true } },
+                availability: true,
+              },
             },
           },
-        },
-      })
-    : [];
+        }),
+        prisma.user.findMany({
+          where: { role: "OBRERO", person: { churchId } },
+          include: {
+            person: { select: { name: true, lastname: true } },
+            availability: true,
+          },
+        }),
+      ])
+    : [[], []];
 
-  const responsablesConDisponibilidad = responsables
-    .filter((r) => r.user.availability.length > 0)
-    .map((r) => ({
-      id: r.user.id,
-      name: `${r.user.person.name} ${r.user.person.lastname}`,
-      availableDays: r.user.availability.map((a) => a.dayOfWeek),
-    }));
+  const responsablesConDisponibilidad = [
+    ...responsablesRows
+      .filter((r) => r.user.availability.length > 0)
+      .map((r) => ({
+        id: r.user.id,
+        name: `${r.user.person.name} ${r.user.person.lastname}`,
+        availableDays: r.user.availability.map((a) => a.dayOfWeek),
+      })),
+    ...obrerosRows
+      .filter((o) => o.availability.length > 0)
+      .map((o) => ({
+        id: o.id,
+        name: `${o.person.name} ${o.person.lastname}`,
+        availableDays: o.availability.map((a) => a.dayOfWeek),
+      })),
+  ];
 
   return (
     <div className="max-w-7xl mx-auto p-4 pb-6 space-y-4 h-[100vh] overflow-auto">
       <DashboardHeader
         title="Nueva cita"
-        subtitle="Reserva un tiempo con el responsable de tu iglesia."
+        subtitle="Reserva un tiempo con un responsable u obrero de tu iglesia."
         action={
           <Link
             href="/app/citas"
@@ -69,15 +87,11 @@ export default async function NuevaCitaPage() {
             Sin disponibilidad configurada
           </p>
           <p className="text-xs text-muted-foreground/70 mt-1 max-w-xs">
-            El responsable de tu iglesia aún no ha configurado su disponibilidad para citas.
+            Ningún responsable u obrero de tu iglesia ha configurado su disponibilidad aún.
           </p>
         </div>
       ) : (
-        <div className="space-y-6">
-          {responsablesConDisponibilidad.map((r) => (
-            <BookingForm key={r.id} responsable={r} />
-          ))}
-        </div>
+        <BookingForm responsables={responsablesConDisponibilidad} />
       )}
     </div>
   );

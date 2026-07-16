@@ -32,14 +32,19 @@ interface Props {
 
 export function PeticionesClient({ items, total, pendientes, enProceso, atendidas }: Props) {
   const [filtrosOpen, setFiltrosOpen] = useState(false);
-  const [filtros, setFiltros] = useState<{ status: string | null }>({ status: null });
+  // Por defecto se muestran las peticiones pendientes y en proceso; las atendidas
+  // son una opción más del filtro.
+  const [filtros, setFiltros] = useState<{ status: string }>({ status: "activas" });
 
   const itemsFiltrados = useMemo(() => {
-    if (!filtros.status) return items;
+    if (filtros.status === "all") return items;
+    if (filtros.status === "activas") {
+      return items.filter((i) => i.status === "PENDIENTE" || i.status === "EN_PROCESO");
+    }
     return items.filter((i) => i.status === filtros.status);
   }, [items, filtros]);
 
-  const hasActiveFiltro = filtros.status !== null;
+  const hasActiveFiltro = filtros.status !== "activas";
 
   return (
     <>
@@ -94,19 +99,18 @@ export function PeticionesClient({ items, total, pendientes, enProceso, atendida
             <div className="space-y-2">
               <Label className="text-sm font-medium">Estado</Label>
               <Select
-                value={filtros.status ?? "all"}
-                onValueChange={(v) =>
-                  setFiltros({ status: v === "all" ? null : v })
-                }
+                value={filtros.status}
+                onValueChange={(v) => setFiltros({ status: v })}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas</SelectItem>
+                  <SelectItem value="activas">Pendientes y en proceso</SelectItem>
                   <SelectItem value="PENDIENTE">Pendiente</SelectItem>
                   <SelectItem value="EN_PROCESO">En proceso</SelectItem>
                   <SelectItem value="ATENDIDA">Atendida</SelectItem>
+                  <SelectItem value="all">Todas</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -117,7 +121,7 @@ export function PeticionesClient({ items, total, pendientes, enProceso, atendida
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => setFiltros({ status: null })}
+                onClick={() => setFiltros({ status: "activas" })}
               >
                 Limpiar filtros
               </Button>

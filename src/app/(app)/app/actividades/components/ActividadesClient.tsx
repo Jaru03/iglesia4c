@@ -55,6 +55,17 @@ interface DeptTab {
   isGrouped: boolean;
 }
 
+const DATE_RANGE_OPTIONS = [
+  { label: "Todo", value: "all" },
+  { label: "Hoy", value: "1d" },
+  { label: "1 semana", value: "1w" },
+  { label: "1 mes", value: "1m" },
+  { label: "2 meses", value: "2m" },
+  { label: "3 meses", value: "3m" },
+  { label: "6 meses", value: "6m" },
+  { label: "1 año", value: "1y" },
+];
+
 type Role = "ADMIN" | "RESPONSIBLE" | "LEADER";
 
 interface Props {
@@ -66,6 +77,8 @@ interface Props {
   showAllOption?: boolean;
   role: Role;
   calendarActividades?: CalendarActividad[];
+  activeFechaRange?: string;
+  activeEstado?: string;
 }
 
 // ─── Calendario de actividades ────────────────────────────────────────────────
@@ -239,7 +252,7 @@ function ActivitiesCalendar({ activities }: { activities: CalendarActividad[] })
                         <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3 shrink-0" />
-                            {format(new Date(a.hourStart), "HH:mm")} – {format(new Date(a.hourEnd), "HH:mm")}
+                            {a.hourStart.slice(11,16)} – {a.hourEnd.slice(11,16)}
                           </span>
                           <span className="flex items-center gap-1">
                             <MapPin className="h-3 w-3 shrink-0" />
@@ -275,6 +288,8 @@ export function ActividadesClient({
   showAllOption = false,
   role,
   calendarActividades = [],
+  activeFechaRange = "all",
+  activeEstado = "proximas",
 }: Props) {
   const router = useRouter();
   const isLeader = role === "LEADER";
@@ -283,16 +298,24 @@ export function ActividadesClient({
   const [view, setView] = useState<"list" | "calendar">("list");
   const [filtrosOpen, setFiltrosOpen] = useState(false);
 
+  const isPasadas = activeEstado === "pasadas";
+
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
+  const DAY_MS = 86400000;
+  const within = (days: number) =>
+    actividades.filter(
+      (a) => Math.abs(new Date(a.hourStart).getTime() - now.getTime()) <= days * DAY_MS
+    ).length;
+
   const hoy = actividades.filter(
     (a) => new Date(a.hourStart) >= today && new Date(a.hourStart) < tomorrow
   ).length;
-  const proximas = actividades.filter((a) => new Date(a.hourStart) > now).length;
-  const pasadas = actividades.filter((a) => new Date(a.hourStart) < now).length;
+  const semana = within(7);
+  const mes = within(30);
 
   const showDeptFilter = showAllOption || allDepts.length > 1;
   const hasFab = canEdit && view === "list";
@@ -300,8 +323,10 @@ export function ActividadesClient({
 
   // Count active filters
   const filtroCount = [
-    showDeptFilter && activeDeptId !== -1 ? activeDeptId : null,
-    isLeader && view === "calendar" ? true : null,
+    showDeptFilter && activeDeptId !== -1 ? 1 : null,
+    isPasadas ? 1 : null,
+    isPasadas && activeFechaRange !== "all" ? 1 : null,
+    isLeader && view === "calendar" ? 1 : null,
   ].filter(Boolean).length;
 
   const currentDeptValue = activeDeptId === -1 || activeDeptId === null ? "all" : activeDeptId.toString();
@@ -310,13 +335,17 @@ export function ActividadesClient({
     <>
       <PageLayout
         title="Actividades"
-        subtitle={view === "calendar" ? "Vista de calendario — todas las actividades de la iglesia" : departmentName}
+        subtitle={
+          view === "calendar"
+            ? "Vista de calendario — todas las actividades de la iglesia"
+            : `${departmentName} · ${isPasadas ? "Pasadas" : "Por venir"}`
+        }
         statsColumns={4}
         stats={[
           { title: "Total", value: actividades.length, icon: Activity, colorIndex: 0 },
           { title: "Hoy", value: hoy, icon: Calendar, colorIndex: 1 },
-          { title: "Próximas", value: proximas, icon: Calendar, colorIndex: 2 },
-          { title: "Pasadas", value: pasadas, icon: Calendar, colorIndex: 3 },
+          { title: "Esta semana", value: semana, icon: Calendar, colorIndex: 2 },
+          { title: "Este mes", value: mes, icon: Calendar, colorIndex: 3 },
         ]}
         listTitle={view === "calendar" ? "Calendario de actividades" : "Lista de Actividades"}
         fab={
@@ -335,7 +364,7 @@ export function ActividadesClient({
         ) : (
           <ResourceList
             items={actividades}
-            emptyMessage="No hay actividades registradas."
+            emptyMessage={isPasadas ? "No hay actividades pasadas." : "No hay actividades por venir."}
             emptyIconName="Activity"
             renderItem={(actividad) => (
               <ListItem
@@ -348,6 +377,7 @@ export function ActividadesClient({
                     text: new Date(actividad.hourStart).toLocaleString("es-ES", {
                       dateStyle: "medium",
                       timeStyle: "short",
+                      timeZone: "UTC",
                     }),
                   },
                 ]}
@@ -372,10 +402,12 @@ export function ActividadesClient({
                           {new Date(actividad.hourStart).toLocaleString("es-ES", {
                             dateStyle: "long",
                             timeStyle: "short",
+                            timeZone: "UTC",
                           })}
                           {" – "}
                           {new Date(actividad.hourEnd).toLocaleString("es-ES", {
                             timeStyle: "short",
+                            timeZone: "UTC",
                           })}
                         </span>
                       </div>
@@ -432,6 +464,24 @@ export function ActividadesClient({
           </SheetHeader>
 
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+            {/* Mostrar — por venir / pasadas */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Mostrar</Label>
+              <Select
+                value={activeEstado}
+                onValueChange={(v) => {
+                  router.push(`/app/actividades?dept=${currentDeptValue}&fechaRange=${activeFechaRange}&estado=${v}`);
+                  setFiltrosOpen(false);
+                }}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="proximas">Por venir</SelectItem>
+                  <SelectItem value="pasadas">Pasadas</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Departamento */}
             {showDeptFilter && (
               <div className="space-y-2">
@@ -439,7 +489,7 @@ export function ActividadesClient({
                 <Select
                   value={currentDeptValue}
                   onValueChange={(v) => {
-                    router.push(`/app/actividades?dept=${v}`);
+                    router.push(`/app/actividades?dept=${v}&fechaRange=${activeFechaRange}&estado=${activeEstado}`);
                     setFiltrosOpen(false);
                   }}
                 >
@@ -451,6 +501,27 @@ export function ActividadesClient({
                         {d.name}
                         {d.isGrouped && ` (×${d.departmentIds.length})`}
                       </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* Período — sólo aplica a las actividades pasadas */}
+            {isPasadas && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Período</Label>
+                <Select
+                  value={activeFechaRange}
+                  onValueChange={(v) => {
+                    router.push(`/app/actividades?dept=${currentDeptValue}&fechaRange=${v}&estado=${activeEstado}`);
+                    setFiltrosOpen(false);
+                  }}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {DATE_RANGE_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

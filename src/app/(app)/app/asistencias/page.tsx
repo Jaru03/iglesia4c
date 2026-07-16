@@ -32,10 +32,24 @@ const groupDepartmentsByName = (depts: { id: number; name: string }[]): DeptGrou
   return result;
 };
 
+function computeDateStart(range: string): Date | null {
+  const now = new Date();
+  switch (range) {
+    case "1d": return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    case "1w": { const d = new Date(now); d.setDate(d.getDate() - 7); return d; }
+    case "1m": { const d = new Date(now); d.setMonth(d.getMonth() - 1); return d; }
+    case "2m": { const d = new Date(now); d.setMonth(d.getMonth() - 2); return d; }
+    case "3m": { const d = new Date(now); d.setMonth(d.getMonth() - 3); return d; }
+    case "6m": { const d = new Date(now); d.setMonth(d.getMonth() - 6); return d; }
+    case "1y": { const d = new Date(now); d.setFullYear(d.getFullYear() - 1); return d; }
+    default: return null;
+  }
+}
+
 export default async function AsistenciasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ dept?: string; actividad?: string }>;
+  searchParams: Promise<{ dept?: string; actividad?: string; fechaRange?: string; estado?: string }>;
 }) {
   const session = await getServerSession(authOptions);
 
@@ -53,16 +67,17 @@ export default async function AsistenciasPage({
 
   if (role === "ADMIN") {
     const allDeptsRaw = await prisma.department.findMany({
+      where: { active: true },
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     });
-    
+
     allDepts = groupDepartmentsByName(allDeptsRaw);
     showAllOption = true;
   } else if (role === "RESPONSIBLE" && churchId) {
     churchIdFilter = churchId;
     const deptsRaw = await prisma.department.findMany({
-      where: { churchId },
+      where: { churchId, active: true },
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     });
@@ -85,34 +100,48 @@ export default async function AsistenciasPage({
       select: { id: true },
     });
 
-    if (!person) {
-      redirect("/app/dashboard");
-    }
-
-    const attendances = await prisma.attendance.findMany({
-      where: { personId: person.id },
-      include: {
-        activity: {
-          select: {
-            id: true,
-            title: true,
-            place: true,
-            hourStart: true,
+    const attendances = person
+      ? await prisma.attendance.findMany({
+          where: { personId: person.id },
+          include: {
+            activity: {
+              select: {
+                id: true,
+                title: true,
+                place: true,
+                hourStart: true,
+              },
+            },
           },
-        },
-      },
-      orderBy: { activity: { hourStart: "desc" } },
-    });
+          orderBy: { activity: { hourStart: "desc" } },
+        })
+      : [];
 
     const { AsistenciasUserClient } = await import("./components/AsistenciasUserClient");
     return <AsistenciasUserClient attendances={attendances} />;
   }
 
   if (allDepts.length === 0) {
-    redirect("/app/dashboard");
+    const { AsistenciasClient } = await import("./components/AsistenciasClient");
+    return (
+      <AsistenciasClient
+        actividades={[]}
+        departmentName="Sin departamentos"
+        allDepts={[]}
+        activeDeptId={-1}
+        showAllOption={false}
+        role={role}
+        activeFechaRange="all"
+        activeEstado="proximas"
+      />
+    );
   }
 
-  const { dept } = await searchParams;
+  const { dept, fechaRange: fechaRangeParam, estado: estadoParam } = await searchParams;
+  const activeFechaRange = fechaRangeParam ?? "all";
+  // Por defecto se muestran las actividades por venir; las pasadas son una opción
+  // más del filtro.
+  const activeEstado = estadoParam === "pasadas" ? "pasadas" : "proximas";
   
   // Encontrar el dept seleccionado
   const selectedDept = allDepts.find((d) => d.name === dept) || 
@@ -164,8 +193,18 @@ export default async function AsistenciasPage({
     return {};
   })();
 
+  const nowDate = new Date();
+  const dateStart = computeDateStart(activeFechaRange);
+  // El estado determina el corte temporal: las próximas parten de ahora en
+  // adelante; las pasadas quedan acotadas por el período seleccionado.
+  const hourStartFilter: { gte?: Date; lt?: Date } =
+    activeEstado === "pasadas"
+      ? { lt: nowDate, ...(dateStart ? { gte: dateStart } : {}) }
+      : { gte: nowDate };
+  const finalWhere = { ...whereClause, hourStart: hourStartFilter };
+
   const actividadesRaw = await prisma.activity.findMany({
-    where: whereClause,
+    where: finalWhere,
     select: {
       id: true,
       title: true,
@@ -176,10 +215,10 @@ export default async function AsistenciasPage({
     },
   });
 
-  const nowDate = new Date();
-  const futureAct = actividadesRaw.filter((a) => a.hourStart >= nowDate).sort((a, b) => a.hourStart.getTime() - b.hourStart.getTime());
-  const pastAct = actividadesRaw.filter((a) => a.hourStart < nowDate).sort((a, b) => b.hourStart.getTime() - a.hourStart.getTime());
-  const actividades = [...futureAct, ...pastAct];
+  const actividades =
+    activeEstado === "pasadas"
+      ? actividadesRaw.sort((a, b) => b.hourStart.getTime() - a.hourStart.getTime())
+      : actividadesRaw.sort((a, b) => a.hourStart.getTime() - b.hourStart.getTime());
 
   const preRegCounts = await prisma.attendance.groupBy({
     by: ["activityId"],
@@ -206,6 +245,8 @@ export default async function AsistenciasPage({
       activeDeptId={activeDeptId ?? allDepts[0].departmentIds[0]}
       showAllOption={showAllOption}
       role={role}
+      activeFechaRange={activeFechaRange}
+      activeEstado={activeEstado}
     />
   );
 }

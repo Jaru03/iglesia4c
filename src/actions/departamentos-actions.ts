@@ -6,40 +6,55 @@ import { getSessionUser, canManageDepartment } from "@/lib/auth-helpers";
 
 const ADMIN_RESPONSIBLE = ["ADMIN", "RESPONSIBLE"];
 
-async function updatePersonAsLeader(userId: number, departmentId: number) {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: { person: { select: { id: true } } },
+async function assignLeaderByPersonId(personId: number, departmentId: number) {
+  const person = await prisma.person.findUnique({
+    where: { id: personId },
+    select: { user: { select: { id: true, role: true } } },
   });
 
-  if (user && !["ADMIN", "RESPONSIBLE"].includes(user.role) && user.role !== "LEADER") {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { role: "LEADER" },
-    });
-  }
+  // Mark in PersonDepartment regardless of account
+  await prisma.personDepartment.upsert({
+    where: { personId_departmentId: { personId, departmentId } },
+    update: { active: true, roleInDept: "LEADER" },
+    create: { personId, departmentId, active: true, roleInDept: "LEADER" },
+  });
 
-  if (user?.person?.id) {
-    await prisma.personDepartment.upsert({
-      where: { personId_departmentId: { personId: user.person.id, departmentId } },
-      update: { active: true, roleInDept: "LEADER" },
-      create: { personId: user.person.id, departmentId, active: true, roleInDept: "LEADER" },
+  // If they have a user account, also update DepartmentMember and role
+  if (person?.user) {
+    const userId = person.user.id;
+    await prisma.departmentMember.upsert({
+      where: { userId_departmentId: { userId, departmentId } },
+      update: { roleInDept: "LEADER", active: true },
+      create: { userId, departmentId, roleInDept: "LEADER", active: true },
     });
+    if (!["ADMIN", "RESPONSIBLE", "LEADER"].includes(person.user.role)) {
+      await prisma.user.update({ where: { id: userId }, data: { role: "LEADER" } });
+    }
   }
 }
 
-async function removePersonAsLeader(userId: number) {
-  const stillLeader = await prisma.departmentMember.findFirst({
-    where: { userId, roleInDept: "LEADER", active: true },
+async function removeLeaderByPersonId(personId: number, departmentId: number) {
+  // Remove from PersonDepartment leadership
+  await prisma.personDepartment.updateMany({
+    where: { personId, departmentId, roleInDept: "LEADER" },
+    data: { roleInDept: null },
   });
 
-  if (!stillLeader) {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (user?.role === "LEADER") {
-      await prisma.user.update({
-        where: { id: userId },
-        data: { role: "USER" },
-      });
+  const person = await prisma.person.findUnique({
+    where: { id: personId },
+    select: { user: { select: { id: true, role: true } } },
+  });
+
+  if (person?.user) {
+    const userId = person.user.id;
+    // Remove from DepartmentMember
+    await prisma.departmentMember.deleteMany({ where: { userId, departmentId, roleInDept: "LEADER" } });
+    // Downgrade role if no longer leader anywhere
+    const stillLeader = await prisma.departmentMember.findFirst({
+      where: { userId, roleInDept: "LEADER", active: true },
+    });
+    if (!stillLeader && person.user.role === "LEADER") {
+      await prisma.user.update({ where: { id: userId }, data: { role: "USER" } });
     }
   }
 }
@@ -52,9 +67,9 @@ export async function crearDepartamento(formData: FormData) {
   const name = formData.get("name")?.toString().trim();
   const description = formData.get("description")?.toString().trim();
   const churchId = parseInt(formData.get("churchId") as string);
-  const leaderIdsRaw = formData.getAll("leaderIds") as string[];
+  const leaderPersonIdsRaw = formData.getAll("leaderPersonIds") as string[];
 
-  const leaderIds = leaderIdsRaw
+  const leaderPersonIds = leaderPersonIdsRaw
     .join(",")
     .split(",")
     .filter((id) => id.trim());
@@ -73,14 +88,9 @@ export async function crearDepartamento(formData: FormData) {
       data: { name, description: description || null, churchId, active: true },
     });
 
-    const validLeaderIds = leaderIds.filter((id) => id).map((id) => parseInt(id));
-    for (const userId of validLeaderIds) {
-      await prisma.departmentMember.upsert({
-        where: { userId_departmentId: { userId, departmentId: departamento.id } },
-        update: { roleInDept: "LEADER", active: true },
-        create: { userId, departmentId: departamento.id, roleInDept: "LEADER", active: true },
-      });
-      await updatePersonAsLeader(userId, departamento.id);
+    const validLeaderPersonIds = leaderPersonIds.filter((id) => id).map((id) => parseInt(id));
+    for (const personId of validLeaderPersonIds) {
+      await assignLeaderByPersonId(personId, departamento.id);
     }
 
     const memberIdsRaw = formData.getAll("memberIds") as string[];
@@ -111,9 +121,9 @@ export async function actualizarDepartamento(id: number, formData: FormData) {
 
   const name = formData.get("name")?.toString().trim();
   const description = formData.get("description")?.toString().trim();
-  const leaderIdsRaw = formData.getAll("leaderIds") as string[];
+  const leaderPersonIdsRaw = formData.getAll("leaderPersonIds") as string[];
 
-  const leaderIds = leaderIdsRaw
+  const leaderPersonIds = leaderPersonIdsRaw
     .join(",")
     .split(",")
     .filter((id) => id.trim());
@@ -131,35 +141,22 @@ export async function actualizarDepartamento(id: number, formData: FormData) {
       },
     });
 
-    const existingLeaders = await prisma.departmentMember.findMany({
+    const existingLeaders = await prisma.personDepartment.findMany({
       where: { departmentId: id, roleInDept: "LEADER" },
     });
 
-    const newLeaderIds = leaderIds.filter((id) => id).map((id) => parseInt(id));
-    const newLeaderSet = new Set(newLeaderIds);
+    const newLeaderPersonIds = leaderPersonIds.filter((pid) => pid).map((pid) => parseInt(pid));
+    const newLeaderSet = new Set(newLeaderPersonIds);
 
-    const toDelete = existingLeaders.filter((l) => !newLeaderSet.has(l.userId));
-    if (toDelete.length > 0) {
-      await prisma.departmentMember.deleteMany({
-        where: { id: { in: toDelete.map((l) => l.id) } },
-      });
-      for (const leader of toDelete) {
-        await removePersonAsLeader(leader.userId);
-      }
+    const toRemove = existingLeaders.filter((l) => !newLeaderSet.has(l.personId));
+    for (const leader of toRemove) {
+      await removeLeaderByPersonId(leader.personId, id);
     }
 
-    const existingUserIds = new Set(existingLeaders.map((l) => l.userId));
-    const toCreate = newLeaderIds.filter((userId) => !existingUserIds.has(userId));
-    for (const userId of toCreate) {
-      await prisma.departmentMember.upsert({
-        where: { userId_departmentId: { userId, departmentId: id } },
-        update: { roleInDept: "LEADER", active: true },
-        create: { userId, departmentId: id, roleInDept: "LEADER", active: true },
-      });
-    }
-
-    for (const userId of newLeaderIds) {
-      await updatePersonAsLeader(userId, id);
+    const existingPersonIds = new Set(existingLeaders.map((l) => l.personId));
+    const toAdd = newLeaderPersonIds.filter((pid) => !existingPersonIds.has(pid));
+    for (const personId of toAdd) {
+      await assignLeaderByPersonId(personId, id);
     }
 
     const memberIdsRaw = formData.getAll("memberIds") as string[];
@@ -167,7 +164,7 @@ export async function actualizarDepartamento(id: number, formData: FormData) {
     const existingMembers = await prisma.personDepartment.findMany({
       where: { departmentId: id, active: true },
     });
-    const existingPersonIds = new Set(existingMembers.map((m) => m.personId));
+    const existingMemberPersonIds = new Set(existingMembers.map((m) => m.personId));
     const newPersonIdSet = new Set(memberIds);
 
     for (const m of existingMembers) {
@@ -179,7 +176,7 @@ export async function actualizarDepartamento(id: number, formData: FormData) {
       }
     }
     for (const personId of memberIds) {
-      if (!existingPersonIds.has(personId)) {
+      if (!existingMemberPersonIds.has(personId)) {
         await prisma.personDepartment.upsert({
           where: { personId_departmentId: { personId, departmentId: id } },
           update: { active: true },

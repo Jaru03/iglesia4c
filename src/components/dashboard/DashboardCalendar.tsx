@@ -197,7 +197,7 @@ export function DashboardCalendar({ events, personId }: Props) {
                       <div className="flex flex-col gap-0.5 text-xs text-muted-foreground pl-4">
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3 shrink-0" />
-                          {format(new Date(e.hourStart), "HH:mm")}
+                          {String(new Date(e.hourStart).getUTCHours()).padStart(2,"0")}:{String(new Date(e.hourStart).getUTCMinutes()).padStart(2,"0")}
                         </span>
                         <span className="flex items-center gap-1">
                           <MapPin className="h-3 w-3 shrink-0" />

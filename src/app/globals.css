@@ -187,6 +187,15 @@
     @apply outline-none ring-2 ring-offset-2 ring-primary-3;
   }
 
+  /* Cursor de mano en cualquier elemento clickable no deshabilitado */
+  button:not(:disabled),
+  [role="button"]:not(:disabled),
+  label[for],
+  summary,
+  a[href] {
+    cursor: pointer;
+  }
+
   .dark *:focus-visible {
     @apply ring-offset-gray-900;
   }

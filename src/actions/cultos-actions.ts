@@ -48,12 +48,10 @@ export async function generarCultosAutomaticos(churchId: number): Promise<void> 
     const monthStart = new Date(year, month, 1);
     const monthEnd = new Date(year, month + 1, 0, 23, 59, 59, 999);
 
-    const existing = await prisma.activity.findFirst({
+    // Eliminar cultos automáticos del mes para regenerarlos con los horarios actuales
+    await prisma.activity.deleteMany({
       where: { isCulto: true, churchId, date: { gte: monthStart, lte: monthEnd } },
-      select: { id: true },
     });
-
-    if (existing) continue; // month already has cultos — skip to preserve edits
 
     const toCreate: { title: string; description: string; place: string; date: Date; hourStart: Date; hourEnd: Date }[] = [];
 
@@ -104,6 +102,7 @@ export async function generarCultosAutomaticos(churchId: number): Promise<void> 
     }
   }
 
+  revalidatePath("/app/cultos");
   revalidatePath("/app/dashboard");
   revalidatePath("/app/actividades");
 }

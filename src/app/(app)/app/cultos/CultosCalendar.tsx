@@ -182,7 +182,7 @@ export function CultosCalendar({ cultos, personId, isAdmin }: Props) {
                         <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3 shrink-0" />
-                            {format(new Date(c.hourStart), "HH:mm")}
+                            {c.hourStart.slice(11, 16)}
                           </span>
                           <span className="flex items-center gap-1">
                             <MapPin className="h-3 w-3 shrink-0" />

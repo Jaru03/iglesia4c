@@ -61,7 +61,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <>
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 overflow-y-auto p-4 space-y-1">
         {items.map((item) => (
           <Button
             key={item.href}
@@ -80,11 +80,11 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
 
       <Separator className="bg-slate-800" />
 
-      <div className="p-4">
+      <div className="pb-8 cursor-pointer">
         <Button
           variant="ghost"
           className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-900/20"
-          onClick={() => signOut({ callbackUrl: "/login" })}
+          onClick={() => signOut({ callbackUrl: "/" })}
         >
           <LogOut className="h-4 w-4 mr-3" />
           Cerrar Sesión

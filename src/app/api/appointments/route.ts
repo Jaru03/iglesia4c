@@ -21,7 +21,7 @@ export async function GET(req: Request) {
   const status = searchParams.get("status");
 
   const where: Record<string, unknown> =
-    session.user.role === "RESPONSIBLE"
+    session.user.role === "RESPONSIBLE" || session.user.role === "OBRERO"
       ? { responsableId: userId }
       : { userId };
 
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
   const responsableUser = await prisma.user.findUnique({
     where: { id: Number(responsableId) },
     include: {
-      person: { select: { name: true, lastname: true, email: true } },
+      person: { select: { name: true, lastname: true, email: true, churchId: true } },
       churchLeaderRoles: { select: { churchId: true } },
     },
   });
@@ -82,7 +82,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Responsable no encontrado" }, { status: 404 });
   }
 
-  const churchId = responsableUser.churchLeaderRoles[0]?.churchId;
+  const churchId =
+    responsableUser.churchLeaderRoles[0]?.churchId ?? responsableUser.person?.churchId ?? null;
   if (!churchId) {
     return NextResponse.json({ error: "El responsable no tiene iglesia asignada" }, { status: 400 });
   }

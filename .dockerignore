@@ -1,0 +1,12 @@
+.git
+.gitignore
+.env*
+.next
+node_modules
+docker-compose.yml
+Dockerfile
+*.md
+*.bat
+prisma/seed*.ts
+src/__tests__
+vitest.config.ts
